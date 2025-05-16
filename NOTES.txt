@@ -1,0 +1,195 @@
+codex
+    Below is a “trace” of what really happens to the symbol n in
+
+        acc = hl.zeros([tile_m, n], dtype=torch.float32)
+
+    when you run  python examples/matmul_ln.py.
+    It follows the value from the Python front-end down to the generated Triton kernel, pointing at the exact Helion source files / functions that touch it and
+    (equally important) the places that do not touch it – which is why you finally hit the u2 vs n mismatch.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. n is born – `y.size( )` returns a SymInt
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    examples/matmul_ln.py
+
+        k2, n = y.size()
+
+    •  y is a FakeTensor (Helion always runs the front-end under
+       CompileEnvironment.fake_mode).
+    •  y.size() therefore returns a torch.SymInt.
+
+    Helion immediately records where that SymInt comes from:
+
+    helion/_compiler/variable_origin.py:TensorSizeOrigin
+    helion/_compiler/host_function.py:HostFunction.register_fake
+
+        if isinstance(value, torch.SymInt):
+            sym = value._sympy_()
+            self.symbol_to_origin[sym.name] = SymbolOrigin(
+                origin = TensorSizeOrigin(y , dim=1)
+            )
+
+    So the symbol that later prints as u1 / u2 has a definitive origin:
+    “size-of-argument-y-dimension-1”.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. `hl.zeros` – front-end fake run
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    helion/language/creation_ops.py:zeros → full
+    helion/language/creation_ops.py:_full_fake
+
+        env.add_kernel_tensor_size(shape)
+        return torch.empty([*shape], ...)
+
+    Here shape is [tile_m, n].
+    tile_m is a TileIndexProxy, n is the SymInt we just created.
+
+    Nothing clever happens to n yet – it is simply stored inside the
+    FakeTensor that represents acc.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Recording shapes that appear in the kernel
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    helion/_compiler/compile_environment.py:add_kernel_tensor_size
+
+    The tuple of SymPy expressions (<block_sym_m>, n) is counted so that
+    Helion can later decide whether some dimensions are worth flattening.
+    Again, n is kept exactly as the TensorSizeOrigin symbol.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Code-generation path – turning `hl.zeros` into Triton `tl.full`
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    helion/language/creation_ops.py:_full_codegen
+
+        shape_str = state.device_function.tile_strategy.shape_str(fake.size())
+
+    fake.size() returns the two SymInts [block_sym_m, n].
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. tile_strategy.shape_str() – who prints what?
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    helion/_compiler/tile_dispatch.py:TileDispatch.shape_str →
+    helion/_compiler/tile_dispatch.py:_compact_shape
+
+    • If a dimension is produced by a tiling loop (block index) we collapse
+      it to the block-size variable.
+    • Otherwise we call
+
+        fn.literal_expr(size)     # DeviceFunction.literal_expr
+
+    For n that goes to
+
+    helion/_compiler/device_function.py:DeviceFunction.literal_expr →
+    DeviceFunction.sympy_expr
+
+    Because the SymPy symbol was tagged with a TensorSizeOrigin, it is
+    rewritten into a kernel argument:
+
+        y_size_1                           # readable name, exact spot:
+                                           # DeviceFunction.tensor_size()
+
+    That adds a TensorSizeArg to the Triton kernel signature, so the final
+    kernel line for the allocation looks (schematically) like
+
+        acc = tl.full([ <block_size_m> ,  y_size_1 ], 0.0, dtype=tl.float32)
+
+    At run time the launcher passes y.stride( ), y.shape( ), … including
+    y.shape[1] as that y_size_1 argument — the value of n.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Where the mismatch is introduced (`y[tile_k, :]`)
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    helion/_compiler/indexing_strategy.py:SubscriptIndexing.compute_shape
+
+    The slice : hits this branch:
+
+        elif isinstance(k, slice) and str(k) == "slice(None, None, None)":
+            size = input_size.popleft()        # this is n
+            if size != 1:
+                rdim = env.allocate_reduction_dimension(size)
+
+    allocate_reduction_dimension (compile_environment.py) does two things
+
+        1. records a *reduction-loop* block size (rdim);
+        2. invents a **new** SymInt `u2` (default value 64) that will later be
+           tuned / rounded up to eg. the next power-of-2.
+
+    So the load shape becomes [block_sym_k, rdim.var]
+    where rdim.var ≠ n once tuning chooses a different block size.
+    That is why FakeTensor math later raises
+    “tensor a (u2) must match tensor b (32)”.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Why `hl.zeros` does **not** get the same rdim
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Nothing in the full/zeros path looks for plain SymInts that happen to
+    equal a reduction dimension.  Only the slice-handling path allocates the
+    special reduction block size.  Hence the two symbols diverge.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    ## Files & functions that touch n
+
+        1. examples/matmul_ln.py – user code that creates it
+        2. variable_origin.py : TensorSizeOrigin
+        3. host_function.py : register_fake
+        4. creation_ops.py : _full_fake / _full_codegen
+        5. compile_environment.py : add_kernel_tensor_size
+        6. tile_dispatch.py : TileDispatch.shape_str / _compact_shape
+        7. device_function.py : literal_expr → sympy_expr → tensor_size()
+        8. indexing_strategy.py : SubscriptIndexing.compute_shape (creates rdim)
+        9. compile_environment.py : allocate_reduction_dimension (new symbol)
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    ## Take-away
+
+    • The “real” n is threaded all the way into the generated Triton kernel
+      via DeviceFunction.tensor_size and appears there as an ordinary kernel
+      scalar parameter.
+
+    • The reduction slice (:) creates a second symbol that is allowed to
+      deviate (rounded-up power-of-2 etc.).  Because hl.zeros keeps the
+      original n while the load keeps the padded rdim, you get the u2 vs n
+      shape mismatch that the comment in matmul_ln.py describes.
+
+    Addressing the bug means making the creation op follow the same
+    allocate_reduction_dimension logic (or otherwise unifying the two
+    symbols).

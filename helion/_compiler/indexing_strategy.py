@@ -185,6 +185,7 @@ class SubscriptIndexing(NamedTuple):
                     rdim = CompileEnvironment.current().allocate_reduction_dimension(
                         size
                     )
+                    print(f"rdim: {rdim}, size: {size}, rdim.var: {rdim.var}")
                     output_size.append(rdim.var)
                 else:
                     output_size.append(1)
