@@ -6,53 +6,6 @@ import helion
 import helion.language as hl
 import torch
 
-@helion.kernel(static_shapes=True)
-def _moe_matmul_ogs_raggedT(
-    A: torch.Tensor,          # [B, K]
-    W: torch.Tensor,                 # [E, K, N]
-    expert_token_counts: torch.Tensor,    # [E]  number of tokens per expert  (TODO: can we remove this?)
-    expert_token_offsets: torch.Tensor,    # [E+1]  start offset of each expert slice
-    sorted_to_orig_token_idx: torch.Tensor,           # [B]  sorted_token_idx -> original_token_idx
-):
-    """Compute C such that rows [offset[e]:offset[e+1]] use W[e].
-    i.e. group by expert and compute one GEMM per expert tile inside the kernel.
-
-    `expert_token_offsets` is a 1-D int32 tensor of length `E+1` with
-        expert_token_offsets[0]   = 0
-        expert_token_offsets[e+1] = expert_token_offsets[e] + # tokens for expert e
-    """
-
-    B = A.size(0)
-    K = A.size(1)
-    N = W.size(2)
-    E = W.size(0)
-
-    C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
-
-    # iterate over experts
-    for e_idx in hl.tile(E, block_size=1):
-        start = expert_token_offsets[e_idx]
-        num_tokens = expert_token_counts[e_idx]
-
-        # skip experts that receive no tokens
-        if num_tokens == 0:
-            continue
-
-        # tile over the tokens that belong to this expert
-        for tile_m, tile_n in hl.tile([num_tokens, N]):
-            acc = hl.zeros([tile_m, tile_n], dtype=torch.float32)
-            orig_rows = sorted_to_orig_token_idx[start + tile_m]
-            for tile_k in hl.tile(K):
-                # gather the rows of A that belong to this expert
-                A_frag   = A[orig_rows, tile_k]
-                W_frag   = W[e_idx, tile_k, tile_n]
-                # compute the matmul
-                acc      = torch.addmm(acc, A_frag, W_frag)
-            # scatter: map each row of the tile back to its original position
-            C[orig_rows, tile_n] = acc
-
-    return C
-
 
 @helion.kernel(static_shapes=True)
 def _moe_matmul_ogs_maxT(
@@ -89,69 +42,51 @@ def _moe_matmul_ogs_maxT(
     E = W.size(0)  # number of experts
 
     C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
+    row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
 
-    for e_idx in hl.tile(E, block_size=1):
+    """
+    TODO:
+    Jason: I want to add a hl.grid(E) API which does this.
+    It should be very similar to hl.tile(..., block_size=1) but gives a scalar.
+    """
+    for e_idx in hl.grid(E):
         start = expert_token_offsets[e_idx]
         num_tokens = expert_token_counts[e_idx]
 
-        # skip experts that receive no tokens
-        if num_tokens == 0:
-            continue
+        # Process this expert only if it received at least one token.
+        if num_tokens != 0:
+            for tile_t, tile_n in hl.tile([T_max, N]):
+                # Determine which rows inside this (expert-local) tile correspond to
+                # *real* tokens and which ones are just padding.
+                local_rows = row_ids[tile_t]  # [BLOCK_T]
+                row_valid = local_rows < num_tokens  # bool[BLOCK_T]
+                # Skip tiles that consist only of padding rows.
+                if torch.any(row_valid):
+                    # Map (expert-local) row indices to original batch order.  For
+                    # rows that are padding we *saturate* the offset to the last
+                    # valid element so we stay in-bounds while their results will be
+                    # discarded later via `row_valid`.
+                    safe_offset = torch.where(
+                        row_valid,
+                        local_rows,
+                        num_tokens - 1,  # any valid row inside the expert slice
+                    )
+                    orig_rows = sorted_to_orig_token_idx[start + safe_offset]  # [BLOCK_T]
 
-        for tile_t, tile_n in hl.tile([T_max, N]):
-            # -------------------------------------------------------------------
-            # Determine which rows inside this (expert-local) tile correspond to
-            # *real* tokens and which ones are just padding.
-            #
-            # Directly computing `row_valid = tile_t < num_tokens` is not allowed
-            # because TileIndexProxy objects may only appear in tensor indexing
-            # expressions.  Instead we first turn the tile indices into a regular
-            # tensor and then perform the comparison.
-            # -------------------------------------------------------------------
+                    acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
 
-            # 1. Convert `tile_t` from a TileIndexProxy into an actual tensor of
-            #    indices in the range [0, T_max).
-            local_rows = torch.arange(T_max, device=A.device, dtype=torch.int32)[
-                tile_t
-            ]  # [BLOCK_T]
+                    for tile_k in hl.tile(K):
+                        # Gather the relevant slice of A.
+                        A_frag = A[orig_rows, tile_k]
+                        # Mask out padding rows by zeroing their inputs
+                        A_frag = A_frag * (row_valid[:, None].to(A_frag.dtype))
+                        # Expert weights for the current (K, N) subtile.
+                        W_frag = W[e_idx, tile_k, tile_n].view(tile_k, tile_n)
+                        # Core matmul on the tile
+                        acc = torch.addmm(acc, A_frag, W_frag)
 
-            # 2. Rows whose index >= `num_tokens` are padding.
-            row_valid = local_rows < num_tokens  # bool[BLOCK_T]
-
-            # If *all* rows are padding we can skip the tile completely.
-            if not torch.any(row_valid):
-                continue
-
-            # 3. Map (expert-local) row indices to original batch order.  For
-            #    rows that are padding we *saturate* the offset to the last
-            #    valid element so we stay in-bounds while their results will be
-            #    discarded later via `row_valid`.
-            safe_offset = torch.where(
-                row_valid,
-                local_rows,
-                num_tokens - 1,  # any valid row inside the expert slice
-            )
-            orig_rows = sorted_to_orig_token_idx[start + safe_offset]  # [BLOCK_T]
-
-            # -------------------------------------------------------------------
-            # Core matmul on the tile
-            # -------------------------------------------------------------------
-            acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
-
-            for tile_k in hl.tile(K):
-                # Gather the relevant slice of A
-                A_frag = A[orig_rows, tile_k]
-                # Mask out padding rows by zeroing their inputs
-                A_frag = A_frag * (row_valid[:, None].to(A_frag.dtype))
-
-                # Expert weights for the current (K, N) subtile.
-                W_frag = W[e_idx, tile_k, tile_n]
-                acc = torch.addmm(acc, A_frag, W_frag)
-
-            # -------------------------------------------------------------------
-            # Scatter the results back – only for the *real* rows.
-            # -------------------------------------------------------------------
-            C[orig_rows[row_valid], tile_n] = acc[row_valid]
+                    # Scatter the results back – only for the *real* rows.
+                    C[orig_rows[row_valid], tile_n] = acc[row_valid, :]
 
     return C
 
@@ -205,14 +140,14 @@ def moe_matmul_ogs(
             sorting,
             T_max,
         )
-    elif variant == "raggedT":
-        C = _moe_matmul_ogs_raggedT(
-            A,
-            W,
-            expert_token_counts,
-            expert_token_offsets,
-            sorting,
-        )
+    # elif variant == "raggedT":
+    #     C = _moe_matmul_ogs_raggedT(
+    #         A,
+    #         W,
+    #         expert_token_counts,
+    #         expert_token_offsets,
+    #         sorting,
+    #     )
 
     return C
 
