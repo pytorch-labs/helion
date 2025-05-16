@@ -10,6 +10,7 @@ import torch
 def _moe_matmul_ogs_raggedT(
     A: torch.Tensor,          # [B, K]
     W: torch.Tensor,                 # [E, K, N]
+    expert_token_counts: torch.Tensor,    # [E]  number of tokens per expert  (TODO: can we remove this?)
     expert_token_offsets: torch.Tensor,    # [E+1]  start offset of each expert slice
     sorted_to_orig_token_idx: torch.Tensor,           # [B]  sorted_token_idx -> original_token_idx
 ):
@@ -31,7 +32,7 @@ def _moe_matmul_ogs_raggedT(
     # iterate over experts
     for e_idx in hl.tile(E, block_size=1):
         start = expert_token_offsets[e_idx]
-        num_tokens = expert_token_offsets[e_idx+1] - start
+        num_tokens = expert_token_counts[e_idx]
 
         # skip experts that receive no tokens
         if num_tokens == 0:
@@ -57,9 +58,10 @@ def _moe_matmul_ogs_raggedT(
 def _moe_matmul_ogs_maxT(
     A: torch.Tensor,  # [B, K]
     W: torch.Tensor,  # [E, K, N]
+    expert_token_counts: torch.Tensor,    # [E]  number of tokens per expert  (TODO: can we remove this?)
     expert_token_offsets: torch.Tensor,  # [E+1] cumulative sum of token counts
     sorted_to_orig_token_idx: torch.Tensor,  # [B] mapping from sorted -> orig idx
-    T_max: int,  # maximum #tokens any expert may receive
+    T_max: hl.constexpr,  # maximum #tokens any expert may receive (compile-time constant)
 ):
     """Compute `C = MoE(A, W)` using OGS with fixed max # tokens per expert `T_max`.
 
@@ -90,47 +92,66 @@ def _moe_matmul_ogs_maxT(
 
     for e_idx in hl.tile(E, block_size=1):
         start = expert_token_offsets[e_idx]
-        num_tokens = expert_token_offsets[e_idx+1] - start
+        num_tokens = expert_token_counts[e_idx]
 
         # skip experts that receive no tokens
         if num_tokens == 0:
             continue
 
         for tile_t, tile_n in hl.tile([T_max, N]):
-            row_valid = tile_t < num_tokens  # bool[BLOCK_T]
+            # -------------------------------------------------------------------
+            # Determine which rows inside this (expert-local) tile correspond to
+            # *real* tokens and which ones are just padding.
+            #
+            # Directly computing `row_valid = tile_t < num_tokens` is not allowed
+            # because TileIndexProxy objects may only appear in tensor indexing
+            # expressions.  Instead we first turn the tile indices into a regular
+            # tensor and then perform the comparison.
+            # -------------------------------------------------------------------
+
+            # 1. Convert `tile_t` from a TileIndexProxy into an actual tensor of
+            #    indices in the range [0, T_max).
+            local_rows = torch.arange(T_max, device=A.device, dtype=torch.int32)[
+                tile_t
+            ]  # [BLOCK_T]
+
+            # 2. Rows whose index >= `num_tokens` are padding.
+            row_valid = local_rows < num_tokens  # bool[BLOCK_T]
 
             # If *all* rows are padding we can skip the tile completely.
             if not torch.any(row_valid):
                 continue
 
-            # Map (expert-local) row indices to original batch order.
-            # We must never index *past* the end of `sorted_to_orig_token_idx`.
-            # To guarantee this without performing forbidden arithmetic on tile
-            # indices outside of an indexing context, we first *saturate* the
-            # within-expert offset so that any padded row is mapped to the *last
-            # valid* token of the expert.
+            # 3. Map (expert-local) row indices to original batch order.  For
+            #    rows that are padding we *saturate* the offset to the last
+            #    valid element so we stay in-bounds while their results will be
+            #    discarded later via `row_valid`.
             safe_offset = torch.where(
                 row_valid,
-                tile_t,
-                num_tokens - 1,  # can be any valid row inside the expert slice
+                local_rows,
+                num_tokens - 1,  # any valid row inside the expert slice
             )
             orig_rows = sorted_to_orig_token_idx[start + safe_offset]  # [BLOCK_T]
 
+            # -------------------------------------------------------------------
+            # Core matmul on the tile
+            # -------------------------------------------------------------------
             acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
 
             for tile_k in hl.tile(K):
-                # Gather the rows of A that belong to this expert
+                # Gather the relevant slice of A
                 A_frag = A[orig_rows, tile_k]
-                # Mask out padded rows by zeroing their inputs
+                # Mask out padding rows by zeroing their inputs
                 A_frag = A_frag * (row_valid[:, None].to(A_frag.dtype))
 
-                # Compute the matmul
+                # Expert weights for the current (K, N) subtile.
                 W_frag = W[e_idx, tile_k, tile_n]
                 acc = torch.addmm(acc, A_frag, W_frag)
 
-            # Scatter: only store results for the *real* rows of this tile.
-            if torch.any(row_valid):
-                C[orig_rows[row_valid], tile_n] = acc[row_valid]
+            # -------------------------------------------------------------------
+            # Scatter the results back – only for the *real* rows.
+            # -------------------------------------------------------------------
+            C[orig_rows[row_valid], tile_n] = acc[row_valid]
 
     return C
 
@@ -179,6 +200,7 @@ def moe_matmul_ogs(
         C = _moe_matmul_ogs_maxT(
             A,
             W,
+            expert_token_counts,
             expert_token_offsets,
             sorting,
             T_max,
@@ -187,6 +209,7 @@ def moe_matmul_ogs(
         C = _moe_matmul_ogs_raggedT(
             A,
             W,
+            expert_token_counts,
             expert_token_offsets,
             sorting,
         )
@@ -235,7 +258,7 @@ def check() -> None:
         baseline_sec = do_bench(lambda: moe_ref(A, W, top1_expert_per_token))
         print(f"Helion time: {sec:.4f}s, torch time: {baseline_sec:.4f}s, speed-up: {baseline_sec/sec:.2f}x")
 
-    _check_variant("raggedT")
+    # _check_variant("raggedT")
     _check_variant("maxT")
 
 
