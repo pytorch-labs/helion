@@ -1,0 +1,182 @@
+codex
+    Below is a walk-through of what happens to the loop variable in
+
+        for tile_m in hl.tile(m):         # ❶ user code
+
+    as Helion lowers the kernel.
+    At every compilation stage we spell out
+
+    • the Python value / IR node that represents tile_m
+    • where it is stored (module / class)
+    • what extra information is attached to it and why.
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Front-end: user level Python
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Stage name          : “kernel authoring”
+    File(s) involved    : your source file only
+
+    hl.tile() is just a normal Python call.  While the kernel is being
+    traced (inside hl.kernel()’s context-manager) it immediately
+    returns a TileIndexProxy object, so
+
+        type(tile_m) is helion._compiler.tile_index_proxy.TileIndexProxy
+
+    Important properties
+    • subclass of torch.Tensor so that it can flow through PyTorch /
+      Triton ops.
+    • single data field block_size_index that says which logical block
+      size this iterator is tied to (see below).
+    • overrides __torch_function__ to intercept x[i], x[i] = …,
+      .view() etc. and forward them to the Helion intrinsics
+      hl.load()/hl.store() (or transparently falls back to “scalar
+      SymInt” when an op needs it).
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Type-propagation pass (AST → ExtendedAST)
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Stage name          : language/_decorators.type_propagation
+    File(s) involved    : helion/helion/language/loops.py
+                          helion/helion/_compiler/type_propagation.py
+
+    The call node hl.tile(m) is visited by the
+    @_decorators.type_propagation handler.
+    Resulting type:
+
+        IterType( TileIndexType )
+
+    TileIndexType is defined in _compiler/type_propagation.py.
+    Creating it has two effects:
+
+    a.  CompileEnvironment.allocate_block_size() is called once and
+        appends a BlockSizeInfo entry to env.block_sizes.
+        • It stores the tensor extent m
+        • Generates a symbolic SymInt called block_size_<idx>
+          (later autotuning will decide its concrete value).
+
+    b.  The allocated block_size_idx is written into the new
+        TileIndexType instance so every later pass can look it up.
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. AST code-generation pass (“choose a TileStrategy”)
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Stage name          : hl.tile → codegen
+    File(s) involved    : helion/helion/language/loops.py
+                          helion/helion/_compiler/tile_strategy.py
+
+    Because the surrounding for … in hl.tile() is the outer-most
+    loop it is annotated LoopType.GRID.
+    The codegen handler therefore asks the active TileStrategy
+    (Flattened vs. ND) to materialise the loop.
+
+    Typical output for the flattened strategy (simplified):
+
+        _BLOCK_SIZE_0 = <autotune constant or SymInt>
+        offsets_0   = tl.program_id(0) * _BLOCK_SIZE_0 + tl.arange(0, _BLOCK_SIZE_0)
+
+        indices_0   = offsets_0                      # only 1-D size “m”
+        mask_0      = offsets_0 < m                  # emitted if total size not % block
+
+    and the original body of the user loop is spliced after these
+    assignments.
+
+    So at this point
+
+        the identifier  tile_m  has become  indices_0   (plain Name node)
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Device-IR building (Python execution → FX graph)
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Stage name          : WalkDeviceAST / _make_fx
+    File(s) involved    : helion/helion/_compiler/device_ir.py
+
+    When the AST walker re-executes the (already rewritten) Python
+    function to build an FX graph, it has to evaluate the RHS of
+    for tile_m in … once to seed the scope inside the loop body.
+
+    It therefore returns again TileIndexProxy(block_size_index)
+    (this time produced by TileIndexType.proxy()).
+
+    Inside the traced body every use of tile_m
+    participates in normal PyTorch eager execution → FX proxy creation.
+    Because TileIndexProxy.__torch_function__ redirects __index__,
+    __getitem__, … the generated graph already contains Helion’s
+    higher-level ops (hl.load, +, *, …) on legitimate FX nodes—
+    not raw Python integers.
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Inductor / Triton codegen
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Stage name          : CodegenState.codegen → Triton AST
+    File(s) involved    : helion/helion/_compiler/inductor_lowering.py
+                          helion/helion/_compiler/tile_strategy.py
+
+    During lowering every TileIndexProxy that is still present in the
+    FX graph is replaced with the concrete Triton IR symbol that the
+    TileStrategy minted earlier:
+
+        TileIndexProxy(block_size_idx=0)  →  ast.Name("indices_0")
+
+    Thus, by the time Helion hands the kernel to the Triton
+    compiler, tile_m is literally the vector
+
+        tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+
+    optionally masked for partial tiles.
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+        1. Final code (GPU assembly view)
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    Stage name          : Triton → LLVM → PTX / SASS
+
+    indices_0 lives in a register per thread; BLOCK_SIZE and the grid
+    dimension computed from triton.cdiv(m, BLOCK_SIZE) become launch
+    parameters.  Apart from their names, neither TileIndexProxy nor
+    TileIndexType exist any more—the compiler has reduced them to integer
+    math that drives address calculations.
+
+    ---------------------------------------------------------------------------------------------------------------------------------------------
+    ---
+
+    ## Recap – single variable through the pipeline
+
+    User code           : TileIndexProxy (torch.Tensor subclass)
+    Type propagation    : TileIndexType(block_size_idx=0)
+    AST after rewrite   : ast.Name("indices_0")
+    FX graph            : proxy for TileIndexProxy → later mapped to indices_0
+    Triton AST          : tl.arange / tl.program_id expression
+    GPU binary          : integer register holding the loop index
+
+    Every stage keeps a pointer (block_size_idx) back to the same entry
+    in CompileEnvironment.block_sizes, which is how autotuning and all
+    subsequent lowerings stay in sync.

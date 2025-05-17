@@ -367,3 +367,6 @@ def _fn_make_precompiler(x: torch.Tensor):
         )
         torch.testing.assert_close(result, torch.sin(args[0]))
         self.assertExpectedInline(code, """""")
+
+if __name__ == "__main__":
+    unittest.main()
