@@ -56,32 +56,32 @@ def _moe_matmul_ogs_maxT(
                 local_rows = row_ids[tile_t]  # [BLOCK_T]
                 row_valid = local_rows < num_tokens  # bool[BLOCK_T]
                 # Skip tiles that consist only of padding rows.
-                if torch.any(row_valid):
-                    # Map (expert-local) row indices to original batch order.  For
-                    # rows that are padding we *saturate* the offset to the last
-                    # valid element so we stay in-bounds while their results will be
-                    # discarded later via `row_valid`.
-                    safe_offset = torch.where(
-                        row_valid,
-                        local_rows,
-                        num_tokens - 1,  # any valid row inside the expert slice
-                    )
-                    orig_rows = sorted_to_orig_token_idx[start + safe_offset]  # [BLOCK_T]
+                # if torch.any(row_valid):  # TODO(yf225): make torch.any work
+                # Map (expert-local) row indices to original batch order.  For
+                # rows that are padding we *saturate* the offset to the last
+                # valid element so we stay in-bounds while their results will be
+                # discarded later via `row_valid`.
+                safe_offset = torch.where(
+                    row_valid,
+                    local_rows,
+                    num_tokens - 1,  # any valid row inside the expert slice
+                )
+                orig_rows = sorted_to_orig_token_idx[start + safe_offset]  # [BLOCK_T]
 
-                    acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
+                acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
 
-                    for tile_k in hl.tile(K):
-                        # Gather the relevant slice of A.
-                        A_frag = A[orig_rows, tile_k]
-                        # Mask out padding rows by zeroing their inputs
-                        A_frag = A_frag * (row_valid[:, None].to(A_frag.dtype))
-                        # Expert weights for the current (K, N) subtile.
-                        W_frag = W[e_idx, tile_k, tile_n].view(tile_k, tile_n)
-                        # Core matmul on the tile
-                        acc = torch.addmm(acc, A_frag, W_frag)
+                for tile_k in hl.tile(K):
+                    # Gather the relevant slice of A.
+                    A_frag = A[orig_rows, tile_k]
+                    # Mask out padding rows by zeroing their inputs
+                    A_frag = A_frag * (row_valid[:, None].to(A_frag.dtype))
+                    # Expert weights for the current (K, N) subtile.
+                    W_frag = W[e_idx, tile_k, tile_n].view(tile_k, tile_n)
+                    # Core matmul on the tile
+                    acc = torch.addmm(acc, A_frag, W_frag)
 
-                    # Scatter the results back – only for the *real* rows.
-                    C[orig_rows[row_valid], tile_n] = acc[row_valid, :]
+                # Scatter the results back – only for the *real* rows.
+                C[orig_rows[row_valid], tile_n] = acc[row_valid, :]
 
     return C
 

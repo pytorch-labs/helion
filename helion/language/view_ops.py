@@ -35,6 +35,9 @@ def _(tensor: torch.Tensor, index: list[object]) -> torch.Tensor:
             output_size.append(1)
         elif isinstance(val, slice) and repr(val) == "slice(None, None, None)":
             output_size.append(input_size.popleft())
+        elif isinstance(val, torch.Tensor) and val.ndim == 1:
+            input_size.popleft()
+            output_size.append(val.size(0))
         else:
             raise exc.InvalidIndexingType(repr(val))
     assert len(input_size) == 0

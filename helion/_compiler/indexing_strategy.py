@@ -207,6 +207,7 @@ class SubscriptIndexing(NamedTuple):
         output_size = SubscriptIndexing.compute_shape(fake_value, index)
         dtype = CompileEnvironment.current().triton_index_type()
         first_non_grid_index = 0
+        print(f"fake_value.shape: {fake_value.shape}, index: {index}")
         for n, k in enumerate(index):
             if k is None:
                 output_idx += 1
@@ -224,6 +225,7 @@ class SubscriptIndexing(NamedTuple):
                         .is_grid()
                     ):
                         first_non_grid_index = n + 1
+                        print(f"fake_value.shape: {fake_value.shape}, output_size: {output_size}, output_idx: {output_idx}")
                         expand = tile_strategy.expand_str(output_size, output_idx)
                     else:
                         expand = tile_strategy.expand_str(
