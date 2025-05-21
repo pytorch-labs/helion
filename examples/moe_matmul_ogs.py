@@ -44,11 +44,6 @@ def _moe_matmul_ogs_maxT(
     C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
     row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
 
-    """
-    TODO:
-    Jason: I want to add a hl.grid(E) API which does this.
-    It should be very similar to hl.tile(..., block_size=1) but gives a scalar.
-    """
     for e_idx in hl.grid(E):
         start = expert_token_offsets[e_idx]
         num_tokens = expert_token_counts[e_idx]
