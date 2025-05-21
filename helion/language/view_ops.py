@@ -48,14 +48,20 @@ def _(tensor: torch.Tensor, index: list[object]) -> torch.Tensor:
 def _(state: CodegenState) -> ast.AST:
     output_keys = []
     # pyre-ignore[16]
-    for val in state.proxy_arg(1):
+    for idx, val in enumerate(state.proxy_arg(1)):
         if val is None:
             output_keys.append("None")
         elif isinstance(val, slice) and repr(val) == "slice(None, None, None)":
             output_keys.append(":")
+        elif isinstance(val, torch.Tensor) and val.ndim == 1:
+            print(f"state.ast_args[0].id: {state.ast_args[0].id}")
+            print(f"state.ast_args[1][idx].id: {state.ast_args[1][idx].id}")
+            output_keys.append(state.ast_args[1][idx].id)
         else:
             raise exc.InvalidIndexingType(repr(val))
-    return expr_from_string(
+    ret = expr_from_string(
         f"base[{', '.join(output_keys)}]",
         base=state.ast_arg(0),
     )
+    print(f"ret: {ret}")
+    return ret

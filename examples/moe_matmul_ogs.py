@@ -116,6 +116,7 @@ def moe_matmul_ogs(
     device = A.device
 
     sorting = torch.argsort(top1_expert_per_token, stable=True).to(torch.int32)  # [B]
+    print(f"sorting.shape: {sorting.shape}")
 
     expert_token_counts = torch.bincount(
         top1_expert_per_token, minlength=E
