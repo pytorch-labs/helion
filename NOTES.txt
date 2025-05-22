@@ -62,3 +62,47 @@
 
     (i.e. the kernel now compiles, runs and produces numerically correct
     results).
+
+
+
+    Yes – instead of first filtering the row indices and then writing the
+    filtered sub-tensor, you can leave the index list untouched and mask the
+    value that is being written.  In practice you have two easy ways to do
+    that:
+
+        1. Multiply the accumulator with the row mask and add it to `C`
+
+               # make the mask broadcastable over the N–dimension
+               row_mask = row_valid[:, None].to(acc.dtype)   #  [BLOCK_T, 1]
+
+               # padding rows contribute 0, real rows contribute their dot-product
+               C[orig_rows, tile_n] += acc * row_mask
+
+           • `orig_rows` is used only once,
+           • the padding rows (where `row_valid == False`) add zero,
+           • every (token, column-tile) pair is written exactly once
+             in the current kernel, so “+=” is equivalent to “=”.
+        2. Keep the existing value for the padding rows with `torch.where`
+
+               row_mask = row_valid[:, None]                 #  [BLOCK_T, 1]  (bool)
+               C[orig_rows, tile_n] = torch.where(
+                   row_mask,                                # take acc if the row is real
+                   acc,                                     # value for real rows
+                   C[orig_rows, tile_n]                     # keep the old value otherwise
+               )
+
+    Both variants remove the second indexing
+    (orig_rows[row_valid]) completely, so you don’t need the
+    intermediate orig_rows_valid tensor any more:
+
+        # old
+        orig_rows_valid = orig_rows[row_valid].squeeze(0)
+        C[orig_rows_valid, tile_n] = acc[row_valid, :]
+
+        # new (pick either of the two styles shown above)
+        row_mask = row_valid[:, None].to(acc.dtype)
+        C[orig_rows, tile_n] += acc * row_mask
+
+    Use whichever form you prefer; they compile to the same thing in Triton/Helion –
+    a single tl.store() guarded by the per-row mask – and avoid the
+    double indexing altogether.

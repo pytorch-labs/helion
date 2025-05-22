@@ -83,8 +83,12 @@ def _moe_matmul_ogs_maxT(
                     acc = torch.addmm(acc, A_frag, W_frag)
 
                 # Scatter the results back – only for the *real* rows.
-                orig_rows_valid = orig_rows[row_valid].squeeze(0)
-                C[orig_rows_valid, tile_n] = acc[row_valid, :]
+                row_mask = row_valid[:, None]                 #  [BLOCK_T, 1]  (bool)
+                C[orig_rows, tile_n] = torch.where(
+                    row_mask,                                # take acc if the row is real
+                    acc,                                     # value for real rows
+                    C[orig_rows, tile_n]                     # keep the old value otherwise
+                )
 
     return C
 
