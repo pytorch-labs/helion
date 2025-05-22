@@ -11,19 +11,7 @@ import triton
 import triton.language as tl
 
 @triton.jit
-def __moe_matmul_ogs_maxT_kernel(
-    expert_token_offsets,
-    expert_token_counts,
-    row_ids,
-    sorted_to_orig_token_idx,
-    A,
-    W,
-    C,
-    _BLOCK_SIZE_2: tl.constexpr,
-    _BLOCK_SIZE_1: tl.constexpr,
-    _BLOCK_SIZE_3: tl.constexpr,
-    _T_MAX: tl.constexpr,
-):
+def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_0 = pid_0
     indices_0 = offset_0 + tl.zeros([1], tl.int32)
@@ -34,9 +22,9 @@ def __moe_matmul_ogs_maxT_kernel(
     if v_1:
         num_tokens_copy = num_tokens
         start_copy = start
-        for offset_1 in range(0, _T_MAX, _BLOCK_SIZE_1):
+        for offset_1 in range(0, 43, _BLOCK_SIZE_1):
             indices_1 = offset_1 + tl.arange(0, _BLOCK_SIZE_1).to(tl.int32)
-            mask_1 = indices_1 < _T_MAX
+            mask_1 = indices_1 < 43
             for offset_2 in range(0, 256, _BLOCK_SIZE_2):
                 indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
                 num_tokens_copy_copy = num_tokens_copy
@@ -67,36 +55,13 @@ def __moe_matmul_ogs_maxT_kernel(
                     A_frag_2 = tl.reshape(v_11, [_BLOCK_SIZE_1, _BLOCK_SIZE_3])
                     W_frag = tl.load(W + (indices_0[:, None] * 131072 + indices_3[:, None] * 256 + indices_2[None, :] * 1), None)
                     acc = tl.dot(A_frag_2, W_frag, acc=acc_copy, input_precision='tf32')
-                #
-                # NOTE: Triton currently doesn't support boolean/tensor indexing like
-                # `orig_rows[v_3]` or `acc[v_3, :]` inside kernels.  Such expressions
-                # are executed eagerly in Python space which breaks JIT compilation
-                # and results in the
-                #   "Did you forget to add @triton.jit?" / `_builder` error
-                # that we saw before.  Instead, we have to rely on `tl.store`'s
-                # masking semantics to avoid updates for the *padding* rows
-                # (where `v_3` is False).
-                #
-                # We therefore write back the full (block-sized) `acc` tensor but
-                # guard the store by a combined mask that is True *only* for the
-                # valid, in-range rows.  This achieves the same effect as the
-                # boolean gather/scatter while staying within Triton's supported
-                # feature set.
-                # Generate a 2-D mask which is `True` for all columns of a row
-                # iff the row is valid.  We construct it with an explicit
-                # singleton dimension so that Triton can broadcast it along the
-                # output dimension without changing its semantics.
-                row_valid = mask_1 & v_3  # [BS1]
-                v_12 = acc.to(tl.float16)
-
-                # Fallback per-row store to avoid complex mask broadcasting issues.
-                # The BLOCK_SIZE_1 is small (16) so the overhead is negligible.
-                row_mask = tl.reshape(row_valid, [_BLOCK_SIZE_1, 1])
-                tl.store(
-                    C + (orig_rows[:, None] * 256 + indices_2[None, :]),
-                    v_12,
-                    mask=row_mask,
-                )
+                row_mask = v_3[:, None]
+                squeeze_2 = tl.reshape(row_mask, [_BLOCK_SIZE_1, 1])
+                load_2 = tl.load(C + (orig_rows[:, None] * 256 + indices_2[None, :] * 1), mask_1[:, None], other=0)
+                v_12 = load_2.to(tl.float32)
+                v_13 = tl.where(squeeze_2, acc, v_12)
+                v_14 = v_13.to(tl.float16)
+                tl.store(C + (orig_rows[:, None] * 256 + indices_2[None, :] * 1), v_14, mask_1[:, None])
 
 def _moe_matmul_ogs_maxT(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max: hl.constexpr):
     """Compute `C = MoE(A, W)` using OGS with fixed max # tokens per expert `T_max`.
@@ -123,58 +88,12 @@ def _moe_matmul_ogs_maxT(A: torch.Tensor, W: torch.Tensor, expert_token_counts: 
     N = W.size(2)
     E = W.size(0)
     C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
-    row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
+    row_ids = torch.arange(43, device=A.device, dtype=torch.int32)
     _BLOCK_SIZE_2 = 16
     _BLOCK_SIZE_1 = 16
     _BLOCK_SIZE_3 = 16
-    __moe_matmul_ogs_maxT_kernel[32,](
-        expert_token_offsets,
-        expert_token_counts,
-        row_ids,
-        sorted_to_orig_token_idx,
-        A,
-        W,
-        C,
-        _BLOCK_SIZE_2,
-        _BLOCK_SIZE_1,
-        _BLOCK_SIZE_3,
-        T_max,
-        num_warps=4,
-        num_stages=3,
-    )
+    __moe_matmul_ogs_maxT_kernel[32,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
     return C
-
-def __moe_matmul_ogs_maxT_make_precompiler(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max: hl.constexpr):
-    """Compute `C = MoE(A, W)` using OGS with fixed max # tokens per expert `T_max`.
-
-    The *dispatch layout* is described by `expert_token_offsets` such that tokens
-    belonging to expert `e` live in the half-open slice
-
-        [ expert_token_offsets[e] : expert_token_offsets[e + 1] )
-
-    inside the *expert-sorted* permutation of the batch.  All rows are stored in
-    the original tensor `A` where we still operate in *original* (unsorted)
-    order - the indirection is handled explicitly via `sorted_to_orig_token_idx`.
-
-    Each expert is processed independently.  They all iterate over *exactly* the
-    same number of rows (`T_max`).  Rows whose relative index is `>= #tokens`
-    for that expert are considered padding.  During the computation we
-    1. mask-out their contribution by zeroing out the corresponding input rows
-       of `A`, and
-    2. skip the scatter write-back for those rows so the output tensor `C`
-       remains untouched for them.
-    """
-    B = A.size(0)
-    K = A.size(1)
-    N = W.size(2)
-    E = W.size(0)
-    C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
-    row_ids = torch.arange(47, device=A.device, dtype=torch.int32)
-    _BLOCK_SIZE_2 = 16
-    _BLOCK_SIZE_1 = 16
-    _BLOCK_SIZE_3 = 16
-    from helion.runtime.precompile_shim import make_precompiler
-    return make_precompiler(__moe_matmul_ogs_maxT_kernel)(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
 
 def moe_matmul_ogs(
     A: torch.Tensor,  # [B, K]
