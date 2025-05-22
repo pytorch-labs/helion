@@ -10,7 +10,7 @@ import triton
 import triton.language as tl
 
 @triton.jit
-def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A_stride_0, A_stride_1, C_stride_0, C_stride_1, W_stride_0, W_stride_1, W_stride_2, expert_token_counts_stride_0, expert_token_offsets_stride_0, row_ids_stride_0, sorted_to_orig_token_idx_stride_0, N, T_max, K, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, k_ids, A, W, C, A_stride_0, A_stride_1, C_stride_0, C_stride_1, W_stride_0, W_stride_1, W_stride_2, expert_token_counts_stride_0, expert_token_offsets_stride_0, k_ids_stride_0, row_ids_stride_0, sorted_to_orig_token_idx_stride_0, N, T_max, K, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_0 = pid_0
     indices_0 = offset_0 + tl.zeros([1], tl.int32)
@@ -30,102 +30,77 @@ def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_
                 num_tokens_copy_copy = num_tokens_copy
                 start_copy_copy = start_copy
                 load = tl.load(row_ids + indices_1 * row_ids_stride_0, mask_1, other=0)
-                local_rows = tl.reshape(load, [_BLOCK_SIZE_1])
+                squeeze = tl.reshape(load, [_BLOCK_SIZE_1])
+                local_rows = tl.reshape(squeeze, [_BLOCK_SIZE_1])
                 v_2 = num_tokens_copy_copy[None]
                 v_3 = local_rows < v_2
-                # For *padding* rows we point to a dummy row that is known not
-                # to be accessed by any other thread.  Using `num_tokens` (i.e.
-                # the first row *after* the actual token slice for this expert)
-                # guarantees that we stay within bounds while avoiding aliasing
-                # with real rows.
+                squeeze_2 = tl.reshape(v_3, [_BLOCK_SIZE_1])
+                row_valid = tl.reshape(squeeze_2, [_BLOCK_SIZE_1])
                 v_4 = tl.full([], 1, tl.int32)
                 v_5 = num_tokens_copy_copy - v_4
                 v_6 = v_5[None]
-                v_7 = tl.where(v_3, local_rows, v_6)
+                v_7 = tl.where(row_valid, local_rows, v_6)
                 v_8 = start_copy_copy[None]
                 v_9 = v_8 + v_7
-                squeeze_1 = tl.reshape(v_9, [_BLOCK_SIZE_1])
-                orig_rows = tl.load(sorted_to_orig_token_idx + squeeze_1 * sorted_to_orig_token_idx_stride_0, mask_1, other=0)
+                squeeze_4 = tl.reshape(v_9, [_BLOCK_SIZE_1])
+                orig_rows = tl.load(sorted_to_orig_token_idx + squeeze_4 * sorted_to_orig_token_idx_stride_0, mask_1, other=0)
                 acc = tl.full([_BLOCK_SIZE_1, _BLOCK_SIZE_2], 0.0, tl.float32)
                 for offset_3 in range(0, K, _BLOCK_SIZE_3):
                     indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
                     mask_3 = indices_3 < K
+                    row_valid_copy = row_valid
                     orig_rows_copy = orig_rows
-                    v_3_copy = v_3
                     acc_copy = acc
-                    squeeze = tl.reshape(orig_rows_copy, [_BLOCK_SIZE_1])
-                    # Only load elements that correspond to *real* rows to
-                    # begin with – this avoids the need for an explicit
-                    # multiplication with the row mask later on and prevents
-                    # any possibility of “bleeding” values from padding rows
-                    # into the computation.
-                    row_valid = tl.reshape(mask_1 & v_3_copy, [_BLOCK_SIZE_1])[:, None]
-                    col_valid = mask_3[None, :]                        # (1, BLOCK_SIZE_3)
-                    load_mask = row_valid & col_valid                  # (BLOCK_SIZE_1, BLOCK_SIZE_3)
-
-                    A_frag = tl.load(
-                        A + (squeeze[:, None] * A_stride_0 + indices_3[None, :] * A_stride_1),
-                        load_mask,
-                        other=0,
-                    )
-                    A_frag_2 = tl.reshape(A_frag, [_BLOCK_SIZE_1, _BLOCK_SIZE_3])
+                    load_1 = tl.load(k_ids + indices_3 * k_ids_stride_0, mask_3, other=0)
+                    col_ids = tl.reshape(load_1, [_BLOCK_SIZE_3])
+                    v_10 = K.to(tl.int32)
+                    v_11 = col_ids < v_10
+                    subscript = row_valid_copy[:, None]
+                    subscript_1 = v_11[None, :]
+                    v_12 = subscript & subscript_1
+                    v_13 = v_12 == 0
+                    subscript_2 = orig_rows_copy[:, None]
+                    squeeze_1 = tl.reshape(subscript_2, [_BLOCK_SIZE_1])
+                    load_2 = tl.load(A + (squeeze_1[:, None] * A_stride_0 + indices_3[None, :] * A_stride_1), mask_1[:, None] & mask_3[None, :], other=0)
+                    v_14 = tl.full([], 0.0, tl.float16)
+                    v_15 = v_14[None, None]
+                    v_16 = tl.where(v_13, v_15, load_2)
+                    A_frag = tl.reshape(v_16, [_BLOCK_SIZE_1, _BLOCK_SIZE_3])
                     W_frag = tl.load(W + (indices_0[:, None] * W_stride_0 + indices_3[:, None] * W_stride_1 + indices_2[None, :] * W_stride_2), mask_3[:, None] & mask_2[None, :], other=0)
-                    acc = tl.dot(A_frag_2, W_frag, acc=acc_copy, input_precision='tf32')
-                row_mask = v_3[:, None]
-                squeeze_2 = tl.reshape(row_mask, [_BLOCK_SIZE_1, 1])
-                load_2 = tl.load(C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1), mask_1[:, None] & mask_2[None, :], other=0)
-                v_12 = load_2.to(tl.float32)
-                v_13 = tl.where(squeeze_2, acc, v_12)
-                v_14 = v_13.to(tl.float16)
-
-                # Construct a mask that prevents *padding* rows from writing to
-                # `C`.  Those rows are identified by `row_mask == False`.
-                # Broadcast `row_mask` to the full `[BLOCK_SIZE_1, BLOCK_SIZE_2]` shape
-                # `v_3` is a 1D boolean vector of length `_BLOCK_SIZE_1` that tells
-                # whether each *logical* row is real (True) or padding (False).
-                valid_rows_vec = tl.reshape(mask_1 & v_3, [_BLOCK_SIZE_1])
-                # Expand to 2-D matrices that match the output tile
-                valid_rows_mat = tl.broadcast_to(valid_rows_vec[:, None], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
-                valid_cols_mat = tl.broadcast_to(mask_2[None, :], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
-                valid_store_mask = valid_rows_mat & valid_cols_mat
+                    acc = tl.dot(A_frag, W_frag, acc=acc_copy, input_precision='tf32')
+                view = tl.reshape(row_valid, [_BLOCK_SIZE_1, 1])
+                valid_store_mask = tl.broadcast_to(view, [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+                
+                
+                C_tile = tl.load(
+                    C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1),
+                    mask_1[:, None] & mask_2[None, :],
+                    other=0
+                )
+                v_19 = tl.where(valid_store_mask, acc, C_tile.to(tl.float32))
+                tl.store(
+                    C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1),
+                    v_19.to(tl.float16),
+                    mask = mask_1[:, None] & mask_2[None, :]
+                )
 
                 tl.store(
                     C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1),
-                    v_14,
-                    valid_store_mask,
+                    acc.to(tl.float16),
+                    mask = mask_1[:, None] & mask_2[None, :] & valid_store_mask
                 )
 
 def _moe_matmul_ogs_maxT(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max_tensor: torch.Tensor):
-    """Compute `C = MoE(A, W)` using OGS with fixed max # tokens per expert `T_max`.
-
-    The *dispatch layout* is described by `expert_token_offsets` such that tokens
-    belonging to expert `e` live in the half-open slice
-
-        [ expert_token_offsets[e] : expert_token_offsets[e + 1] )
-
-    inside the *expert-sorted* permutation of the batch.  All rows are stored in
-    the original tensor `A` where we still operate in *original* (unsorted)
-    order - the indirection is handled explicitly via `sorted_to_orig_token_idx`.
-
-    Each expert is processed independently.  They all iterate over *exactly* the
-    same number of rows (`T_max`).  Rows whose relative index is `>= #tokens`
-    for that expert are considered padding.  During the computation we
-    1. mask-out their contribution by zeroing out the corresponding input rows
-       of `A`, and
-    2. skip the scatter write-back for those rows so the output tensor `C`
-       remains untouched for them.
-    """
-    B = A.size(0)
-    K = A.size(1)
-    N = W.size(2)
-    E = W.size(0)
+    B, K = A.shape
+    E, _, N = W.shape
+    T_max = T_max_tensor.numel()
     C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
-    T_max = T_max_tensor.size(0)
     row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
+    k_ids = torch.arange(K, device=A.device, dtype=torch.int32)
     _BLOCK_SIZE_2 = 16
     _BLOCK_SIZE_1 = 16
     _BLOCK_SIZE_3 = 16
-    __moe_matmul_ogs_maxT_kernel[E,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), N, T_max, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    __moe_matmul_ogs_maxT_kernel[E,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, k_ids, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), k_ids.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), N, T_max, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
     return C
 
 
