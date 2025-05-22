@@ -6,33 +6,38 @@ Matmul-of-Experts (MoE) with Outer-Gather-Scatter (OGS)
 from __future__ import annotations
 
 import torch
-import helion.language as hl
 import triton
 import triton.language as tl
 
 @triton.jit
-def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A_stride_0, A_stride_1, C_stride_0, C_stride_1, W_stride_0, W_stride_1, W_stride_2, expert_token_counts_stride_0, expert_token_offsets_stride_0, row_ids_stride_0, sorted_to_orig_token_idx_stride_0, N, T_max, K, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_0 = pid_0
     indices_0 = offset_0 + tl.zeros([1], tl.int32)
-    start = tl.load(expert_token_offsets + indices_0 * 1, None)
-    num_tokens = tl.load(expert_token_counts + indices_0 * 1, None)
+    start = tl.load(expert_token_offsets + indices_0 * expert_token_offsets_stride_0, None)
+    num_tokens = tl.load(expert_token_counts + indices_0 * expert_token_counts_stride_0, None)
     v_0 = tl.full([], 0, tl.int32)
     v_1 = num_tokens != v_0
     if v_1:
         num_tokens_copy = num_tokens
         start_copy = start
-        for offset_1 in range(0, 43, _BLOCK_SIZE_1):
+        for offset_1 in range(0, T_max, _BLOCK_SIZE_1):
             indices_1 = offset_1 + tl.arange(0, _BLOCK_SIZE_1).to(tl.int32)
-            mask_1 = indices_1 < 43
-            for offset_2 in range(0, 256, _BLOCK_SIZE_2):
+            mask_1 = indices_1 < T_max
+            for offset_2 in range(0, N, _BLOCK_SIZE_2):
                 indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+                mask_2 = indices_2 < N
                 num_tokens_copy_copy = num_tokens_copy
                 start_copy_copy = start_copy
-                load = tl.load(row_ids + indices_1 * 1, mask_1, other=0)
+                load = tl.load(row_ids + indices_1 * row_ids_stride_0, mask_1, other=0)
                 local_rows = tl.reshape(load, [_BLOCK_SIZE_1])
                 v_2 = num_tokens_copy_copy[None]
                 v_3 = local_rows < v_2
+                # For *padding* rows we point to a dummy row that is known not
+                # to be accessed by any other thread.  Using `num_tokens` (i.e.
+                # the first row *after* the actual token slice for this expert)
+                # guarantees that we stay within bounds while avoiding aliasing
+                # with real rows.
                 v_4 = tl.full([], 1, tl.int32)
                 v_5 = num_tokens_copy_copy - v_4
                 v_6 = v_5[None]
@@ -40,30 +45,57 @@ def __moe_matmul_ogs_maxT_kernel(expert_token_offsets, expert_token_counts, row_
                 v_8 = start_copy_copy[None]
                 v_9 = v_8 + v_7
                 squeeze_1 = tl.reshape(v_9, [_BLOCK_SIZE_1])
-                orig_rows = tl.load(sorted_to_orig_token_idx + squeeze_1 * 1, mask_1, other=0)
+                orig_rows = tl.load(sorted_to_orig_token_idx + squeeze_1 * sorted_to_orig_token_idx_stride_0, mask_1, other=0)
                 acc = tl.full([_BLOCK_SIZE_1, _BLOCK_SIZE_2], 0.0, tl.float32)
-                for offset_3 in range(0, 512, _BLOCK_SIZE_3):
+                for offset_3 in range(0, K, _BLOCK_SIZE_3):
                     indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+                    mask_3 = indices_3 < K
                     orig_rows_copy = orig_rows
                     v_3_copy = v_3
                     acc_copy = acc
                     squeeze = tl.reshape(orig_rows_copy, [_BLOCK_SIZE_1])
-                    A_frag = tl.load(A + (squeeze[:, None] * 512 + indices_3[None, :] * 1), mask_1[:, None], other=0)
-                    subscript = v_3_copy[:, None]
-                    v_10 = subscript.to(tl.float16)
-                    v_11 = A_frag * v_10
-                    A_frag_2 = tl.reshape(v_11, [_BLOCK_SIZE_1, _BLOCK_SIZE_3])
-                    W_frag = tl.load(W + (indices_0[:, None] * 131072 + indices_3[:, None] * 256 + indices_2[None, :] * 1), None)
+                    # Only load elements that correspond to *real* rows to
+                    # begin with – this avoids the need for an explicit
+                    # multiplication with the row mask later on and prevents
+                    # any possibility of “bleeding” values from padding rows
+                    # into the computation.
+                    row_valid = tl.reshape(mask_1 & v_3_copy, [_BLOCK_SIZE_1])[:, None]
+                    col_valid = mask_3[None, :]                        # (1, BLOCK_SIZE_3)
+                    load_mask = row_valid & col_valid                  # (BLOCK_SIZE_1, BLOCK_SIZE_3)
+
+                    A_frag = tl.load(
+                        A + (squeeze[:, None] * A_stride_0 + indices_3[None, :] * A_stride_1),
+                        load_mask,
+                        other=0,
+                    )
+                    A_frag_2 = tl.reshape(A_frag, [_BLOCK_SIZE_1, _BLOCK_SIZE_3])
+                    W_frag = tl.load(W + (indices_0[:, None] * W_stride_0 + indices_3[:, None] * W_stride_1 + indices_2[None, :] * W_stride_2), mask_3[:, None] & mask_2[None, :], other=0)
                     acc = tl.dot(A_frag_2, W_frag, acc=acc_copy, input_precision='tf32')
                 row_mask = v_3[:, None]
                 squeeze_2 = tl.reshape(row_mask, [_BLOCK_SIZE_1, 1])
-                load_2 = tl.load(C + (orig_rows[:, None] * 256 + indices_2[None, :] * 1), mask_1[:, None], other=0)
+                load_2 = tl.load(C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1), mask_1[:, None] & mask_2[None, :], other=0)
                 v_12 = load_2.to(tl.float32)
                 v_13 = tl.where(squeeze_2, acc, v_12)
                 v_14 = v_13.to(tl.float16)
-                tl.store(C + (orig_rows[:, None] * 256 + indices_2[None, :] * 1), v_14, mask_1[:, None])
 
-def _moe_matmul_ogs_maxT(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max: hl.constexpr):
+                # Construct a mask that prevents *padding* rows from writing to
+                # `C`.  Those rows are identified by `row_mask == False`.
+                # Broadcast `row_mask` to the full `[BLOCK_SIZE_1, BLOCK_SIZE_2]` shape
+                # `v_3` is a 1D boolean vector of length `_BLOCK_SIZE_1` that tells
+                # whether each *logical* row is real (True) or padding (False).
+                valid_rows_vec = tl.reshape(mask_1 & v_3, [_BLOCK_SIZE_1])
+                # Expand to 2-D matrices that match the output tile
+                valid_rows_mat = tl.broadcast_to(valid_rows_vec[:, None], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+                valid_cols_mat = tl.broadcast_to(mask_2[None, :], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+                valid_store_mask = valid_rows_mat & valid_cols_mat
+
+                tl.store(
+                    C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1),
+                    v_14,
+                    valid_store_mask,
+                )
+
+def _moe_matmul_ogs_maxT(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max_tensor: torch.Tensor):
     """Compute `C = MoE(A, W)` using OGS with fixed max # tokens per expert `T_max`.
 
     The *dispatch layout* is described by `expert_token_offsets` such that tokens
@@ -88,12 +120,14 @@ def _moe_matmul_ogs_maxT(A: torch.Tensor, W: torch.Tensor, expert_token_counts: 
     N = W.size(2)
     E = W.size(0)
     C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
-    row_ids = torch.arange(43, device=A.device, dtype=torch.int32)
+    T_max = T_max_tensor.size(0)
+    row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
     _BLOCK_SIZE_2 = 16
     _BLOCK_SIZE_1 = 16
     _BLOCK_SIZE_3 = 16
-    __moe_matmul_ogs_maxT_kernel[32,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    __moe_matmul_ogs_maxT_kernel[E,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), N, T_max, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
     return C
+
 
 def moe_matmul_ogs(
     A: torch.Tensor,  # [B, K]
@@ -125,7 +159,6 @@ def moe_matmul_ogs(
     device = A.device
 
     sorting = torch.argsort(top1_expert_per_token, stable=True).to(torch.int32)  # [B]
-    
     expert_token_counts = torch.bincount(
         top1_expert_per_token, minlength=E
     ).to(torch.int32)  # [E]
@@ -135,22 +168,14 @@ def moe_matmul_ogs(
     expert_token_offsets[1:] = torch.cumsum(expert_token_counts, 0, dtype=torch.int32)
 
     if variant == "maxT":
-        # The "precompile" path returns a callback that only *compiles* the kernel
-        # but does **not** execute it, which means we would get `None` instead of
-        # the computed result tensor.  For the purposes of this example (and the
-        # associated correctness check) we just invoke the regular run-time
-        # variant directly so that the kernel is launched and we obtain the
-        # output.
-
         T_max = int(expert_token_counts.max().item())
-
         C = _moe_matmul_ogs_maxT(
             A,
             W,
             expert_token_counts,
             expert_token_offsets,
             sorting,
-            T_max,
+            torch.empty(T_max, device=device),
         )
     # elif variant == "raggedT":
     #     C = _moe_matmul_ogs_raggedT(

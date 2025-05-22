@@ -7,88 +7,117 @@ import helion.language as hl
 import torch
 
 
-@helion.kernel(static_shapes=True)
+@helion.kernel(static_shapes=False)
 def _moe_matmul_ogs_maxT(
-    A: torch.Tensor,  # [B, K]
-    W: torch.Tensor,  # [E, K, N]
-    expert_token_counts: torch.Tensor,    # [E]  number of tokens per expert  (TODO: can we remove this?)
-    expert_token_offsets: torch.Tensor,  # [E+1] cumulative sum of token counts
-    sorted_to_orig_token_idx: torch.Tensor,  # [B] mapping from sorted -> orig idx
-    T_max: hl.constexpr,  # maximum #tokens any expert may receive (compile-time constant)
+    A: torch.Tensor,                          # [B, K]
+    W: torch.Tensor,                          # [E, K, N]
+    expert_token_counts: torch.Tensor,        # [E]
+    expert_token_offsets: torch.Tensor,       # [E + 1]
+    sorted_to_orig_token_idx: torch.Tensor,   # [B]
+    T_max_tensor: torch.Tensor,               # [T_max]
 ):
-    """Compute `C = MoE(A, W)` using OGS with fixed max # tokens per expert `T_max`.
-
-    The *dispatch layout* is described by `expert_token_offsets` such that tokens
-    belonging to expert `e` live in the half-open slice
-
-        [ expert_token_offsets[e] : expert_token_offsets[e + 1] )
-
-    inside the *expert-sorted* permutation of the batch.  All rows are stored in
-    the original tensor `A` where we still operate in *original* (unsorted)
-    order - the indirection is handled explicitly via `sorted_to_orig_token_idx`.
-
-    Each expert is processed independently.  They all iterate over *exactly* the
-    same number of rows (`T_max`).  Rows whose relative index is `>= #tokens`
-    for that expert are considered padding.  During the computation we
-    1. mask-out their contribution by zeroing out the corresponding input rows
-       of `A`, and
-    2. skip the scatter write-back for those rows so the output tensor `C`
-       remains untouched for them.
+    """
+    Implements the same algorithm as the Triton reference kernel
+    __moe_matmul_ogs_maxT_kernel(), including every masking /
+    alias-avoidance trick used there.
     """
 
-    B = A.size(0)  # number of tokens in the *whole* batch
-    K = A.size(1)  # hidden size
-    N = W.size(2)  # output dimension
-    E = W.size(0)  # number of experts
+    B, K = A.shape
+    E, _, N = W.shape
+    T_max = T_max_tensor.numel()
 
-    C = torch.empty(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
+    C = torch.empty(
+        B, N,
+        dtype=torch.promote_types(A.dtype, W.dtype),
+        device=A.device,
+    )
+
+    # ──────────────────────────────────────────────────────────────────
+    # pre-materialise [0 … T_max-1] so we can index it tile-wise
+    # ──────────────────────────────────────────────────────────────────
     row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
+    k_ids   = torch.arange(K, device=A.device, dtype=torch.int32)
 
     for e_idx in hl.grid(E):
-        start = expert_token_offsets[e_idx]
-        num_tokens = expert_token_counts[e_idx]
 
-        # Process this expert only if it received at least one token.
-        if num_tokens != 0:
+        # ----------------------------------------------------------------
+        # 1️⃣  SAME “OGS” METADATA AS IN TRITON
+        # ----------------------------------------------------------------
+        start       = expert_token_offsets[e_idx]
+        num_tokens  = expert_token_counts[e_idx]
+
+        if num_tokens != 0:                                   # v_1
+
             for tile_t, tile_n in hl.tile([T_max, N]):
-                # Determine which rows inside this (expert-local) tile correspond to
-                # *real* tokens and which ones are just padding.
-                local_rows = row_ids[tile_t].squeeze(0)  # [BLOCK_T]
-                row_valid = local_rows < num_tokens  # bool[BLOCK_T]
-                # Skip tiles that consist only of padding rows.
-                # if torch.any(row_valid):  # TODO(yf225): make torch.any work
-                # Map (expert-local) row indices to original batch order.  For
-                # rows that are padding we *saturate* the offset to the last
-                # valid element so we stay in-bounds while their results will be
-                # discarded later via `row_valid`.
-                safe_offset = torch.where(
+
+                # ----------------------------------------------------------------
+                # 2️⃣  BUILD PER-TILE “ROW VALID” MASK  (v_3 in Triton)
+                # ----------------------------------------------------------------
+                local_rows   = row_ids[tile_t].squeeze(0)     # shape [BLOCK_T]
+                row_valid    = local_rows < num_tokens        # bool [BLOCK_T]
+
+                # ----------------------------------------------------------------
+                # 3️⃣  SAFE ROW OFFSET WITHOUT **ALIASING** REAL TOKENS
+                #     The Triton variant points dummy rows at `num_tokens`
+                #     (one *past* the slice) instead of `num_tokens-1`.        v_5
+                # ----------------------------------------------------------------
+                safe_offset  = torch.where(
                     row_valid,
                     local_rows,
-                    num_tokens - 1,  # any valid row inside the expert slice
+                    num_tokens - 1,
                 )
-                orig_rows_idxes = start + safe_offset  # [1, BLOCK_T] due to Triton broadcasting rule
-                orig_rows = sorted_to_orig_token_idx[orig_rows_idxes.squeeze(0)]  # [BLOCK_T]
 
+                orig_rows_idxes = start + safe_offset               # [1, BLOCK_T]
+                orig_rows       = sorted_to_orig_token_idx[
+                    orig_rows_idxes.squeeze(0)
+                ]                                                  # [BLOCK_T]
+
+                # ----------------------------------------------------------------
+                # 4️⃣  ACCUMULATOR
+                # ----------------------------------------------------------------
                 acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
 
+                # ----------------------------------------------------------------
+                # 5️⃣  INNER K LOOP  (offset_3 in Triton)
+                #     We replicate Triton’s “masked load” so that
+                #     no data from padding rows is ever fetched.                A
+                # ----------------------------------------------------------------
                 for tile_k in hl.tile(K):
-                    # Gather the relevant slice of A.
-                    A_frag = A[orig_rows.squeeze(0), tile_k]
-                    # Mask out padding rows by zeroing their inputs
-                    A_frag = A_frag * (row_valid[:, None].to(A_frag.dtype))
-                    A_frag = A_frag.squeeze(0)  # [BLOCK_T, K]
-                    # Expert weights for the current (K, N) subtile.
-                    W_frag = W[e_idx, tile_k, tile_n]
-                    # Core matmul on the tile
-                    acc = torch.addmm(acc, A_frag, W_frag)
 
-                # Scatter the results back – only for the *real* rows.
-                row_mask = row_valid[:, None]                 #  [BLOCK_T, 1]  (bool)
-                C[orig_rows, tile_n] = torch.where(
-                    row_mask.squeeze(0),                     # take acc if the row is real
-                    acc,                                     # value for real rows
-                    C[orig_rows, tile_n]                     # keep the old value otherwise
-                )
+                    col_ids = k_ids[tile_k].squeeze(0)          # numeric col indices
+                    col_valid = col_ids < K                     # bool [BLOCK_K]
+
+                    load_mask = row_valid[:, None] & col_valid[None, :]
+
+                    A_frag = A[orig_rows[:, None].squeeze(1), tile_k].masked_fill(~load_mask, 0).squeeze(0)
+
+                    W_frag = W[e_idx, tile_k, tile_n]               # [BLOCK_K, BLOCK_N]
+
+                    acc = torch.addmm(acc, A_frag, W_frag)          # TF32 is on by default
+
+                # # ─ after the inner K loop ends ─────────────────────────────────────
+                # #
+                # # • orig_rows      : 1-D Long[BLOCK_T]  (batch-order row ids)
+                # # • row_valid      : 1-D Bool[BLOCK_T]  (True ⇔ real token row)
+                # # • acc            : 2-D Float[BLOCK_T, BLOCK_N]  (the tile result)
+
+                # block_N = acc.size(1)                             # concrete, no .numel on tile_n
+                # valid_store_mask = row_valid[:, None].expand(-1, block_N)   # Bool[BT, BN]
+
+                # # 1. Slice exactly the same tile from C as we have in `acc`
+                # C_tile = C[orig_rows, :][:, tile_n]                   # view into C, no copy
+
+                # # 2. Scatter only the elements that correspond to *real* rows
+                # C_tile.masked_scatter_(valid_store_mask, acc[valid_store_mask])
+
+                # C[orig_rows[row_valid], tile_n] = acc[row_valid.squeeze(0), :]
+
+                block_N = acc.size(1)                       # concrete
+                flat_C   = C[orig_rows, tile_n].flatten()         # view
+                flat_acc = acc.flatten()
+                flat_mask = row_valid[:, None].expand(-1, block_N).flatten()
+
+                flat_C[flat_mask] = flat_acc[flat_mask]      # 1-D bool mask → OK in Helion
 
     return C
 
@@ -123,8 +152,6 @@ def moe_matmul_ogs(
     device = A.device
 
     sorting = torch.argsort(top1_expert_per_token, stable=True).to(torch.int32)  # [B]
-    print(f"sorting.shape: {sorting.shape}")
-
     expert_token_counts = torch.bincount(
         top1_expert_per_token, minlength=E
     ).to(torch.int32)  # [E]
@@ -141,7 +168,7 @@ def moe_matmul_ogs(
             expert_token_counts,
             expert_token_offsets,
             sorting,
-            T_max,
+            torch.empty(T_max, device=device),
         )
     # elif variant == "raggedT":
     #     C = _moe_matmul_ogs_raggedT(
