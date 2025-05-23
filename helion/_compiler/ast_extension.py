@@ -157,6 +157,9 @@ def create_arguments(args: list[ast.arg]) -> ast.arguments:
 
 
 def statement_from_string(template: str, **placeholders: ast.AST) -> ast.stmt:
+    # import sympy
+    # if isinstance(template, sympy.core.symbol.Symbol):
+    #     template = str(template)
     (statement,) = ast.parse(template).body
     location: SourceLocation = current_location()
 

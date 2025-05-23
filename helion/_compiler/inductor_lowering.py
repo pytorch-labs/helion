@@ -455,12 +455,6 @@ class ScanLowering(InductorLowering):
         scan_var = scan_ranges[0]
         assert isinstance(scan_var, sympy.Expr), f"scan_var: {scan_var}"
 
-        print(f"CompileEnvironment.current().block_sizes: {CompileEnvironment.current().block_sizes}")
-        # TODO(yf225): figure out how to implement 2D reduction (u1*u2) - is there a way to merge two reduction strategies?
-        block_index = TileStrategy.get_block_index(scan_var)
-        assert block_index is not None
-        self.block_index: int = block_index
-
     def codegen(self, ctx: GraphInterpreter, node: torch.fx.Node) -> object:
         scan = self.buffer.data
         assert isinstance(scan, Scan)
@@ -469,43 +463,31 @@ class ScanLowering(InductorLowering):
             sympy.Symbol(f"i{n}")
             for n in range(len(indices), len(indices) + len(scan.scan_ranges))
         ]
+        assert len(scan_indices) == 1, f"Only 1D scan is supported, but got {len(scan_indices)}"
         with self.install_kernel_handlers(ctx, node):
             # codegen the pointwise part before reduction
             output_name = _unpack_opsvalue(
-                self.buffer.data.inner_fn(indices, scan_indices)
+                self.buffer.data.inner_fn(scan_indices)
             )
 
         state = CodegenState(
             ctx.cg,
             fx_node=node,
         )
-        if CompileEnvironment.current().block_sizes[self.block_index].reduction:
-            strategy = ctx.cg.device_function.tile_strategy.get_reduction_strategy(
-                self.block_index
-            )
-        else:
-            from .reduction_strategy import BlockReductionStrategy
+        from .scan_strategy import UnifiedScanStrategy
 
-            strategy = BlockReductionStrategy(state, self.block_index)
+        strategy = UnifiedScanStrategy(state.device_function, 0)
 
         inputs = self.input_fake_tensors(node)
         if len(inputs) != 1:
             # TODO(jansel): combine multiple inputs into a single fake value
             raise NotImplementedError("reductions with >1 input")
 
-        # TODO(jansel): find a better way to get dim
-        (dim,) = [
-            i
-            for i, v in enumerate(inputs[0].shape)
-            if TileStrategy.get_block_index(v) == self.block_index
-        ]
-
-        return strategy.codegen_reduction(
+        return strategy.codegen_scan(
             state,
             output_name,
-            scan.scan_type,
-            dim,
-            inputs[0],
+            "sum",
+            0,
             node.meta["val"],
         )
 
@@ -783,7 +765,7 @@ class GenerateASTFromInductor(DefaultHandler):
 def _unpack_opsvalue(value: object) -> str:
     if isinstance(value, OpsValue):
         return str(value)
-    assert isinstance(value, str)
+    assert isinstance(value, str), f"Expected str, got {type(value)}"
     return value
 
 
