@@ -53,8 +53,8 @@ def _(state: CodegenState) -> ast.AST:
             output_keys.append("None")
         elif isinstance(val, slice) and repr(val) == "slice(None, None, None)":
             output_keys.append(":")
-        # elif isinstance(val, torch.SymInt):
-        #     output_keys.append(state.ast_args[1][idx].id)
+        elif isinstance(val, torch.SymInt):
+            output_keys.append(state.ast_args[1][idx].id)
         else:
             raise exc.InvalidIndexingType(repr(val))
     ret = expr_from_string(
