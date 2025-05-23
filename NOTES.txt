@@ -1,108 +1,55 @@
-    The Triton compilation failure originated from these two lines inside
-    __moe_matmul_ogs_maxT_kernel
+wonder for a cumsum op over a 1D
+tensor of u1*u2 shape (i.e. product of two original
+reduction axis dim sizes), would it be a good idea
+to have a "merge two reduction strategies" operation
+ that merges the reduction strategies of u1 and u2
+into a new 1D reduction? (or maybe should it just
+create a new 1D reduction strategy specifically for
+this cumsum?)
 
-        subscript_1 = orig_rows[v_3]      # boolean / tensor indexing
-        subscript_2 = acc[v_3, :]         # boolean / tensor indexing
+    codex
+    Short answer: flatten first and treat it as a
+    brand-new 1-D “scan” (prefix-sum) rather than
+    trying to fuse two existing reduction states.
 
-    tl.tensor does not support NumPy–style boolean indexing, so the
-    interpreter tried to execute those expressions eagerly, outside of the JIT
-    builder, and raised
+    Why
 
-        ValueError: Did you forget to add @triton.jit ? (`_builder` argument must be
-        provided outside of JIT functions.)
+        1. ReductionStrategy in Helion is built
+    around an associative, **commutative** op whose
+    result is a single scalar per tile.  A
+    prefix-scan has very different
+    synchronization/order requirements, so you would
+     need a dedicated “ScanStrategy” anyway.
+        2. Collapsing the two logical axes into one
+    physical axis early (during shape analysis) is
+    easy: it’s the same trick we already use in
+    `FlattenedTileStrategy`.  Once you have a single
+     `(u1·u2)` dimension you can design the scan
+    kernel without worrying about multi-axis
+    bookkeeping.
+        3. Trying to “merge” two existing
+    ReductionStrategy objects becomes thorny:
+           • Which of the two should dictate
+    persistent vs. looped behaviour?
+           • How do you combine their block-size
+    specs when autotuning?
+           • You still have to emit completely
+    different code for a prefix-scan versus a plain
+    reduction, so the shared logic is minimal.
 
-    Fix (minimal ­– no algorithmic changes)
+    Recommended approach
 
-        1. Replace the boolean-indexing with ordinary arithmetic plus the
-           already-available row mask.  You can rely on `tl.store`’s `mask=…`
-           argument to suppress writes for the padding rows.
+    • When you see cumsum(x, dim=[d1, d2])
+    (conceptually), reshape or view x to collapse d1
+     and d2 into one dim d_flat.
+    • Lower cumsum with a new ScanStrategy (or a
+    specialised lowering pass) that only needs to
+    handle a single reduction axis.
+    • Re-use all the existing plumbing (block-size
+    variables, masks, masking rules) just like we do
+     for 1-D reductions today, but with
+    scan-specific combine/propagate code.
 
-        # valid rows inside the current 16-row block
-        row_valid = mask_1 & v_3                      # [BS1]  (tl.int1)
-
-        # 16×16 block of output values
-        v_12 = acc.to(tl.float16)
-
-        # write everything, but only where the row is valid
-        tl.store(
-            C + (orig_rows[:, None] * 256 + indices_2[None, :]),
-            v_12,
-            mask=row_valid[:, None],                  # broadcast over the N dimension
-        )
-
-        1. Delete the two offending lines as well as the now-unused reshapes:
-
-        - subscript_1 = orig_rows[v_3]
-        - orig_rows_valid = tl.reshape(subscript_1, [_BLOCK_SIZE_1])
-        - subscript_2 = acc[v_3, :]
-        - v_12 = subscript_2.to(tl.float16)
-        - tl.store(C + (orig_rows_valid[:, None] * 256 + indices_2[None, :] * 1),
-        -          v_12, mask_1[:, None])
-
-        + row_valid = mask_1 & v_3
-        + v_12 = acc.to(tl.float16)
-        + tl.store(C + (orig_rows[:, None] * 256 + indices_2[None, :]),
-        +          v_12, mask=row_valid[:, None])
-
-    That is enough to let Triton build the kernel successfully; the rest of the
-    Python code keeps working unchanged.
-
-    Key points
-    •  Triton only understands scalar predicates in if …:; masks for bulk
-       operations must be passed through tl.store(…, mask=…).
-    •  Boolean / fancy indexing (tensor[mask]) is not implemented – use masks
-       instead.
-    •  tl.reshape(x, [-1]) (or .reshape([])) converts a 1-element tensor into a
-       scalar when you really need to use it in a Python‐level if.
-
-    After the patch
-
-        $ python examples/moe_matmul_ogs_debug.py
-        Helion time: 0.43s, torch time: 3.87s, speed-up: 9.0x
-
-    (i.e. the kernel now compiles, runs and produces numerically correct
-    results).
-
-
-
-    Yes – instead of first filtering the row indices and then writing the
-    filtered sub-tensor, you can leave the index list untouched and mask the
-    value that is being written.  In practice you have two easy ways to do
-    that:
-
-        1. Multiply the accumulator with the row mask and add it to `C`
-
-               # make the mask broadcastable over the N–dimension
-               row_mask = row_valid[:, None].to(acc.dtype)   #  [BLOCK_T, 1]
-
-               # padding rows contribute 0, real rows contribute their dot-product
-               C[orig_rows, tile_n] += acc * row_mask
-
-           • `orig_rows` is used only once,
-           • the padding rows (where `row_valid == False`) add zero,
-           • every (token, column-tile) pair is written exactly once
-             in the current kernel, so “+=” is equivalent to “=”.
-        2. Keep the existing value for the padding rows with `torch.where`
-
-               row_mask = row_valid[:, None]                 #  [BLOCK_T, 1]  (bool)
-               C[orig_rows, tile_n] = torch.where(
-                   row_mask,                                # take acc if the row is real
-                   acc,                                     # value for real rows
-                   C[orig_rows, tile_n]                     # keep the old value otherwise
-               )
-
-    Both variants remove the second indexing
-    (orig_rows[row_valid]) completely, so you don’t need the
-    intermediate orig_rows_valid tensor any more:
-
-        # old
-        orig_rows_valid = orig_rows[row_valid].squeeze(0)
-        C[orig_rows_valid, tile_n] = acc[row_valid, :]
-
-        # new (pick either of the two styles shown above)
-        row_mask = row_valid[:, None].to(acc.dtype)
-        C[orig_rows, tile_n] += acc * row_mask
-
-    Use whichever form you prefer; they compile to the same thing in Triton/Helion –
-    a single tl.store() guarded by the per-row mask – and avoid the
-    double indexing altogether.
+    This keeps the compiler logic simple and avoids
+    a bespoke “merge two reduction strategies” path
+    that would only be used for scans.
