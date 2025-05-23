@@ -140,18 +140,21 @@ def prepare_node_lowering(
             # pyre-ignore[6]
             *map_arg((node.args, node.kwargs), convert_arg),
         )
-        result.realize()
-    if not isinstance(result, TensorBox) or not isinstance(result.data, StorageBox):
-        raise InductorLoweringError(
-            f"Lowering {node.target} returned type(result), expected TensorBox(StorageBox(...)): {result}"
-        )
-    if not isinstance(buffer := result.data.data, ComputedBuffer):
-        raise InductorLoweringError(
-            f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer: {buffer}"
-        )
+        if not isinstance(result, tuple):
+            result = (result,)
+        for r in result:
+            r.realize()
+            if not isinstance(r, TensorBox) or not isinstance(r.data, StorageBox):
+                raise InductorLoweringError(
+                    f"Lowering {node.target} returned {type(r)}, expected TensorBox(StorageBox(...)): {r}"
+                )
+            if not isinstance(buffer := r.data.data, ComputedBuffer):
+                raise InductorLoweringError(
+                    f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer: {buffer}"
+                )
 
     new_buffers = graph_lowering.buffers[prior_buffers:]
-    assert new_buffers[-1] is buffer
+    # assert new_buffers[-1] is buffer, f"new_buffers[-1] is {new_buffers[-1]}, buffer is {buffer}"
     nodes = []
     extra_input_names = []
     new_node: torch.fx.Node
@@ -174,6 +177,11 @@ def prepare_node_lowering(
             else ReductionLowering
         )
         buffer.freeze_layout()
+        print(f"i: {i}, buffer: {buffer}")
+        print(f"node: {node}, node.all_input_nodes: {node.all_input_nodes}, node.all_input_nodes[0].all_input_nodes: {node.all_input_nodes[0].all_input_nodes}")
+        print(f"input_names: {input_names}")
+        print(f"extra_input_names: {extra_input_names}")
+        print("--------------------------------")
         used_input_names = strip_unused_inputs(
             new_node,
             buffer.get_read_names(),

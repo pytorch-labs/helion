@@ -60,12 +60,9 @@ def _full_fake(
         raise TypeError(f"Expected list[SymInt], got {type(shape).__name__}")
     env = CompileEnvironment.current()
 
-    print(f"before: full: {shape}, {dtype}")
     for i, size in enumerate(shape):
         if isinstance(size, int):
             shape[i] = env.allocate_reduction_dimension(size).var
-    print(f"after: full: {shape}, {dtype}")    
-    
 
     env.add_kernel_tensor_size(shape)
     return torch.empty(
