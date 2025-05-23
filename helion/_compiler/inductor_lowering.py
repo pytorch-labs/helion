@@ -440,73 +440,74 @@ class ReductionLowering(InductorLowering):
 
 @dataclasses.dataclass
 class ScanLowering(InductorLowering):
-    # def __init__(
-    #     self,
-    #     buffer: ComputedBuffer,
-    #     input_names: list[str],
-    # ) -> None:
-    #     super().__init__(buffer, input_names)
-    #     scan = self.buffer.data
-    #     assert isinstance(scan, Scan)
-    #     scan_ranges = scan.scan_ranges
-    #     if len(scan_ranges) != 1:
-    #         # TODO(jansel): can this happen?
-    #         raise NotImplementedError("multiple scan dimensions")
-    #     scan_var = scan_ranges[0]
-    #     assert isinstance(scan_var, sympy.Expr), f"scan_var: {scan_var}"
+    def __init__(
+        self,
+        buffer: ComputedBuffer,
+        input_names: list[str],
+    ) -> None:
+        super().__init__(buffer, input_names)
+        scan = self.buffer.data
+        assert isinstance(scan, Scan)
+        scan_ranges = scan.scan_ranges
+        if len(scan_ranges) != 1:
+            # TODO(jansel): can this happen?
+            raise NotImplementedError("multiple scan dimensions")
+        scan_var = scan_ranges[0]
+        assert isinstance(scan_var, sympy.Expr), f"scan_var: {scan_var}"
 
-    #     block_index = TileStrategy.get_block_index(scan_var)
-    #     assert block_index is not None
-    #     self.block_index: int = block_index
+        print(f"CompileEnvironment.current().block_sizes: {CompileEnvironment.current().block_sizes}")
+        # TODO(yf225): figure out how to implement 2D reduction (u1*u2) - is there a way to merge two reduction strategies?
+        block_index = TileStrategy.get_block_index(scan_var)
+        assert block_index is not None
+        self.block_index: int = block_index
 
-    # def codegen(self, ctx: GraphInterpreter, node: torch.fx.Node) -> object:
-    #     scan = self.buffer.data
-    #     assert isinstance(scan, Scan)
-    #     indices = [sympy.Symbol(f"i{n}") for n in range(len(scan.ranges))]
-    #     scan_indices = [
-    #         sympy.Symbol(f"i{n}")
-    #         for n in range(len(indices), len(indices) + len(scan.scan_ranges))
-    #     ]
-    #     with self.install_kernel_handlers(ctx, node):
-    #         # codegen the pointwise part before reduction
-    #         output_name = _unpack_opsvalue(
-    #             self.buffer.data.inner_fn(indices, scan_indices)
-    #         )
+    def codegen(self, ctx: GraphInterpreter, node: torch.fx.Node) -> object:
+        scan = self.buffer.data
+        assert isinstance(scan, Scan)
+        indices = [sympy.Symbol(f"i{n}") for n in range(len(scan.ranges))]
+        scan_indices = [
+            sympy.Symbol(f"i{n}")
+            for n in range(len(indices), len(indices) + len(scan.scan_ranges))
+        ]
+        with self.install_kernel_handlers(ctx, node):
+            # codegen the pointwise part before reduction
+            output_name = _unpack_opsvalue(
+                self.buffer.data.inner_fn(indices, scan_indices)
+            )
 
-    #     state = CodegenState(
-    #         ctx.cg,
-    #         fx_node=node,
-    #     )
-    #     if CompileEnvironment.current().block_sizes[self.block_index].reduction:
-    #         strategy = ctx.cg.device_function.tile_strategy.get_reduction_strategy(
-    #             self.block_index
-    #         )
-    #     else:
-    #         from .reduction_strategy import BlockReductionStrategy
+        state = CodegenState(
+            ctx.cg,
+            fx_node=node,
+        )
+        if CompileEnvironment.current().block_sizes[self.block_index].reduction:
+            strategy = ctx.cg.device_function.tile_strategy.get_reduction_strategy(
+                self.block_index
+            )
+        else:
+            from .reduction_strategy import BlockReductionStrategy
 
-    #         strategy = BlockReductionStrategy(state, self.block_index)
+            strategy = BlockReductionStrategy(state, self.block_index)
 
-    #     inputs = self.input_fake_tensors(node)
-    #     if len(inputs) != 1:
-    #         # TODO(jansel): combine multiple inputs into a single fake value
-    #         raise NotImplementedError("reductions with >1 input")
+        inputs = self.input_fake_tensors(node)
+        if len(inputs) != 1:
+            # TODO(jansel): combine multiple inputs into a single fake value
+            raise NotImplementedError("reductions with >1 input")
 
-    #     # TODO(jansel): find a better way to get dim
-    #     (dim,) = [
-    #         i
-    #         for i, v in enumerate(inputs[0].shape)
-    #         if TileStrategy.get_block_index(v) == self.block_index
-    #     ]
+        # TODO(jansel): find a better way to get dim
+        (dim,) = [
+            i
+            for i, v in enumerate(inputs[0].shape)
+            if TileStrategy.get_block_index(v) == self.block_index
+        ]
 
-    #     return strategy.codegen_reduction(
-    #         state,
-    #         output_name,
-    #         scan.scan_type,
-    #         dim,
-    #         inputs[0],
-    #         node.meta["val"],
-    #     )
-    pass
+        return strategy.codegen_reduction(
+            state,
+            output_name,
+            scan.scan_type,
+            dim,
+            inputs[0],
+            node.meta["val"],
+        )
 
 
 @dataclasses.dataclass
