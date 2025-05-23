@@ -39,8 +39,7 @@ def scatter_masked_rows_on_tensor(
             acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
 
             # scatter masked rows
-            orig_rows_valid = orig_rows[row_valid]
-            C[orig_rows_valid, tile_n] = acc[row_valid, tile_n]
+            C[orig_rows[row_valid], tile_n] = acc[row_valid, tile_n]
 
     return C
 

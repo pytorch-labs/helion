@@ -49,8 +49,8 @@ def scatter_masked_rows_on_tile(
         mask_rows = row_mask[tile_m]  # shape: [tile_m]
 
         for tile_n in hl.tile(N):
-            rows = tile_m[mask_rows]
-            out[rows, tile_n] = y[rows, tile_n]
+            selected_rows = tile_m[mask_rows]
+            out[selected_rows, tile_n] = y[selected_rows, tile_n]
 
     return out
 
