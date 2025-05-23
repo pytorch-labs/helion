@@ -67,24 +67,43 @@ def _moe_matmul_ogs_maxT(
 
                     acc = torch.addmm(acc, A_frag, W_frag)          # TF32 is on by default
 
-                block_T = acc.size(0)
-                block_N = acc.size(1)
+                # v0
+                C[orig_rows[row_valid], tile_n] = acc[row_valid, tile_n]
 
-                # 1.  Build the 2-D mask once
-                valid_store_mask = row_valid.view(block_T, 1).expand(block_T, block_N)   # [BT, BN]  bool
+                # # v1
+                # block_T = acc.size(0)
+                # block_N = acc.size(1)
+                # # 1.  Build the 2-D mask once
+                # valid_store_mask = row_valid.view(block_T, 1).expand(block_T, block_N)   # [BT, BN]  bool
 
-                # 2.  Read the destination tile just once
-                C_tile = C[orig_rows, tile_n]                                            # [BT, BN]
+                # # 2.  Read the destination tile just once
+                # C_tile = C[orig_rows, tile_n]                                            # [BT, BN]
 
-                # 3.  Mix old and new values *inside* Python, so the Triton store
-                #     happens only on rows/cols where `valid_store_mask == True`.
-                C_tile = torch.where(valid_store_mask, acc, C_tile)
+                # # 3.  Mix old and new values *inside* Python, so the Triton store
+                # #     happens only on rows/cols where `valid_store_mask == True`.
+                # C_tile = torch.where(valid_store_mask, acc, C_tile)
 
-                # 4.  Write the tile back.  Because every element that is *False*
-                #     in `valid_store_mask` is bit-identical to what was already in
-                #     `C`, Triton is free to omit those lanes entirely, and the
-                #     generated `tl.store` will be predicated by the same mask.
-                C[orig_rows, tile_n] = C_tile
+                # # 4.  Write the tile back.  Because every element that is *False*
+                # #     in `valid_store_mask` is bit-identical to what was already in
+                # #     `C`, Triton is free to omit those lanes entirely, and the
+                # #     generated `tl.store` will be predicated by the same mask.
+                # C[orig_rows[row_valid], tile_n] = acc[row_valid, tile_n]
+
+                # # v3
+                # valid_store_mask = row_valid.view(block_T, 1).expand(block_T, block_N)   # [BT, BN]  bool
+
+                # # shape shorthand: BT = block_T   BN = block_N
+                # rows = orig_rows        # Long[BT]
+                # cols = tile_n           # Long[BN]
+
+                # # 2-D runtime mask – same one you already computed
+                # store_mask = valid_store_mask        # Bool[BT, BN]
+
+                # # --- one liner that lowers to  tl.store(..., mask=mask_1 & mask_2 & store_mask)
+                # # C[rows[:, None], cols[None, :]][store_mask] = acc[store_mask]
+
+                # tile_view = C[rows[:, None], cols[None, :]]      # takes no memory yet
+                # tile_view.masked_scatter_(store_mask, acc)       # ← generates the masked store
 
     return C
 

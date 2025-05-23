@@ -35,6 +35,9 @@ def _(tensor: torch.Tensor, index: list[object]) -> torch.Tensor:
             output_size.append(1)
         elif isinstance(val, slice) and repr(val) == "slice(None, None, None)":
             output_size.append(input_size.popleft())
+        elif isinstance(val, torch.SymInt):
+            input_size.popleft()
+            output_size.append(val)
         elif isinstance(val, torch.Tensor) and val.ndim == 1:
             input_size.popleft()
             output_size.append(val.size(0))
@@ -53,9 +56,9 @@ def _(state: CodegenState) -> ast.AST:
             output_keys.append("None")
         elif isinstance(val, slice) and repr(val) == "slice(None, None, None)":
             output_keys.append(":")
+        elif isinstance(val, torch.SymInt):
+            output_keys.append(state.ast_args[1][idx].id)
         elif isinstance(val, torch.Tensor) and val.ndim == 1:
-            print(f"state.ast_args[0].id: {state.ast_args[0].id}")
-            print(f"state.ast_args[1][idx].id: {state.ast_args[1][idx].id}")
             output_keys.append(state.ast_args[1][idx].id)
         else:
             raise exc.InvalidIndexingType(repr(val))
@@ -63,5 +66,4 @@ def _(state: CodegenState) -> ast.AST:
         f"base[{', '.join(output_keys)}]",
         base=state.ast_arg(0),
     )
-    print(f"ret: {ret}")
     return ret
