@@ -128,6 +128,7 @@ class TileStrategy:
                 BlockSizeOrigin,
             ):
                 return origin_info.origin.block_size_idx
+        print(f"size: {size}, type(size): {type(size)}")
         return None
 
 
