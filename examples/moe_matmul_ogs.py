@@ -68,15 +68,16 @@ def _moe_matmul_ogs_maxT(
                     acc = torch.addmm(acc, A_frag, W_frag)          # TF32 is on by default
 
                 # v0
-                # C[orig_rows[row_valid], tile_n] = acc[row_valid, tile_n]
+                orig_rows_valid = orig_rows[row_valid]
+                C[orig_rows_valid, tile_n] = acc[row_valid, tile_n]
 
                 # v1
-                block_T = acc.size(0)
-                block_N = acc.size(1)
-                C[orig_rows, tile_n] = C[orig_rows, tile_n].masked_scatter(
-                    row_valid.view(block_T, 1).expand(block_T, block_N),
-                    acc.to(C.dtype),
-                )
+                # block_T = acc.size(0)
+                # block_N = acc.size(1)
+                # C[orig_rows, tile_n] = C[orig_rows, tile_n].masked_scatter(
+                #     row_valid.view(block_T, 1).expand(block_T, block_N),
+                #     acc.to(C.dtype),
+                # )
 
                 # # v3
                 # valid_store_mask = row_valid.view(block_T, 1).expand(block_T, block_N)   # [BT, BN]  bool
