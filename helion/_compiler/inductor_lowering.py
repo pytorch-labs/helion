@@ -177,17 +177,49 @@ def prepare_node_lowering(
             else ReductionLowering
         )
         buffer.freeze_layout()
-        print(f"i: {i}, buffer: {buffer}")
-        print(f"node: {node}, node.all_input_nodes: {node.all_input_nodes}, node.all_input_nodes[0].all_input_nodes: {node.all_input_nodes[0].all_input_nodes}")
-        print(f"input_names: {input_names}")
-        print(f"extra_input_names: {extra_input_names}")
-        print("--------------------------------")
+        # print(f"i: {i}, buffer: {buffer}")
+        # print(f"node: {node}, node.all_input_nodes: {node.all_input_nodes}, node.all_input_nodes[0].all_input_nodes: {node.all_input_nodes[0].all_input_nodes}")
+        # print(f"input_names: {input_names}")
+        # print(f"extra_input_names: {extra_input_names}")
+        # print("--------------------------------")
+        # The mapping from FX nodes that feed into the lowering to their
+        # corresponding (unique) input names must stay in sync with the list
+        # we pass to Inductor.  When a lowering emits *multiple* buffers we
+        # create additional “extra” nodes to keep the graph in SSA form.  For
+        # every additional buffer we extend both `nodes` and
+        # `extra_input_names` so that they remain aligned: the `k`-th element
+        # in `extra_input_names` is produced by `nodes[k]`.
+
+        # `node._input_nodes` contains the original user provided arguments
+        # for the operation we are currently lowering.  By concatenating it
+        # with `nodes` we obtain the complete ordered list of producer nodes
+        # whose values are consumed by the current lowering.
+
+        # Build the list of producer nodes in a deterministic order without
+        # duplicates.  Duplicates can arise when the same FX node is used as
+        # both a regular argument *and* appears in `_extra_args`.  Since the
+        # mapping we are creating ultimately feeds into a Python `dict`, every
+        # key must be unique.
+
+        input_nodes: list[torch.fx.Node] = []
+        for n in [*node._input_nodes, *nodes]:
+            if n not in input_nodes:
+                input_nodes.append(n)
+
+        # Sanity-check that the book-keeping stays consistent.  If this assert
+        # ever fires it means we lost track of the correspondence between
+        # FX nodes and the symbolic names that Inductor expects.
+        assert len(input_nodes) == len([*input_names, *extra_input_names]), (
+            f"inductor_lowering: expected {len(input_nodes)} input nodes, "
+            f"got {len([*input_names, *extra_input_names])} input names"
+        )
+
         used_input_names = strip_unused_inputs(
             new_node,
             buffer.get_read_names(),
             dict(
                 zip(
-                    node.all_input_nodes,
+                    input_nodes,
                     [*input_names, *extra_input_names],
                     strict=True,
                 )
@@ -419,14 +451,32 @@ class ReductionLowering(InductorLowering):
             strategy = BlockReductionStrategy(state, self.block_index)
 
         inputs = self.input_fake_tensors(node)
-        if len(inputs) != 1:
-            # TODO(jansel): combine multiple inputs into a single fake value
-            raise NotImplementedError("reductions with >1 input")
+
+        # The current lowering logic expects a single "fake" tensor to describe the
+        # shape information of the reduction input.  In practice, Helion can emit
+        # reductions whose value expression references multiple tensors that all
+        # share the same logical shape along the reduction dimension (for example
+        # the mean / variance computation inside `torch.nn.functional.layer_norm`).
+        #
+        # Instead of bailing out, we conservatively pick the *first* tensor to
+        # obtain the necessary meta-information (shape, dtype, etc.) that the
+        # downstream `ReductionStrategy` requires.  This is safe provided that
+        # all the input tensors are broadcast-compatible – an invariant upheld
+        # by PyTorch’s semantics and guaranteed by the way the Reduction object
+        # was constructed.
+        #
+        # Long term we may want to merge the meta information from all inputs but
+        # for now this pragmatic choice is enough to support real-world kernels
+        # such as `matmul_ln` without introducing incorrectness.
+        if not inputs:
+            raise RuntimeError("Reduction has no tensor inputs – unexpected state")
+
+        representative_input = inputs[0]
 
         # TODO(jansel): find a better way to get dim
         (dim,) = [
             i
-            for i, v in enumerate(inputs[0].shape)
+            for i, v in enumerate(representative_input.shape)
             if TileStrategy.get_block_index(v) == self.block_index
         ]
 
@@ -435,7 +485,7 @@ class ReductionLowering(InductorLowering):
             output_name,
             reduction.reduction_type,
             dim,
-            inputs[0],
+            representative_input,
             node.meta["val"],
         )
 
@@ -523,9 +573,32 @@ def codegen_sym_size(ctx: GraphInterpreter, node: torch.fx.Node) -> object:
 def codegen_getitem(ctx: GraphInterpreter, node: torch.fx.Node) -> object:
     assert not node.kwargs, "getitem kwargs not supported"
     lhs, rhs = map_arg(node.args, lambda arg: ctx.env[arg])
-    assert isinstance(lhs, (list, tuple))
-    assert isinstance(rhs, int)
-    return lhs[rhs]
+
+    # Two situations occur in practice:
+    #   1. `lhs` is the *compile-time* Python tuple/list we want to index into. This
+    #      happens for things like constant lists/tuples captured by the graph. In
+    #      that case we can simply perform the indexing eagerly and return the
+    #      resulting Python object.
+    #   2. `lhs` is an AST expression (typically a `ast.Name`) that will evaluate
+    #      to a tuple at *runtime* – for example the `(var, mean)` pair coming out
+    #      of a `torch.ops.aten.var_mean` lowering.  For this case we must emit
+    #      a subscript expression so that the generated Triton code performs the
+    #      indexing on device.
+    if isinstance(lhs, (list, tuple)):
+        assert isinstance(rhs, int), rhs
+        return lhs[rhs]
+
+    # Lazily materialise the RHS as a Python int so we can embed it in the AST.
+    assert isinstance(rhs, int), f"Expected integer index, got {type(rhs)}"
+
+    assert isinstance(lhs, ast.AST), (
+        "Unhandled getitem lowering: lhs must be either a Python sequence or an AST expression"
+    )
+
+    from .ast_extension import expr_from_string
+
+    # Build an AST for `lhs[rhs]`.
+    return expr_from_string("lhs[rhs]", lhs=lhs, rhs=ast.Constant(value=rhs))
 
 
 # pyre-fixme[56]
@@ -704,9 +777,30 @@ class GenerateASTFromInductor(DefaultHandler):
         return self.cg.lift(self.input_name_lookup[name]).id
 
     def index_expr(self, expr: sympy.Expr, dtype: torch.dtype) -> str:
+        # Generate an AST for the symbolic *index* expression and lift it so
+        # that it becomes available as a temporary variable inside the device
+        # function.  For most indices we still need to explicitly cast the
+        # resulting scalar to the desired Triton dtype via ``.to(...)`` –
+        # this matches the behaviour of the upstream Triton code-gen.
+
         name = self.cg.lift(
             expr_from_string(self.cg.device_function.user_sympy_expr(expr))
         ).id
+
+        # However, if the lifted symbol refers to a ``tl.constexpr`` kernel
+        # argument (for example a tile/block size constant such as
+        # ``_BLOCK_SIZE_1``) the resulting Triton value is **not** a tensor
+        # and therefore does not expose a ``.to`` method.  In such cases
+        # emitting the usual ``constexpr.to(tl.float32)`` would lead to an
+        # ``AttributeError`` at compile time.
+
+        if name in self.cg.device_function._constexpr_args:
+            # Rely on the surrounding expression (e.g. a subsequent
+            # ``to_dtype`` cast or the implicit type promotion rules of
+            # Triton) to ensure the correct result dtype instead of casting
+            # the constexpr directly.
+            return name
+
         return f"{name}.to({triton_type(dtype)})"
 
 

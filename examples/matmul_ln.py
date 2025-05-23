@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import torch
-
+import torch.nn.functional as F
 import helion
 import helion.language as hl
 
@@ -34,13 +34,25 @@ def matmul_ln(x: torch.Tensor, y: torch.Tensor, weight: torch.Tensor, bias: torc
     implicitly round up to a power of 2 the same way `:` does and introduce a reduction dimension.
 
     NOTE: this should fix Driss's flashattn repro too: https://www.internalfb.com/phabricator/paste/view/P1815504920
+
+    TODO(yf225): try the original [:] version on top of Jason's PR https://github.com/pytorch-labs/helion/pull/72#pullrequestreview-2865742124.
     """
     for tile_m, tile_n in hl.tile([m, n], block_size=[None, n]):
         acc = hl.zeros([tile_m, tile_n], dtype=torch.float32)
         for tile_k in hl.tile(k):
             mm = torch.matmul(x[tile_m, tile_k], y[tile_k, tile_n])
             acc = acc + mm
-        acc = torch.nn.functional.layer_norm(acc, [acc.size(1)], weight.to(torch.float32)[tile_n], bias.to(torch.float32)[tile_n])
+        # Convert the weight and bias to FP32 *after* slicing so that the dtype
+        # cast happens on the per-tile vectors, avoiding the need to materialise
+        # an FP32 copy of the full tensors on-device.  This also prevents the
+        # generated Triton kernel from referencing placeholder `_host_tensor`
+        # variables that are not wired up as kernel arguments.
+        acc = F.layer_norm(
+            acc,
+            [acc.size(1)],
+            weight[tile_n].to(torch.float32),
+            bias[tile_n].to(torch.float32),
+        )
         out[tile_m, tile_n] = acc
     return out
 

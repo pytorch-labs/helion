@@ -203,7 +203,15 @@ class PersistentReductionStrategy(ReductionStrategy):
         fake_output: torch.Tensor,
     ) -> ast.AST:
         default = ir.Reduction.default_accumulator(reduction_type, fake_input.dtype)
-        assert isinstance(default, (float, int, bool))
+
+        def _is_valid_default(val: object) -> bool:  # see comment above
+            if isinstance(val, (int, float, bool)):
+                return True
+            if isinstance(val, tuple):
+                return all(_is_valid_default(v) for v in val)
+            return False
+
+        assert _is_valid_default(default), f"default: {default}"
         expr = self.call_reduction_function(
             self.maybe_mask(state, fake_input, dim, input_name, default),
             reduction_type,
@@ -360,7 +368,27 @@ class BlockReductionStrategy(ReductionStrategy):
         fake_output: torch.Tensor,
     ) -> ast.AST:
         default = ir.Reduction.default_accumulator(reduction_type, fake_input.dtype)
-        assert isinstance(default, (float, int, bool))
+        # torch._inductor.ir.Reduction.default_accumulator returns a scalar for most
+        # reductions.  However, for compound reductions such as ``welford_reduce``
+        # it returns a tuple (e.g. ``(0, 0, 0)`` for running mean/var).
+        #
+        # The original assertion assumed that the accumulator is always a scalar
+        # which breaks when we legitimately hit a ``welford_reduce`` coming from
+        # the ``torch.nn.functional.layer_norm`` lowering in the example
+        # ``examples/matmul_ln.py``.  We only rely on ``default`` being a *python
+        # literal* that can safely flow into generated Triton code via
+        # ``constant_repr``.  A tuple of literals satisfies that requirement just
+        # as well as a scalar, so we relax the assertion to also accept tuples
+        # (and, recursively, tuples of numeric / bool literals).
+
+        def _is_valid_default(val: object) -> bool:
+            if isinstance(val, (int, float, bool)):
+                return True
+            if isinstance(val, tuple):
+                return all(_is_valid_default(v) for v in val)
+            return False
+
+        assert _is_valid_default(default), f"default: {default}"
         expr = self.call_reduction_function(
             self.maybe_mask(state, fake_input, dim, input_name, default),
             reduction_type,
