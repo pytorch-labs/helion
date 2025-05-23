@@ -22,7 +22,7 @@ from torch._inductor.ir import ComputedBuffer
 from torch._inductor.ir import FixedLayout
 from torch._inductor.ir import InputBuffer
 from torch._inductor.ir import Pointwise
-from torch._inductor.ir import Reduction
+from torch._inductor.ir import Reduction, Scan
 from torch._inductor.ir import StorageBox
 from torch._inductor.ir import TensorBox
 from torch._inductor.ops_handler import DefaultHandler
@@ -156,10 +156,10 @@ def prepare_node_lowering(
     new_node: torch.fx.Node
     for i, buffer in enumerate(new_buffers):
         if not isinstance(buffer, ComputedBuffer) or not isinstance(
-            buffer.data, (Pointwise, Reduction)
+            buffer.data, (Pointwise, Reduction, Scan)
         ):
             raise InductorLoweringError(
-                f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer(Pointwise|Reduction): {buffer}"
+                f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer(Pointwise|Reduction): {buffer}. type(buffer.data): {type(buffer.data)}"
             )
         if i == len(new_buffers) - 1:
             new_node = node
@@ -167,11 +167,18 @@ def prepare_node_lowering(
                 new_node.kwargs = {**new_node.kwargs, "_extra_args": [*nodes]}
         else:
             new_node = create_extra_node(node, buffer, [*node._input_nodes, *nodes])
-        lowering_cls = (
-            PointwiseLowering
-            if isinstance(buffer.data, Pointwise)
-            else ReductionLowering
-        )
+        lowering_cls = None
+        if isinstance(buffer.data, Pointwise):
+            lowering_cls = PointwiseLowering
+        elif isinstance(buffer.data, Reduction):
+            lowering_cls = ReductionLowering
+        elif isinstance(buffer.data, Scan):
+            lowering_cls = ScanLowering
+        else:
+            raise InductorLoweringError(
+                f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer(Pointwise|Reduction|Scan): {buffer}. type(buffer.data): {type(buffer.data)}"
+            )
+        buffer.freeze_layout()
         buffer.freeze_layout()
         used_input_names = strip_unused_inputs(
             new_node,
@@ -429,6 +436,12 @@ class ReductionLowering(InductorLowering):
             inputs[0],
             node.meta["val"],
         )
+
+
+@dataclasses.dataclass
+class ScanLowering(InductorLowering):
+    # TODO(yf225): implement
+    pass
 
 
 @dataclasses.dataclass
