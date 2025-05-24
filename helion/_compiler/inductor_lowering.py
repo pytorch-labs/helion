@@ -825,6 +825,14 @@ class GraphInterpreter(Interpreter):
                 lowering: Lowering = n.meta["lowering"]
                 
                 # Special handling for var_mean with extra_args
+                """
+                TODO(yf225):
+                0. why is var and mean two different nodes? can we find them without doing pattern matching?
+                1. what's inside `_extra_args`
+                2. is this pattern matching actually rebust?
+                3. what's `aux` and the `self.run_node(..)`?
+                4. move `var_mean.correction` handling to a specific helper function.
+                """
                 if (
                     n.target == torch.ops.aten.var_mean.correction
                     and "_extra_args" in n.kwargs
