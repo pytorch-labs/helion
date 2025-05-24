@@ -829,61 +829,71 @@ class GraphInterpreter(Interpreter):
                     "_extra_args" in n.kwargs and
                     any(user.target == getitem for user in n.users)):
                     
-                    # Process extra nodes first
+                    # ------------------------------------------------------------------
+                    # Special-case handling for `torch.var_mean`
+                    # ------------------------------------------------------------------
+                    # Inductor lowers `torch.var_mean` by emitting a set of auxiliary
+                    # reductions (the raw sums and sums-of-squares) followed by a final
+                    # point-wise kernel that divides by the block size(s) to obtain the
+                    # actual *mean* and *variance* tensors.  The variables holding these
+                    # final results receive automatically generated identifiers such as
+                    # “v_4”, “v_9”, … depending on how many temporaries were already in
+                    # scope when the kernel was emitted.  Previously Helion relied on
+                    # those numeric suffixes being *exactly* “v_4” for the mean and “v_9”
+                    # for the variance – a fragile assumption that breaks as soon as the
+                    # surrounding code changes.
+                    #
+                    # The strategy below avoids hard-coding any names.  We:
+                    #   1. Evaluate the auxiliary reduction nodes so that the relevant
+                    #      assignments are present in `device_function.body`.
+                    #   2. Emit the main reduction which returns the *variance* AST.
+                    #   3. Scan the body for the *first* assignment of the pattern
+                    #
+                    #         <lhs> = <something> / _BLOCK_SIZE_*
+                    #
+                    #      that yields the *mean*.  This heuristic is sufficient because
+                    #      the only divide-by-block-size expression that appears before
+                    #      the var_mean call is precisely the computation of the mean.
+                    #
+                    # The function then returns a tuple `(variance_ast, mean_ast)` that
+                    # is later de-structured by the `getitem` nodes in the FX graph.
+                    # ------------------------------------------------------------------
+
+                    # 1.  Evaluate the extra reduction nodes (sums / sums-of-squares).
                     extra_args = n.kwargs["_extra_args"]
                     for extra_node in extra_args:
                         if extra_node is not None:
                             self.run_node(extra_node)
-                    
-                    # Process the main reduction
-                    result = lowering.codegen(self, n)
-                    
-                    # For var_mean, we need to return a tuple of (variance, mean)
-                    # The actual values are computed by dividing the sums by block size
-                    # We need to generate that code and return references to the results
-                    
-                    # Find the block size for division
-                    block_size = None
-                    for arg in self.cg.device_function.arguments:
-                        if hasattr(arg, 'name') and '_BLOCK_SIZE_' in arg.name:
-                            block_size = arg.name
+
+                    # 2.  Emit the core reduction which yields the *variance*.
+                    variance_ast = lowering.codegen(self, n)
+
+                    import ast as _ast
+
+                    # 3.  Heuristically locate the *mean* assignment in the generated
+                    #     Triton AST.
+                    mean_var_name: str | None = None
+                    for stmt in self.cg.device_function.body:
+                        if (
+                            isinstance(stmt, _ast.Assign)
+                            and isinstance(stmt.value, _ast.BinOp)
+                            and isinstance(stmt.value.op, _ast.Div)
+                            and isinstance(stmt.value.right, _ast.Name)
+                            and stmt.value.right.id.startswith("_BLOCK_SIZE_")
+                            and len(stmt.targets) == 1
+                            and isinstance(stmt.targets[0], _ast.Name)
+                        ):
+                            mean_var_name = stmt.targets[0].id
                             break
-                    
-                    if block_size and len(extra_args) >= 3:
-                        # extra_args[1] is the sum for mean
-                        # extra_args[2] is the sum of squares for variance
-                        mean_sum_node = extra_args[1]
-                        var_sum_node = extra_args[2]
-                        
-                        if mean_sum_node in self.env and var_sum_node in self.env:
-                            # Generate division expressions
-                            mean_sum = self.env[mean_sum_node]
-                            var_sum = self.env[var_sum_node]
-                            
-                            # Create division expressions
-                            mean_expr = expr_from_string(f"mean_sum / {block_size}", mean_sum=mean_sum)
-                            var_expr = expr_from_string(f"var_sum / {block_size}", var_sum=var_sum)
-                            
-                            # Lift to variables
-                            mean_var = self.cg.lift(mean_expr)
-                            var_var = self.cg.lift(var_expr)
-                            
-                            # Return (variance, mean)
-                            return (var_var, mean_var)
-                    
-                    # Fallback - this maintains compatibility but is not ideal
-                    # The generated code will have v_4 as mean and v_9 as variance
-                    # based on the current code generation pattern
-                    import warnings
-                    warnings.warn(
-                        "var_mean lowering using fallback variable names. "
-                        "This may break if code generation patterns change.",
-                        RuntimeWarning
-                    )
-                    return (
-                        create(ast.Name, id="v_9", ctx=ast.Load()),  # variance
-                        create(ast.Name, id="v_4", ctx=ast.Load())   # mean
-                    )
+
+                    if mean_var_name is None:
+                        raise InductorLoweringError(
+                            "Unable to locate mean variable while lowering torch.var_mean; "
+                            "please file a bug so the pattern can be taught to Helion."
+                        )
+
+                    mean_ast = create(_ast.Name, id=mean_var_name, ctx=_ast.Load())
+                    return (variance_ast, mean_ast)
                 
                 # Normal single-output node handling
                 result = lowering.codegen(self, n)
