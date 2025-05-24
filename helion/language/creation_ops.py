@@ -26,12 +26,6 @@ def zeros(shape: list[object], dtype: torch.dtype = torch.float32) -> torch.Tens
     :param dtype: torch.dtype, default is torch.float32
     :return: a device tensor of the given shape and dtype
     """
-    # print(f"before: zeros: {shape}, {dtype}")
-    # env = CompileEnvironment.current()
-    # for i, size in enumerate(shape):
-    #     if isinstance(size, int):
-    #         shape[i] = env.allocate_reduction_dimension(size)
-    # print(f"after: zeros: {shape}, {dtype}")    
     return full(shape, 0.0 if dtype.is_floating_point else 0, dtype=dtype)
 
 
@@ -59,10 +53,6 @@ def _full_fake(
     if not isinstance(shape, (list, tuple)):
         raise TypeError(f"Expected list[SymInt], got {type(shape).__name__}")
     env = CompileEnvironment.current()
-
-    for i, size in enumerate(shape):
-        if isinstance(size, int):
-            shape[i] = env.allocate_reduction_dimension(size).var
 
     env.add_kernel_tensor_size(shape)
     return torch.empty(
