@@ -820,6 +820,40 @@ class GraphInterpreter(Interpreter):
         if n.op == "call_function":
             with self._set_current_node(n), n.meta["location"]:
                 lowering: Lowering = n.meta["lowering"]
+                
+                # Check if this node has multiple outputs accessed via getitem
+                # This happens for operations like var_mean that return tuples
+                getitem_users = [user for user in n.users if user.target == getitem]
+                if getitem_users and "_extra_args" in n.kwargs:
+                    # This node has multiple outputs that are accessed via getitem
+                    # We need to collect all the outputs and return them as a tuple
+                    extra_args = n.kwargs["_extra_args"]
+                    outputs = []
+                    
+                    # Process extra nodes first
+                    for extra_node in extra_args:
+                        if extra_node is not None:
+                            # Run the extra node to get its result
+                            extra_result = self.run_node(extra_node)
+                            outputs.append(extra_result)
+                    
+                    # Process the main node
+                    result = lowering.codegen(self, n)
+                    if result is not None:
+                        if not isinstance(result, ast.AST):
+                            outputs.append(result)
+                        else:
+                            assert isinstance(result, ast.expr)
+                            name = self.cg.device_function.new_var(n.name)
+                            self.cg.add_statement(
+                                statement_from_string(f"{name} = result", result=result)
+                            )
+                            outputs.append(create(ast.Name, id=name, ctx=ast.Load()))
+                    
+                    # Return the outputs as a tuple that can be indexed by getitem
+                    return tuple(outputs)
+                
+                # Normal single-output node handling
                 result = lowering.codegen(self, n)
                 if result is None:
                     return None

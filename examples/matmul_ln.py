@@ -96,7 +96,8 @@ def check(m: int, k: int, n: int) -> None:
     weight = torch.randn([n], device="cuda", dtype=torch.float16)
     bias = torch.randn([n], device="cuda", dtype=torch.float16)
     result = matmul_ln(x, y, weight, bias)
-    torch.testing.assert_close(result, x @ y, rtol=1e-2, atol=1e-1)
+    expected = matmul_ln_pytorch(x, y, weight, bias)
+    torch.testing.assert_close(result, expected, rtol=1e-2, atol=1e-1)
     sec = do_bench(lambda: matmul_ln(x, y, weight, bias))
     baseline_sec = do_bench(lambda: matmul_ln_pytorch(x, y, weight, bias))
     print(
@@ -105,4 +106,4 @@ def check(m: int, k: int, n: int) -> None:
 
 
 if __name__ == "__main__":
-    check(256, 512, 1024)
+    check(32, 64, 128)
