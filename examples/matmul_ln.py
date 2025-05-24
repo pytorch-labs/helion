@@ -88,15 +88,6 @@ def matmul_ln_pytorch(x: torch.Tensor,
     return out
 
 
-# TODO(yf225): have a config for this upstream
-# Problem: since `reduction_numel` is never a sympy.Integer,
-# how do we reason about whether to return True in upstream use_two_step_variance()?
-def _use_two_step_variance_patched(x, axis, keepdim):
-    return True
-
-torch._inductor.lowering.use_two_step_variance = _use_two_step_variance_patched
-
-
 def check(m: int, k: int, n: int) -> None:
     from triton.testing import do_bench
 
