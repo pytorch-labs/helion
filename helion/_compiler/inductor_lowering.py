@@ -830,48 +830,37 @@ class GraphInterpreter(Interpreter):
                     any(user.target == getitem for user in n.users)):
                     
                     # ------------------------------------------------------------------
-                    # Special-case handling for `torch.var_mean`
+                    # Minimal, name-agnostic handling for `torch.var_mean`
                     # ------------------------------------------------------------------
-                    # Inductor lowers `torch.var_mean` by emitting a set of auxiliary
-                    # reductions (the raw sums and sums-of-squares) followed by a final
-                    # point-wise kernel that divides by the block size(s) to obtain the
-                    # actual *mean* and *variance* tensors.  The variables holding these
-                    # final results receive automatically generated identifiers such as
-                    # “v_4”, “v_9”, … depending on how many temporaries were already in
-                    # scope when the kernel was emitted.  Previously Helion relied on
-                    # those numeric suffixes being *exactly* “v_4” for the mean and “v_9”
-                    # for the variance – a fragile assumption that breaks as soon as the
-                    # surrounding code changes.
+                    # Inductor emits three auxiliary nodes inside `_extra_args`:
+                    #   0. (unused / placeholder)
+                    #   1. row-wise sum            → needed for *mean*
+                    #   2. row-wise sum of squares → needed for *variance*
                     #
-                    # The strategy below avoids hard-coding any names.  We:
-                    #   1. Evaluate the auxiliary reduction nodes so that the relevant
-                    #      assignments are present in `device_function.body`.
-                    #   2. Emit the main reduction which returns the *variance* AST.
-                    #   3. Scan the body for the *first* assignment of the pattern
-                    #
-                    #         <lhs> = <something> / _BLOCK_SIZE_*
-                    #
-                    #      that yields the *mean*.  This heuristic is sufficient because
-                    #      the only divide-by-block-size expression that appears before
-                    #      the var_mean call is precisely the computation of the mean.
-                    #
-                    # The function then returns a tuple `(variance_ast, mean_ast)` that
-                    # is later de-structured by the `getitem` nodes in the FX graph.
+                    # The final variance expression is returned directly by the main
+                    # reduction lowering.  The mean is simply `sum / block_size` where
+                    # the block size is the compile-time constant for the reduction
+                    # dimension.  We derive it without making any assumption on the
+                    # auto-generated variable names.
                     # ------------------------------------------------------------------
 
-                    # 1.  Evaluate the extra reduction nodes (sums / sums-of-squares).
                     extra_args = n.kwargs["_extra_args"]
-                    for extra_node in extra_args:
-                        if extra_node is not None:
-                            self.run_node(extra_node)
 
-                    # 2.  Emit the core reduction which yields the *variance*.
+                    # Ensure the auxiliary reductions are evaluated so their ASTs live
+                    # in `env`.
+                    for aux in extra_args:
+                        if aux is not None:
+                            self.run_node(aux)
+
                     variance_ast = lowering.codegen(self, n)
 
                     import ast as _ast
 
-                    # 3.  Heuristically locate the *mean* assignment in the generated
-                    #     Triton AST.
+                    # Heuristically locate the assignment that produces the mean: the
+                    # first divide-by-block-size that appears in the generated body *before*
+                    # the var_mean call.  This keeps us fully agnostic to the actual
+                    # temporary names chosen by Inductor.
+
                     mean_var_name: str | None = None
                     for stmt in self.cg.device_function.body:
                         if (
@@ -888,11 +877,11 @@ class GraphInterpreter(Interpreter):
 
                     if mean_var_name is None:
                         raise InductorLoweringError(
-                            "Unable to locate mean variable while lowering torch.var_mean; "
-                            "please file a bug so the pattern can be taught to Helion."
+                            "var_mean lowering: unable to find mean computation in generated AST"
                         )
 
                     mean_ast = create(_ast.Name, id=mean_var_name, ctx=_ast.Load())
+
                     return (variance_ast, mean_ast)
                 
                 # Normal single-output node handling
