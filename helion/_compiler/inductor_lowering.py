@@ -825,9 +825,12 @@ class GraphInterpreter(Interpreter):
                 lowering: Lowering = n.meta["lowering"]
                 
                 # Special handling for var_mean with extra_args
-                if (n.target == torch.ops.aten.var_mean.correction and 
-                    "_extra_args" in n.kwargs and
-                    any(user.target == getitem for user in n.users)):
+                if (
+                    n.target == torch.ops.aten.var_mean.correction
+                    and "_extra_args" in n.kwargs
+                    and any(user.target == getitem for user in n.users)
+                ):
+                    # Special-case handling starts here
                     
                     # ------------------------------------------------------------------
                     # Minimal, name-agnostic handling for `torch.var_mean`
@@ -846,8 +849,10 @@ class GraphInterpreter(Interpreter):
 
                     extra_args = n.kwargs["_extra_args"]
 
-                    # Ensure the auxiliary reductions are evaluated so their ASTs live
-                    # in `env`.
+                    # Ensure the auxiliary reductions are evaluated so their ASTs
+                    # live in `env` so that we can reference them when constructing
+                    # the final `(var, mean)` tuple.
+
                     for aux in extra_args:
                         if aux is not None:
                             self.run_node(aux)
@@ -856,24 +861,39 @@ class GraphInterpreter(Interpreter):
 
                     import ast as _ast
 
-                    # Heuristically locate the assignment that produces the mean: the
-                    # first divide-by-block-size that appears in the generated body *before*
-                    # the var_mean call.  This keeps us fully agnostic to the actual
-                    # temporary names chosen by Inductor.
+                    # ----------------------------------------------------------
+                    # Locate the assignment that computes the *mean* value.
+                    # ----------------------------------------------------------
+                    # Inductor expresses the mean as a plain division by the
+                    # relevant *reduction* block-size constant (one of the
+                    # entries in `DeviceFunction.block_size_var_cache`).  We
+                    # therefore iterate over the already-generated body and look
+                    # for an `Assign` whose RHS matches the pattern
+                    #     <expr> / <block_size_var>
+                    # where `<block_size_var>` is any of the block-size
+                    # variables for this kernel.  Using the structural pattern
+                    # matching syntax available from Python 3.10 makes this both
+                    # concise and explicit while avoiding any reliance on
+                    # hard-coded naming conventions (such as the
+                    # "_BLOCK_SIZE_" prefix previously used here).
+
+                    block_size_vars: set[str] = set(
+                        self.cg.device_function.block_size_var_cache.values()
+                    )
 
                     mean_var_name: str | None = None
                     for stmt in self.cg.device_function.body:
-                        if (
-                            isinstance(stmt, _ast.Assign)
-                            and isinstance(stmt.value, _ast.BinOp)
-                            and isinstance(stmt.value.op, _ast.Div)
-                            and isinstance(stmt.value.right, _ast.Name)
-                            and stmt.value.right.id.startswith("_BLOCK_SIZE_")
-                            and len(stmt.targets) == 1
-                            and isinstance(stmt.targets[0], _ast.Name)
-                        ):
-                            mean_var_name = stmt.targets[0].id
-                            break
+                        match stmt:
+                            case _ast.Assign(
+                                targets=[_ast.Name(id=var_name, ctx=_)],
+                                value=_ast.BinOp(
+                                    left=_,
+                                    op=_ast.Div(),
+                                    right=_ast.Name(id=bs_name, ctx=_),
+                                ),
+                            ) if bs_name in block_size_vars:
+                                mean_var_name = var_name
+                                break
 
                     if mean_var_name is None:
                         raise InductorLoweringError(
