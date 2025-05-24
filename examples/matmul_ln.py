@@ -88,6 +88,13 @@ def matmul_ln_pytorch(x: torch.Tensor,
     return out
 
 
+# TODO(yf225): have a config for this upstream
+def _use_two_step_variance_patched(x, axis, keepdim):
+    return True
+
+torch._inductor.lowering.use_two_step_variance = _use_two_step_variance_patched
+
+
 def check(m: int, k: int, n: int) -> None:
     from triton.testing import do_bench
 
