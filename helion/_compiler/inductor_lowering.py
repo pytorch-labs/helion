@@ -86,6 +86,7 @@ def prepare_node_lowering(
         node.meta["lowering"] = APIFuncLowering(api)
         return
 
+    print(f"node.target: {node.target}, node.target in aten_lowering_dispatch: {node.target in aten_lowering_dispatch}")
     if node.target in aten_lowering_dispatch:
         node.meta["lowering"] = aten_lowering_dispatch[node.target](node)
         return
@@ -757,6 +758,33 @@ def codegen_baddbmm(ctx: GraphInterpreter, node: torch.fx.Node) -> ast.AST:
         lhs=lhs,
         rhs=rhs,
         acc=acc,
+    )
+
+
+def var_mean_helper_(x, *, axis, correction, keepdim, return_mean):
+    from torch._inductor.lowering import var_mean_sum_, to_dtype
+    from torch._prims_common import get_computation_dtype
+
+    out_dtype = x.get_dtype()
+    compute_dtype = get_computation_dtype(out_dtype)
+    x = to_dtype(x, compute_dtype, copy=False)
+    kwargs = dict(
+        x=x,
+        axis=axis,
+        correction=correction,
+        keepdim=keepdim,
+        return_mean=return_mean,
+    )
+    # TODO: support Welford reduction in Helion, then switch back to use Inductor `var_mean_helper_()`.
+    output = var_mean_sum_(**kwargs)
+    output = tuple(to_dtype(x, out_dtype, copy=False) for x in output)
+    return output[0] if not return_mean else output
+
+
+@register_lowering(torch.ops.aten.var_mean.correction)
+def var_mean(x, axis=None, *, correction=None, keepdim=False):
+    return var_mean_helper_(
+        x, axis=axis, correction=correction, keepdim=keepdim, return_mean=True
     )
 
 
