@@ -283,6 +283,11 @@ class ReductionRoller:
                     or node.op == "output"
                 ):
                     self.start_new_graph()
+
+                # TODO(yf225): instead of doing force_outputs and all these logic below, Jason's suggestion
+                # is that the correct thing to happen is for roll_reduction.py to realize that graph can't be rolled and exit,
+                # specifically "maybe the test is, if a rdim goes into a dot() then exit".
+
                 # Special handling for output node
                 if node.op == "output":
                     # The output node's args reference nodes from the original graph
