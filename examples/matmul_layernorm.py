@@ -70,7 +70,7 @@ def check(m: int, k: int, n: int) -> None:
 def main() -> None:
     # check(32, 64, 64)
     # check(32, 64, 128)
-    # check(32, 64, 200)
+    check(32, 64, 200)
     check(128, 256, 400)
 
 
