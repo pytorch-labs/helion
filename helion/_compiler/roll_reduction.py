@@ -79,8 +79,7 @@ class ReductionRoller:
             info = self.graph_id_to_info[graph_id]
             if info.used_rdim:
                 if not info.can_be_rolled_by_caller:
-                    # Treat mixed reduction dim loops as outer graph nodes
-                    return False
+                    raise NotImplementedError("for loop with mixed reduction dim usage")
                 return True
             return False
 
