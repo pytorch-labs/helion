@@ -234,6 +234,7 @@ class SubscriptIndexing(NamedTuple):
                     rdim = CompileEnvironment.current().allocate_reduction_dimension(
                         size
                     )
+                    print(f"here1: {rdim.var}")
                     output_size.append(rdim.var)
                 else:
                     output_size.append(1)
@@ -305,6 +306,7 @@ class SubscriptIndexing(NamedTuple):
                 if size != 1:
                     env = CompileEnvironment.current()
                     rdim = env.allocate_reduction_dimension(size)
+                    print(f"here2: {rdim.var}")
                     block_idx = rdim.block_size_idx
                     index_var = state.codegen.index_var(block_idx)
                     index_values.append(f"({index_var}){expand}")
@@ -537,6 +539,7 @@ class BlockedSubscriptIndexing:
                 if size != 1:
                     env = CompileEnvironment.current()
                     rdim = env.allocate_reduction_dimension(size)
+                    print(f"here3: {rdim.var}")
                     res.offsets.append(state.codegen.offset_var(rdim.block_size_idx))
                     res.block_shape.append(rdim.var)
                 else:
