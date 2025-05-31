@@ -102,7 +102,7 @@ class CompileEnvironment:
         from .host_function import HostFunction
 
         if isinstance(size, torch.SymInt):
-            # If block size is already allocated, we can use the existing index.
+            # If block size is already allocated, we reuse the existing index.
             expr = size._sympy_()
             origin_info = HostFunction.current().expr_to_origin.get(expr)
             if origin_info and isinstance(origin_info.origin, BlockSizeOrigin):
