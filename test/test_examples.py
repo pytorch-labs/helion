@@ -182,7 +182,7 @@ from torch._inductor.runtime.triton_compat import libdevice
 def _matmul_layernorm_kernel(x, y, weight, bias, out, out_stride_0, _BLOCK_SIZE_1: tl.constexpr, _RDIM_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_1 = pid_0 * _BLOCK_SIZE_1
-    indices_1 = offset_1 + tl.arange(0, _BLOCK_SIZE_1).to(tl.int32)
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
     indices_0 = tl.arange(0, _RDIM_SIZE_0).to(tl.int32)
     mask_0 = indices_0 < 400
     acc = tl.full([_BLOCK_SIZE_1, _RDIM_SIZE_0], 0.0, tl.float32)
@@ -278,12 +278,12 @@ from torch._inductor.runtime.triton_compat import libdevice
 def _matmul_layernorm_kernel(bias, x, y, weight, out, bias_size_0, bias_stride_0, out_stride_0, out_stride_1, weight_stride_0, x_stride_0, x_stride_1, y_stride_0, y_stride_1, m, k, _BLOCK_SIZE_1: tl.constexpr, _RDIM_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_1 = pid_0 * _BLOCK_SIZE_1
-    indices_1 = offset_1 + tl.arange(0, _BLOCK_SIZE_1).to(tl.int32)
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
     mask_1 = indices_1 < m
     indices_0 = tl.arange(0, _RDIM_SIZE_0).to(tl.int32)
     mask_0 = indices_0 < bias_size_0
     acc = tl.full([_BLOCK_SIZE_1, _RDIM_SIZE_0], 0.0, tl.float32)
-    for offset_2 in range(0, k, _BLOCK_SIZE_2):
+    for offset_2 in range(0, k.to(tl.int32), _BLOCK_SIZE_2):
         indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
         mask_2 = indices_2 < k
         acc_copy = acc
