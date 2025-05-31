@@ -470,7 +470,7 @@ class ReductionLowering(InductorLowering):
                 input_dtype = inp.meta["val"].dtype
                 break
         assert input_dtype is not None
-        default = ir.Reduction.default_accumulator(reduction_type, input_dtype)
+        default = Reduction.default_accumulator(reduction_type, input_dtype)
         assert isinstance(default, (float, int, bool))
         mask_node_inputs(node, default)
 
