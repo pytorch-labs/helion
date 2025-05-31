@@ -141,18 +141,12 @@ class ReductionRoller:
         node.meta["lowering"] = APIFuncLowering(_get_symnode)
         return node
 
-    def start_new_graph(self, force_outputs: set[torch.fx.Node] | None = None) -> None:
-        if self.inner_count == 0 and not force_outputs:
+    def start_new_graph(self) -> None:
+        if self.inner_count == 0:
             return
 
         inner_nodes: dict[torch.fx.Node, torch.fx.Node] = self.inner_nodes
         outputs = {}
-
-        if force_outputs:
-            # Add forced outputs first
-            for orig_node in force_outputs:
-                if orig_node in inner_nodes:
-                    outputs[orig_node] = inner_nodes[orig_node]
 
         for orig_node, inner_node in inner_nodes.items():
             if self.is_reduction(orig_node) and orig_node not in self.outer_nodes:
@@ -270,13 +264,12 @@ class ReductionRoller:
 
             # Check if any inputs to matmul have rdim
             for input_node in node.all_input_nodes:
-                if hasattr(input_node, "meta") and "val" in input_node.meta:
-                    val = input_node.meta["val"]
-                    if isinstance(val, torch.Tensor):
-                        for size in val.size():
-                            block_idx = TileStrategy.get_block_index(size)
-                            if block_idx == self.rdim.block_size_idx:
-                                return True
+                val = input_node.meta.get("val", None)
+                if isinstance(val, torch.Tensor):
+                    for size in val.size():
+                        block_idx = TileStrategy.get_block_index(size)
+                        if block_idx == self.rdim.block_size_idx:
+                            return True
             return False
 
         return any(is_matmul_with_rdim(node) for node in graph.nodes)
@@ -306,7 +299,6 @@ class ReductionRoller:
                     or node.op == "output"
                 ):
                     self.start_new_graph()
-
                 new_node = self.outer_graph.create_node(
                     node.op,
                     node.target,

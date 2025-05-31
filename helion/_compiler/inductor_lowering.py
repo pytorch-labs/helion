@@ -647,16 +647,6 @@ def _register_inductor_lowering(
     convert_input_to_bool: bool,
     lowering_dict: dict[object, Callable[..., object]],
 ) -> Callable:
-    """
-    Add a lowering to lowerings dict
-
-    Arguments:
-        aten_fn: torch.ops.aten.* fn we are lowering
-        decomp_fn: alternate implementation on our IR
-        broadcast: True to apply broadcasting to tensor inputs
-        type_promotion_kind: kind of type promotion applied to tensor inputs, `None` means no type promotion
-        convert_input_to_bool: some logical ops require inputs are converted to bool
-    """
     from torch._inductor.lowering import fallbacks
     from torch._inductor.lowering import get_overloads
     from torch._inductor.lowering import in_namespace
@@ -712,9 +702,6 @@ def register_inductor_lowering(
         Any, Callable[..., Any]
     ] = inductor_lowering_dispatch,
 ) -> Callable:
-    """
-    Shim to support decorator syntax.
-    """
     return functools.partial(
         _register_inductor_lowering,
         aten_fn,

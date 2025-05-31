@@ -276,14 +276,15 @@ class DeviceIR:
 
             # First, check if any graph contains matmul with rdim
             # If so, we can't roll any graphs in this reduction dimension
-            can_roll_any_graph = True
+            can_roll_graphs = True
             for graph_info in self.graphs:
+                print(f"graph: {graph_info.graph.graph}")
                 roller = ReductionRoller(self, rdim, {})
                 if roller.has_matmul_with_rdim(graph_info.graph.graph):
-                    can_roll_any_graph = False
+                    can_roll_graphs = False
                     break
 
-            if not can_roll_any_graph:
+            if not can_roll_graphs:
                 # Can't roll any graphs for this rdim, but still need to add the spec
                 env.config_spec.reduction_loop_specs.append(
                     ReductionLoopSpec(
