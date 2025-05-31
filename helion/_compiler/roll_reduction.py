@@ -147,13 +147,13 @@ class ReductionRoller:
 
         inner_nodes: dict[torch.fx.Node, torch.fx.Node] = self.inner_nodes
         outputs = {}
-        
+
         if force_outputs:
             # Add forced outputs first
             for orig_node in force_outputs:
                 if orig_node in inner_nodes:
                     outputs[orig_node] = inner_nodes[orig_node]
-        
+
         for orig_node, inner_node in inner_nodes.items():
             if self.is_reduction(orig_node) and orig_node not in self.outer_nodes:
                 outputs[orig_node] = inner_node
@@ -264,10 +264,10 @@ class ReductionRoller:
             """Check if a node is a matmul operation with rdim inputs."""
             if node.op != "call_function":
                 return False
-                
-            if not node.target == torch.ops.aten.mm.default:
+
+            if node.target != torch.ops.aten.mm.default:
                 return False
-                
+
             # Check if any inputs to matmul have rdim
             for input_node in node.all_input_nodes:
                 if hasattr(input_node, "meta") and "val" in input_node.meta:
@@ -279,9 +279,7 @@ class ReductionRoller:
                                 return True
             return False
 
-        return any(
-            is_matmul_with_rdim(node) for node in graph.nodes
-        )
+        return any(is_matmul_with_rdim(node) for node in graph.nodes)
 
     def process(self, graph: torch.fx.Graph) -> torch.fx.Graph:
         for node in graph.nodes:

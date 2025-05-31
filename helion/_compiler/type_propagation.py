@@ -1050,6 +1050,7 @@ class GridIndexType(SymIntType):
 
 class ReductionDimType(SymIntType):
     """Type for reduction dimensions allocated via register_reduction_dim"""
+
     block_size_idx: int
 
     def __init__(self, origin: Origin, block_size_idx: int) -> None:
@@ -1059,20 +1060,17 @@ class ReductionDimType(SymIntType):
         super().__init__(origin, env.block_sizes[block_size_idx].var)
         self.block_size_idx = block_size_idx
 
-    def __str__(self) -> str:  # pragma: no cover – debug helper
+    def __str__(self) -> str:
         return f"{type(self).__name__}({self.block_size_idx})"
 
     def proxy(self) -> torch.SymInt:
         """Return the RDIM variable when used in expressions"""
         from .._compiler.compile_environment import CompileEnvironment
-        
-        env = CompileEnvironment.current()
-        rdim_var = env.block_sizes[self.block_size_idx].var
-        # Debug: ensure we're returning the RDIM variable
-        # print(f"ReductionDimType.proxy() returning RDIM var: {rdim_var}")
-        return rdim_var
 
-    def merge(self, other: TypeInfo) -> TypeInfo:  # type: ignore[override]
+        env = CompileEnvironment.current()
+        return env.block_sizes[self.block_size_idx].var
+
+    def merge(self, other: TypeInfo) -> TypeInfo:
         if isinstance(other, ReductionDimType):
             if self.block_size_idx == other.block_size_idx:
                 return self

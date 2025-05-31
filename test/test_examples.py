@@ -186,11 +186,11 @@ def _matmul_layernorm_kernel(x, y, weight, bias, out, out_stride_0, _BLOCK_SIZE_
     indices_0 = tl.arange(0, _RDIM_SIZE_0).to(tl.int32)
     mask_0 = indices_0 < 400
     acc = tl.full([_BLOCK_SIZE_1, _RDIM_SIZE_0], 0.0, tl.float32)
-    for offset_3 in range(0, 256, _BLOCK_SIZE_2):
-        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+    for offset_2 in range(0, 256, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
         acc_copy = acc
-        load = tl.load(x + (indices_1[:, None] * 256 + indices_3[None, :] * 1), None)
-        load_1 = tl.load(y + (indices_3[:, None] * 400 + indices_0[None, :] * 1), mask_0[None, :], other=0)
+        load = tl.load(x + (indices_1[:, None] * 256 + indices_2[None, :] * 1), None)
+        load_1 = tl.load(y + (indices_2[:, None] * 400 + indices_0[None, :] * 1), mask_0[None, :], other=0)
         mm = tl.dot(load, load_1, input_precision='tf32')
         acc = acc_copy + mm
     v_1 = tl.where(tl.broadcast_to(mask_0[None, :], [_BLOCK_SIZE_1, _RDIM_SIZE_0]), acc, 0)
@@ -283,12 +283,12 @@ def _matmul_layernorm_kernel(bias, x, y, weight, out, bias_size_0, bias_stride_0
     indices_0 = tl.arange(0, _RDIM_SIZE_0).to(tl.int32)
     mask_0 = indices_0 < bias_size_0
     acc = tl.full([_BLOCK_SIZE_1, _RDIM_SIZE_0], 0.0, tl.float32)
-    for offset_3 in range(0, k, _BLOCK_SIZE_2):
-        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
-        mask_2 = indices_3 < k
+    for offset_2 in range(0, k, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+        mask_2 = indices_2 < k
         acc_copy = acc
-        load = tl.load(x + (indices_1[:, None] * x_stride_0 + indices_3[None, :] * x_stride_1), mask_1[:, None] & mask_2[None, :], other=0)
-        load_1 = tl.load(y + (indices_3[:, None] * y_stride_0 + indices_0[None, :] * y_stride_1), mask_2[:, None] & mask_0[None, :], other=0)
+        load = tl.load(x + (indices_1[:, None] * x_stride_0 + indices_2[None, :] * x_stride_1), mask_1[:, None] & mask_2[None, :], other=0)
+        load_1 = tl.load(y + (indices_2[:, None] * y_stride_0 + indices_0[None, :] * y_stride_1), mask_2[:, None] & mask_0[None, :], other=0)
         mm = tl.dot(load, load_1, input_precision='tf32')
         acc = acc_copy + mm
     v_1 = tl.where(tl.broadcast_to(mask_0[None, :], [_BLOCK_SIZE_1, _RDIM_SIZE_0]), acc, 0)

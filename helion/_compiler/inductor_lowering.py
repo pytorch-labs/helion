@@ -16,29 +16,20 @@ import sympy
 import torch
 from torch._dynamo.convert_frame import compile_lock
 from torch._inductor import config as inductor_config
-from torch._inductor import ir
 from torch._inductor.codegen.simd import SIMDKernelFeatures
 from torch._inductor.codegen.simd import constant_repr
 from torch._inductor.codegen.triton import TritonKernel
 from torch._inductor.codegen.triton import TritonOverrides
 from torch._inductor.graph import GraphLowering
 from torch._inductor.ir import ComputedBuffer
-from torch._inductor.ir import ExpandView
 from torch._inductor.ir import FixedLayout
 from torch._inductor.ir import InputBuffer
 from torch._inductor.ir import Pointwise
 from torch._inductor.ir import Reduction
 from torch._inductor.ir import StorageBox
 from torch._inductor.ir import TensorBox
-from torch._inductor.lowering import _validate_reduction_axis
-from torch._inductor.lowering import div
-from torch._inductor.lowering import square
-from torch._inductor.lowering import squeeze
-from torch._inductor.lowering import sub
-from torch._inductor.lowering import sum_
 from torch._inductor.lowering import to_dtype
 from torch._inductor.ops_handler import DefaultHandler
-from torch._inductor.utils import sympy_product
 from torch._inductor.utils import triton_type
 from torch._inductor.virtualized import OpsValue
 from torch._inductor.virtualized import V
@@ -109,7 +100,6 @@ def prepare_graph_lowerings(gm: torch.fx.GraphModule) -> None:
                 }, node.op
                 if node.op == "call_function":
                     with node.meta["location"]:
-                        print(f"Preparing lowering for node: {node}, target: {node.target}, args: {node.args}, kwargs: {node.kwargs}")
                         prepare_node_lowering(graph_lowering, node)
 
 
@@ -458,7 +448,9 @@ class ReductionLowering(InductorLowering):
             # TODO(jansel): can this happen?
             raise NotImplementedError("multiple reduction dimensions")
         reduction_var = reduction_ranges[0]
-        assert isinstance(reduction_var, sympy.Symbol), f"Expected sympy.Symbol, got {type(reduction_var)} with value {reduction_var}"
+        assert isinstance(reduction_var, sympy.Symbol), (
+            f"Expected sympy.Symbol, got {type(reduction_var)} with value {reduction_var}"
+        )
         block_index = TileStrategy.get_block_index(reduction_var)
         assert block_index is not None
         self.block_index: int = block_index
@@ -934,8 +926,6 @@ def codegen_baddbmm(ctx: GraphInterpreter, node: torch.fx.Node) -> ast.AST:
     )
 
 
-
-
 def var_mean_helper_(
     x: torch._inductor.ir.TensorBox,
     *,
@@ -944,7 +934,7 @@ def var_mean_helper_(
     keepdim: bool,
     return_mean: bool,
 ) -> torch._inductor.ir.TensorBox:
-    from torch._inductor.lowering import to_dtype, var_mean_sum_
+    from torch._inductor.lowering import var_mean_sum_
     from torch._prims_common import get_computation_dtype
 
     out_dtype = x.get_dtype()
@@ -1000,7 +990,6 @@ def var_mean(
         keepdim=keepdim,
         return_mean=True,
     )
-
 
 
 class GenerateASTFromInductor(DefaultHandler):

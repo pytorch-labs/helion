@@ -273,16 +273,16 @@ class DeviceIR:
         for rdim in rdims:
             graph_to_info = {}
             allow_loop = False
-            
+
             # First, check if any graph contains matmul with rdim
             # If so, we can't roll any graphs in this reduction dimension
             can_roll_any = True
-            for graph_id, graph_info in enumerate([*self.graphs]):
+            for graph_info in self.graphs:
                 roller = ReductionRoller(self, rdim, {})
                 if roller.has_matmul_with_rdim(graph_info.graph.graph):
                     can_roll_any = False
                     break
-            
+
             if not can_roll_any:
                 # Can't roll any graphs for this rdim, but still need to add the spec
                 env.config_spec.reduction_loop_specs.append(
@@ -293,22 +293,24 @@ class DeviceIR:
                 )
                 first = False
                 continue
-            
+
             # Process graphs normally
             for graph_id, graph_info in enumerate([*self.graphs]):
                 assert graph_id == graph_info.graph_id
-                
+
                 roller = ReductionRoller(self, rdim, graph_to_info)
                 processed_graph = roller.process(graph_info.graph.graph)
-                
+
                 # Graph was successfully rolled
                 new_graph = torch.fx.GraphModule({}, processed_graph)
                 new_graph_id = self.add_graph(
                     new_graph, type(graph_info), **graph_info.kwargs()
                 )
                 used_rdim = len(roller.graphs_added) > 0
-                can_be_rolled_by_caller = roller.outer_count == 0 and len(roller.graphs_added) == 1
-                    
+                can_be_rolled_by_caller = (
+                    roller.outer_count == 0 and len(roller.graphs_added) == 1
+                )
+
                 reduction_info = RolledReductionInfo(
                     rolled_block_indices=[rdim.block_size_idx],
                     original_graph_id=graph_id,
@@ -684,7 +686,7 @@ class WalkDeviceAST(NodeVisitor):
                 raise exc.InvalidAssignment
             if len(target.elts) != len(value):
                 raise exc.InvalidAssignment
-            for t, v in zip(target.elts, value):
+            for t, v in zip(target.elts, value, strict=False):
                 if isinstance(t, ast.Name):
                     self._assign(t, v)
                 else:

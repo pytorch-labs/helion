@@ -37,7 +37,7 @@ def matmul_layernorm_pytorch(
     x: torch.Tensor, y: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor
 ) -> torch.Tensor:
     import torch.nn.functional as F
-    
+
     matmul_out = torch.matmul(x, y)
 
     ln_out = F.layer_norm(

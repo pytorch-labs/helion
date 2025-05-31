@@ -404,17 +404,19 @@ def register_reduction_dim(size: Sequence[int]) -> Sequence[torch.SymInt]: ...
 
 
 @_decorators.api(is_device_only=False, cache_type=True, tiles_as_sizes=True)
-def register_reduction_dim(size: int | Sequence[int]) -> torch.SymInt | Sequence[torch.SymInt]:
+def register_reduction_dim(
+    size: int | Sequence[int],
+) -> torch.SymInt | Sequence[torch.SymInt]:
     """
     Explicitly register a reduction dimension that should be used for reduction operations.
-    
+
     This is useful when you need to allocate a dimension for reduction that isn't
     automatically inferred from a slice operation. The registered dimension can be
     used for allocations and operations that require knowing the reduction size upfront.
-    
+
     Unlike regular block sizes, reduction dimensions are specifically marked for
     reduction operations and may have different optimization strategies applied.
-    
+
     :param size: An integer or a sequence of integers representing the reduction dimension sizes.
     :return: A SymInt object if a single size is provided, or a sequence of SymInt objects if a sequence of sizes is provided.
     """
@@ -425,22 +427,22 @@ def register_reduction_dim(size: int | Sequence[int]) -> torch.SymInt | Sequence
 def _(size: int | Sequence[int]) -> torch.SymInt | Sequence[torch.SymInt]:
     """Fake implementation that returns the registered reduction dimension size(s)"""
     from .._compiler.compile_environment import CompileEnvironment
-    
+
     env = CompileEnvironment.current()
-    
+
     if isinstance(size, (int, torch.SymInt)):
         # Allocate a single reduction dimension
         rdim = env.allocate_reduction_dimension(size)
         # Return the RDIM variable
         return rdim.var
-    
+
     # Allocate multiple reduction dimensions
     results = []
     for s in size:
         rdim = env.allocate_reduction_dimension(s)
         # Return the RDIM variables
         results.append(rdim.var)
-    
+
     return results
 
 
@@ -448,7 +450,7 @@ def _(size: int | Sequence[int]) -> torch.SymInt | Sequence[torch.SymInt]:
 def _(sizes: TypeInfo, *, origin: Origin) -> TypeInfo:
     from .._compiler.compile_environment import CompileEnvironment
     from .._compiler.type_propagation import ReductionDimType
-    
+
     try:
         proxy_sizes = sizes.proxy()
         if not (
@@ -465,22 +467,22 @@ def _(sizes: TypeInfo, *, origin: Origin) -> TypeInfo:
                 chained_from=sizes,
             )
         ) from None
-    
+
     env = CompileEnvironment.current()
-    
+
     # For single size
     if not isinstance(sizes, SequenceType):
         # Allocate a reduction dimension
         rdim = env.allocate_reduction_dimension(proxy_sizes)
         # Return a ReductionDimType that will use the RDIM variable
         return ReductionDimType(origin, rdim.block_size_idx)
-    
+
     # For multiple sizes - return a sequence of ReductionDimTypes
     results = []
-    for i, size in enumerate(proxy_sizes):
+    for size in proxy_sizes:
         rdim = env.allocate_reduction_dimension(size)
         results.append(ReductionDimType(origin, rdim.block_size_idx))
-    
+
     return SequenceType(origin=origin, element_types=results)
 
 
@@ -488,23 +490,21 @@ def _(sizes: TypeInfo, *, origin: Origin) -> TypeInfo:
 def _(state: CodegenState) -> ast.AST:
     """Generate code for register_reduction_dim - return the size expression"""
     from .._compiler.type_propagation import ReductionDimType
-    
+
     # In the generated host code, we need to return the actual size expression
     # The RDIM variable allocation already happened during type propagation
-    
+
     # The type info should be a ReductionDimType or SequenceType of ReductionDimTypes
     current_node = ExtendedAST.current()[-1]
     type_info = current_node._type_info
-    
+
     if isinstance(type_info, ReductionDimType):
         # Single reduction dim - we need to reconstruct the original size expression
         # from the AST node arguments
-        if current_node.args:
+        if current_node.args:  # pyre-ignore[16]
             # Return the first argument which should be the size expression
             return current_node.args[0]
-        else:
-            # Fallback - this shouldn't happen
-            raise NotImplementedError("No args found for register_reduction_dim")
-    else:
-        # Multiple reduction dims
-        raise NotImplementedError("Multiple reduction dims not yet supported in codegen")
+        # Fallback - this shouldn't happen
+        raise NotImplementedError("No args found for register_reduction_dim")
+    # Multiple reduction dims
+    raise NotImplementedError("Multiple reduction dims not yet supported in codegen")
