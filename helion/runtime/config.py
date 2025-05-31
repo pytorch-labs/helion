@@ -23,8 +23,6 @@ class Config(Mapping[str, object]):
         block_sizes: list[int | list[int]] | None = None,
         loop_orders: list[list[int]] | None = None,
         reduction_loops: list[int | None] | None = None,
-        scan_loops: list[int | None] | None = None,
-        scan_loop: int | None = None,  # Single scan_loop value
         num_warps: int | None = None,
         num_stages: int | None = None,
         l2_grouping: int | None = None,
@@ -40,7 +38,6 @@ class Config(Mapping[str, object]):
             block_sizes: Controls tile sizes for hl.tile invocations.
             loop_orders: Permutes iteration order of tiles.
             reduction_loops: Configures reduction loop behavior.
-            scan_loops: Configures scan loop behavior.
             num_warps: Number of warps per block.
             num_stages: Number of stages for software pipelining.
             l2_grouping: Reorders program IDs for L2 cache locality.
@@ -53,7 +50,6 @@ class Config(Mapping[str, object]):
             "block_sizes": block_sizes,
             "loop_orders": loop_orders,
             "reduction_loops": reduction_loops,
-            "scan_loops": scan_loops,
             "num_warps": num_warps,
             "num_stages": num_stages,
             "indexing": indexing,
@@ -63,12 +59,6 @@ class Config(Mapping[str, object]):
         for key, value in core_props.items():
             if value is not None:
                 self.config[key] = value
-
-        # Handle single scan_loop parameter
-        if scan_loop is not None:
-            if "scan_loops" in self.config:
-                raise ValueError("Cannot specify both scan_loop and scan_loops")
-            self.config["scan_loops"] = [scan_loop]
 
         self.config.update(kwargs)
 
@@ -126,10 +116,6 @@ class Config(Mapping[str, object]):
     @property
     def reduction_loops(self) -> list[int | None]:
         return cast("list[int | None]", self.config.get("reduction_loops", []))
-
-    @property
-    def scan_loops(self) -> list[int | None]:
-        return cast("list[int | None]", self.config.get("scan_loops", []))
 
     @property
     def num_warps(self) -> int:

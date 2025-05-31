@@ -33,7 +33,6 @@ VALID_KEYS: frozenset[str] = frozenset(
         "block_sizes",
         "loop_orders",
         "reduction_loops",
-        "scan_loops",
         "num_warps",
         "num_stages",
         "l2_grouping",
@@ -49,7 +48,6 @@ class ConfigSpec:
     reduction_loop_specs: list[ReductionLoopSpec] = dataclasses.field(
         default_factory=list
     )
-    scan_loop_specs: list[ScanLoopSpec] = dataclasses.field(default_factory=list)
 
     def loop_order_specs(self) -> Sequence[PermutationFragment]:
         """Return the specs for the loop orders."""
@@ -65,7 +63,7 @@ class ConfigSpec:
             self.normalize(config.config)
             return
 
-        for name in ("block_size", "loop_order", "reduction_loop", "scan_loop"):
+        for name in ("block_size", "loop_order", "reduction_loop"):
             if name in config:
                 names = f"{name}s"
                 if names in config:
@@ -85,15 +83,6 @@ class ConfigSpec:
         )
         if not config["reduction_loops"]:
             config.pop("reduction_loops")
-        # Only normalize scan_loops if we have scan_loop_specs
-        if self.scan_loop_specs:
-            config["scan_loops"] = self.normalize_scan_loops(
-                config.get("scan_loops", None)
-            )
-            if not config["scan_loops"]:
-                config.pop("scan_loops")
-        # If no scan_loop_specs but scan_loops was provided, preserve it
-        # This allows scan_loops to be used even before scan dimensions are allocated
         config.setdefault("num_warps", DEFAULT_NUM_WARPS)
         config.setdefault("num_stages", DEFAULT_NUM_STAGES)
         # TODO(jansel): include num_ctas and max_nreg
@@ -199,21 +188,6 @@ class ConfigSpec:
             for spec, value in zip(loops, reduction_loops, strict=True)
         ]
 
-    def normalize_scan_loops(self, scan_loops: object) -> list[int | None]:
-        assert isinstance(scan_loops, (list, tuple, type(None), int))
-        loops = [spec for spec in self.scan_loop_specs if spec.allow_loop]
-        if scan_loops is None:
-            scan_loops = [None for _ in loops]
-        elif isinstance(scan_loops, int):
-            scan_loops = [scan_loops]
-        if len(scan_loops) != len(loops):
-            raise InvalidConfig(
-                f"Invalid number of scan loops, expected {len(loops)} got {len(scan_loops)}"
-            )
-        return [
-            spec.normalize(value) for spec, value in zip(loops, scan_loops, strict=True)
-        ]
-
     def default_config(self) -> helion.Config:
         return self.flat_config(lambda x: x.default())
 
@@ -240,13 +214,6 @@ class ConfigSpec:
                 for spec in self.reduction_loop_specs
                 if spec.allow_loop
             ],
-            "scan_loops": [
-                spec.flat_scan_loop(fn)
-                for spec in self.scan_loop_specs
-                if spec.allow_loop
-            ]
-            if self.scan_loop_specs
-            else [],
             "num_warps": fn(NumWarpsFragment(1, 32, DEFAULT_NUM_WARPS)),
             "num_stages": fn(IntegerFragment(1, 8, DEFAULT_NUM_STAGES)),
             "indexing": fn(
@@ -261,8 +228,6 @@ class ConfigSpec:
             config.pop("loop_orders")
         if not config["reduction_loops"]:
             config.pop("reduction_loops")
-        if not config["scan_loops"]:
-            config.pop("scan_loops")
         if self.allow_l2_grouping:
             config["l2_grouping"] = fn(PowerOfTwoFragment(1, 64, 1))
         if self.allow_use_yz_grid:
@@ -376,30 +341,6 @@ class ReductionLoopSpec:
         return value
 
 
-@dataclasses.dataclass
-class ScanLoopSpec:
-    size_hint: int
-    allow_loop: bool
-
-    def normalize(self, value: int | None) -> int | None:
-        if value is None:
-            return None
-        assert_integer_power_of_two(value)
-        if value < 0 or value >= next_power_of_2(self.size_hint):
-            raise InvalidConfig(
-                f"Invalid scan loop value {value!r}, expected 0 to {next_power_of_2(self.size_hint)}"
-            )
-        return value
-
-    def flat_scan_loop(self, fn: Callable[[ConfigSpecFragment], object]) -> object:
-        assert self.allow_loop
-        high = next_power_of_2(self.size_hint)
-        low = min(8, high)  # Ensure low doesn't exceed high
-        default = min(high, 4096)
-        value = fn(BlockSizeFragment(low, high, default))
-        if value == high:
-            return None  # max size becomes persistent scan
-        return value
 
 
 def product(seq: Sequence[int]) -> int:

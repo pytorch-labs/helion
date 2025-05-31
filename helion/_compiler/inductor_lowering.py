@@ -24,7 +24,6 @@ from torch._inductor.ir import FixedLayout
 from torch._inductor.ir import InputBuffer
 from torch._inductor.ir import Pointwise
 from torch._inductor.ir import Reduction
-from torch._inductor.ir import Scan
 from torch._inductor.ir import StorageBox
 from torch._inductor.ir import TensorBox
 from torch._inductor.ops_handler import DefaultHandler
@@ -162,10 +161,10 @@ def prepare_node_lowering(
     new_node: torch.fx.Node
     for i, buffer in enumerate(new_buffers):
         if not isinstance(buffer, ComputedBuffer) or not isinstance(
-            buffer.data, (Pointwise, Reduction, Scan)
+            buffer.data, (Pointwise, Reduction)
         ):
             raise InductorLoweringError(
-                f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer(Pointwise|Reduction|Scan): {buffer}"
+                f"Lowering {node.target} returned buffer type {type(buffer)}, expected ComputedBuffer(Pointwise|Reduction): {buffer}"
             )
         if i == len(new_buffers) - 1:
             new_node = node
@@ -177,8 +176,6 @@ def prepare_node_lowering(
             lowering_cls = PointwiseLowering
         elif isinstance(buffer.data, Reduction):
             lowering_cls = ReductionLowering
-        elif isinstance(buffer.data, Scan):
-            lowering_cls = ScanLowering
         else:
             raise InductorLoweringError(
                 f"Unsupported buffer data type: {type(buffer.data)}"
@@ -470,172 +467,6 @@ class ReductionLowering(InductorLowering):
         )
 
 
-@dataclasses.dataclass
-class ScanLowering(InductorLowering):
-    scan_type: str = dataclasses.field(init=False)
-    
-    def __init__(
-        self,
-        buffer: ComputedBuffer,
-        input_names: list[str],
-    ) -> None:
-        super().__init__(buffer, input_names)
-        scan = self.buffer.data
-        assert isinstance(scan, Scan)
-        scan_ranges = scan.scan_ranges
-        if len(scan_ranges) != 1:
-            # TODO(jansel): can this happen?
-            raise NotImplementedError("multiple scan dimensions")
-        scan_var = scan_ranges[0]
-        assert isinstance(scan_var, sympy.Expr), f"scan_var: {scan_var}"
-
-        # Extract scan type from the scan operation
-        # Check if the scan has an explicit scan_type attribute
-        if hasattr(scan, "scan_type"):
-            self.scan_type = scan.scan_type
-        else:
-            # Try to infer from the origin node name or combine_fn
-            # The origin usually contains the operation name like 'cumsum' or 'cumprod'
-            if hasattr(scan, "origin") and scan.origin:
-                origin_str = str(scan.origin)
-                if "cumsum" in origin_str:
-                    self.scan_type = "sum"
-                elif "cumprod" in origin_str:
-                    self.scan_type = "prod"
-                else:
-                    self.scan_type = "generic"
-            elif hasattr(scan, "combine_fn"):
-                # Try to determine from combine_fn if available
-                combine_fn_str = str(scan.combine_fn)
-                if (
-                    "add" in combine_fn_str
-                    or "sum" in combine_fn_str
-                    or "+" in combine_fn_str
-                ):
-                    self.scan_type = "sum"
-                elif (
-                    "mul" in combine_fn_str
-                    or "prod" in combine_fn_str
-                    or "*" in combine_fn_str
-                ):
-                    self.scan_type = "prod"
-                else:
-                    self.scan_type = "generic"
-            else:
-                # Default to sum if we can't determine
-                self.scan_type = "sum"
-
-    def codegen(self, ctx: GraphInterpreter, node: torch.fx.Node) -> object:
-        scan = self.buffer.data
-        assert isinstance(scan, Scan)
-
-        indices = [sympy.Symbol(f"i{n}") for n in range(len(scan.ranges))]
-        scan_indices = [
-            sympy.Symbol(f"i{n}")
-            for n in range(len(indices), len(indices) + len(scan.scan_ranges))
-        ]
-        assert len(scan_indices) == 1, (
-            f"Only 1D scan is supported, but got {len(scan_indices)}"
-        )
-        with self.install_kernel_handlers(ctx, node):
-            # codegen the pointwise part before scan
-            # For scans, we need to provide the full indices
-            full_indices = indices + scan_indices
-            output_name = _unpack_opsvalue(self.buffer.data.inner_fn(full_indices))
-
-        state = CodegenState(
-            ctx.cg,
-            fx_node=node,
-        )
-
-        # Find the scan dimension by looking at scan ranges
-        scan_var = scan.scan_ranges[0]
-
-        # Allocate a scan dimension if needed
-        env = CompileEnvironment.current()
-
-        # Check if we already have a block size for this scan dimension
-        block_index = None
-        for idx, bs in enumerate(env.block_sizes):
-            if (
-                hasattr(bs.block_size_source, "is_scan")
-                and bs.block_size_source.is_scan
-                and bs.numel == scan_var
-            ):
-                block_index = idx
-                break
-
-        if block_index is None:
-            # Allocate a new scan dimension
-            scan_block_info = env.allocate_scan_dimension(scan_var)
-            block_index = scan_block_info.block_size_idx
-
-            # Add ScanLoopSpec to config_spec so scan_loop config is preserved
-            from helion.autotuner.config_spec import ScanLoopSpec
-
-            # Get size hint - handle sympy expressions
-            if isinstance(scan_block_info.size, sympy.Expr):
-                # For sympy expressions, use a reasonable default hint
-                size_hint = 512
-            else:
-                size_hint = scan_block_info.size_hint()
-
-            env.config_spec.scan_loop_specs.append(
-                ScanLoopSpec(
-                    size_hint=size_hint,
-                    allow_loop=True,  # Allow looped scan strategy
-                )
-            )
-
-        # Create scan strategy
-        from .scan_strategy import create_scan_strategy
-
-        # Check if scan_loops is specified in the config
-        config = state.device_function.config
-        scan_loop = None
-
-        # Check for scan_loops in config
-        if "scan_loops" in config:
-            scan_loops = config.get("scan_loops", [])
-            if scan_loops and scan_loops != [
-                None
-            ]:  # Ignore [None] which is a placeholder
-                # Find the index of this scan dimension among all scan dimensions
-                scan_loop_idx = sum(
-                    1
-                    for bs in env.block_sizes[:block_index]
-                    if getattr(bs.block_size_source, "is_scan", False)
-                )
-                if (
-                    scan_loop_idx < len(scan_loops)
-                    and scan_loops[scan_loop_idx] is not None
-                ):
-                    scan_loop = scan_loops[scan_loop_idx]
-
-        strategy = create_scan_strategy(state.device_function, block_index, scan_loop)
-
-        inputs = self.input_fake_tensors(node)
-        if len(inputs) != 1:
-            # TODO(jansel): combine multiple inputs into a single fake value
-            raise NotImplementedError("scans with >1 input")
-
-        # Find which dimension corresponds to the scan_var
-        input_shape = inputs[0].shape
-        scan_dim = -1
-        for i, shape_dim in enumerate(input_shape):
-            if _unpack_symint(shape_dim) == scan_var:
-                scan_dim = i
-                break
-
-        # This is a persistent scan strategy
-        strategy.codegen_preamble(state)
-        return strategy.codegen_scan(
-            state,
-            output_name,
-            self.scan_type,
-            scan_dim,
-            inputs[0],
-        )
 
 
 @dataclasses.dataclass
@@ -862,9 +693,6 @@ def codegen_expand(ctx: GraphInterpreter, node: torch.fx.Node) -> object:
     )
 
 
-# Note: cumsum and cumprod are handled by PyTorch inductor's GraphLowering
-# which creates Scan IR nodes. These are then processed by ScanLowering class.
-# We don't need explicit registrations here as they go through prepare_node_lowering.
 
 
 def apply_dot_requirements(
