@@ -134,7 +134,6 @@ class CompileEnvironment:
         )
         return self.block_sizes[rdim_idx]
 
-
     def create_block_var(self, debug_name: str, hint: int = 64) -> torch.SymInt:
         with self.shape_env.ignore_fresh_unbacked_symbols():
             sym = self.shape_env.create_unbacked_symint()
@@ -312,15 +311,13 @@ class BlockSizeInfo:
     """
 
     block_size_idx: int
-    size: torch.SymInt | int | AutoSize | sympy.Expr | None
+    size: torch.SymInt | int | AutoSize | None
     var: torch.SymInt
     reduction: bool
     block_size_source: BlockSizeSource
 
     @property
     def numel(self) -> sympy.Expr:
-        if isinstance(self.size, sympy.Expr):
-            return self.size
         assert isinstance(self.size, (int, torch.SymInt))
         return _to_sympy(self.size)
 
@@ -475,8 +472,6 @@ class ReductionLoopBlockSizeSource(BlockSizeSource):
 
     def from_config(self, config: Config) -> int | None:
         return config.reduction_loops[self.reduction_loop]
-
-
 
 
 def warning(warning: exc.BaseWarning | type[exc.BaseWarning]) -> None:

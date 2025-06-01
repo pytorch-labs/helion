@@ -172,14 +172,11 @@ def prepare_node_lowering(
                 new_node.kwargs = {**new_node.kwargs, "_extra_args": [*nodes]}
         else:
             new_node = create_extra_node(node, buffer, [*node._input_nodes, *nodes])
-        if isinstance(buffer.data, Pointwise):
-            lowering_cls = PointwiseLowering
-        elif isinstance(buffer.data, Reduction):
-            lowering_cls = ReductionLowering
-        else:
-            raise InductorLoweringError(
-                f"Unsupported buffer data type: {type(buffer.data)}"
-            )
+        lowering_cls = (
+            PointwiseLowering
+            if isinstance(buffer.data, Pointwise)
+            else ReductionLowering
+        )
         buffer.freeze_layout()
         used_input_names = strip_unused_inputs(
             new_node,
@@ -469,8 +466,6 @@ class ReductionLowering(InductorLowering):
         )
 
 
-
-
 @dataclasses.dataclass
 class APIFuncLowering(Lowering):
     api_func: APIFunc
@@ -693,8 +688,6 @@ def codegen_expand(ctx: GraphInterpreter, node: torch.fx.Node) -> object:
         f"tl.broadcast_to(tensor, {shape_str})",
         tensor=tensor,
     )
-
-
 
 
 def apply_dot_requirements(

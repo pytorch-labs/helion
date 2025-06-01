@@ -341,8 +341,6 @@ class ReductionLoopSpec:
         return value
 
 
-
-
 def product(seq: Sequence[int]) -> int:
     """Return the product of the elements in the sequence."""
     return functools.reduce(operator.mul, seq, 1)

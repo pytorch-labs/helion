@@ -59,7 +59,6 @@ class Config(Mapping[str, object]):
         for key, value in core_props.items():
             if value is not None:
                 self.config[key] = value
-
         self.config.update(kwargs)
 
     def __getitem__(self, key: str) -> object:

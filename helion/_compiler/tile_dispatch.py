@@ -101,7 +101,6 @@ class TileStrategyDispatch:
             self.block_indices_to_strategy[(rdim_index,)] = strategy
         assert not reduction_loops
 
-
     def codegen_grid(self, state: CodegenState, block_indices: list[int]) -> None:
         strategy = self.block_indices_to_strategy[tuple(block_indices)]
         strategy.codegen_grid(state)
@@ -157,7 +156,6 @@ class TileStrategyDispatch:
         strategy = self.block_indices_to_strategy[(block_idx,)]
         assert isinstance(strategy, ReductionStrategy)
         return strategy
-
 
     def user_size(self, block_index: int) -> sympy.Expr:
         """The user-visible size of the block index."""

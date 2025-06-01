@@ -18,7 +18,7 @@ def moe_matmul_ogs(
     expert_token_offsets: torch.Tensor,  # [E + 1]
     sorted_to_orig_token_idx: torch.Tensor,  # [B]
     T_max_tensor: torch.Tensor,  # [T_max]
-):
+) -> torch.Tensor:  # [B, N]
     B, K = A.shape
     E, _, N = W.shape
     T_max = T_max_tensor.numel()
@@ -31,7 +31,6 @@ def moe_matmul_ogs(
     )
 
     row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
-    k_ids = torch.arange(K, device=A.device, dtype=torch.int32)
 
     for e_idx in hl.grid(E):
         start = expert_token_offsets[e_idx]
@@ -57,17 +56,9 @@ def moe_matmul_ogs(
                 ]  # [BLOCK_T]
 
                 acc = hl.zeros([tile_t, tile_n], dtype=torch.float32)
-
                 for tile_k in hl.tile(K):
-                    col_ids = k_ids[tile_k].squeeze(0)
-                    col_valid = col_ids < K  # bool[BLOCK_K]
-
-                    load_mask = row_valid[:, None] & col_valid[None, :]
-
                     A_frag = A[orig_rows, tile_k]
-
                     W_frag = W[e_idx, tile_k, tile_n]  # [BLOCK_K, BLOCK_N]
-
                     acc = torch.addmm(acc, A_frag, W_frag)
 
                 block_T = acc.size(0)
@@ -83,8 +74,9 @@ def moe_matmul_ogs_helion_kernel_args_gen(
     A: torch.Tensor,  # [B, K]
     W: torch.Tensor,  # [E, K, N]
     top1_expert_per_token: torch.Tensor,  # [B]
-) -> torch.Tensor:
-    B = A.size(0)
+) -> tuple[
+    torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+]:
     E = W.size(0)
     device = A.device
 
