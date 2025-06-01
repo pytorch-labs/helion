@@ -1461,7 +1461,7 @@ import triton
 import triton.language as tl
 
 @triton.jit
-def _moe_matmul_ogs_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, k_ids, A, W, C, A_stride_0, A_stride_1, C_stride_0, C_stride_1, W_stride_0, W_stride_1, W_stride_2, expert_token_counts_stride_0, expert_token_offsets_stride_0, k_ids_stride_0, row_ids_stride_0, sorted_to_orig_token_idx_stride_0, T_max, N, K, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+def _moe_matmul_ogs_kernel(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A_stride_0, A_stride_1, C_stride_0, C_stride_1, W_stride_0, W_stride_1, W_stride_2, expert_token_counts_stride_0, expert_token_offsets_stride_0, row_ids_stride_0, sorted_to_orig_token_idx_stride_0, T_max, N, K, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_0 = pid_0
     indices_0 = offset_0 + tl.zeros([1], tl.int32)
@@ -1498,25 +1498,17 @@ def _moe_matmul_ogs_kernel(expert_token_offsets, expert_token_counts, row_ids, s
                 for offset_3 in range(0, K.to(tl.int32), _BLOCK_SIZE_3):
                     indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
                     mask_3 = indices_3 < K
-                    row_valid_copy = row_valid
                     orig_rows_copy = orig_rows
                     acc_copy = acc
-                    load_1 = tl.load(k_ids + indices_3 * k_ids_stride_0, mask_3, other=0)
-                    col_ids = tl.reshape(load_1, [_BLOCK_SIZE_3])
-                    v_9 = K.to(tl.int32)
-                    v_10 = col_ids < v_9
-                    subscript = row_valid_copy[:, None]
-                    subscript_1 = v_10[None, :]
-                    v_11 = subscript & subscript_1
                     A_frag = tl.load(A + (orig_rows_copy[:, None] * A_stride_0 + indices_3[None, :] * A_stride_1), mask_1[:, None] & mask_3[None, :], other=0)
                     W_frag = tl.load(W + (indices_0[:, None] * W_stride_0 + indices_3[:, None] * W_stride_1 + indices_2[None, :] * W_stride_2), mask_3[:, None] & mask_2[None, :], other=0)
                     acc = tl.dot(A_frag, W_frag, acc=acc_copy, input_precision='tf32')
                 existing = tl.load(C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1), mask_1[:, None] & mask_2[None, :], other=0)
                 view = tl.reshape(row_valid, [_BLOCK_SIZE_1, 1])
                 mask_2d = tl.broadcast_to(view, [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
-                v_12 = acc.to(tl.float16)
-                v_13 = tl.where(mask_2d, v_12, existing)
-                tl.store(C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1), v_13, mask_1[:, None] & mask_2[None, :])
+                v_9 = acc.to(tl.float16)
+                v_10 = tl.where(mask_2d, v_9, existing)
+                tl.store(C + (orig_rows[:, None] * C_stride_0 + indices_2[None, :] * C_stride_1), v_10, mask_1[:, None] & mask_2[None, :])
 
 def moe_matmul_ogs(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max_tensor: torch.Tensor):
     B, K = A.shape
@@ -1524,11 +1516,10 @@ def moe_matmul_ogs(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.
     T_max = T_max_tensor.numel()
     C = torch.zeros(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
     row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
-    k_ids = torch.arange(K, device=A.device, dtype=torch.int32)
     _BLOCK_SIZE_2 = 16
     _BLOCK_SIZE_1 = 16
     _BLOCK_SIZE_3 = 16
-    _moe_matmul_ogs_kernel[E,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, k_ids, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), k_ids.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), T_max, N, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    _moe_matmul_ogs_kernel[E,](expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), T_max, N, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
     return C
 
 def _moe_matmul_ogs_make_precompiler(A: torch.Tensor, W: torch.Tensor, expert_token_counts: torch.Tensor, expert_token_offsets: torch.Tensor, sorted_to_orig_token_idx: torch.Tensor, T_max_tensor: torch.Tensor):
@@ -1537,12 +1528,11 @@ def _moe_matmul_ogs_make_precompiler(A: torch.Tensor, W: torch.Tensor, expert_to
     T_max = T_max_tensor.numel()
     C = torch.zeros(B, N, dtype=torch.promote_types(A.dtype, W.dtype), device=A.device)
     row_ids = torch.arange(T_max, device=A.device, dtype=torch.int32)
-    k_ids = torch.arange(K, device=A.device, dtype=torch.int32)
     _BLOCK_SIZE_2 = 16
     _BLOCK_SIZE_1 = 16
     _BLOCK_SIZE_3 = 16
     from helion.runtime.precompile_shim import make_precompiler
-    return make_precompiler(_moe_matmul_ogs_kernel)(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, k_ids, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), k_ids.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), T_max, N, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)""",
+    return make_precompiler(_moe_matmul_ogs_kernel)(expert_token_offsets, expert_token_counts, row_ids, sorted_to_orig_token_idx, A, W, C, A.stride(0), A.stride(1), C.stride(0), C.stride(1), W.stride(0), W.stride(1), W.stride(2), expert_token_counts.stride(0), expert_token_offsets.stride(0), row_ids.stride(0), sorted_to_orig_token_idx.stride(0), T_max, N, K, _BLOCK_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)""",
         )
 
 
