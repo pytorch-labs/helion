@@ -67,6 +67,7 @@ def longsum_manual(x: torch.Tensor) -> torch.Tensor:
         acc = hl.zeros([tile_m, block_size_n], dtype=x.dtype)
         for tile_n in hl.tile(n, block_size=block_size_n):  # Reduction loop
             acc += x[tile_m, tile_n]
+            print("acc: ", acc)
         out[tile_m] = acc.sum(-1)
     return out
 
