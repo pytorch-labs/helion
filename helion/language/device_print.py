@@ -35,7 +35,6 @@ def _(prefix: str, *values: object) -> None:
 @_decorators.codegen(device_print)
 def _(state) -> None:
     import ast
-    import os
 
     from .._compiler.ast_extension import create
     from .._compiler.ast_extension import expr_from_string
@@ -82,25 +81,11 @@ def _(state) -> None:
                     if isinstance(ast_node, ast.AST):
                         call_args.append(ast_node)
 
-    # Check if TRITON_INTERPRET is enabled
-    if os.environ.get("TRITON_INTERPRET") == "1":
-        # Use regular Python print() when in interpreter mode
-        call_expr = create(
-            ast.Call,
-            func=create(ast.Name, id="print", ctx=create(ast.Load)),
-            args=call_args,
-            keywords=[],
-        )
-    else:
-        # Use tl.device_print for normal execution
-        call_expr = create(
-            ast.Call,
-            func=expr_from_string("tl.device_print"),
-            args=call_args,
-            keywords=[],
-        )
-
-    # Create expression statement
+    call_expr = create(
+        ast.Call,
+        func=expr_from_string("tl.device_print"),
+        args=call_args,
+        keywords=[],
+    )
     stmt = create(ast.Expr, value=call_expr)
-
     state.add_statement(stmt)
