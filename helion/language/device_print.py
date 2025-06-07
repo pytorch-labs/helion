@@ -2,23 +2,27 @@
 
 from __future__ import annotations
 
+import ast
 from typing import TYPE_CHECKING
 
 from torch.fx import has_side_effect
 
 from .. import exc
+from .._compiler.ast_extension import create
+from .._compiler.ast_extension import expr_from_string
 from . import _decorators
 
 if TYPE_CHECKING:
     import torch
+
+    from .._compiler.inductor_lowering import CodegenState
 
 
 @has_side_effect
 @_decorators.api()
 def device_print(prefix: str, *values: torch.Tensor) -> None:
     """
-    Print values from device code. This is a wrapper around triton's device_print
-    that handles tensor values properly.
+    Print values from device code.
 
     :param prefix: A string prefix for the print statement
     :param values: Tensor values to print
@@ -28,38 +32,22 @@ def device_print(prefix: str, *values: torch.Tensor) -> None:
 
 @_decorators.register_fake(device_print)
 def _(prefix: str, *values: object) -> None:
-    # Fake implementation - just return None since print has no return value
     return None
 
 
 @_decorators.codegen(device_print)
-def _(state) -> None:
-    import ast
-
-    from .._compiler.ast_extension import create
-    from .._compiler.ast_extension import expr_from_string
-    from .._compiler.inductor_lowering import CodegenState
-
-    # State contains the codegen context and the FX node
-    assert isinstance(state, CodegenState)
-
-    # Get arguments
+def _(state: CodegenState) -> None:
     if len(state.proxy_args) < 1:
         raise ValueError("device_print requires at least a prefix argument")
 
-    # First argument is the prefix string
     prefix = state.proxy_arg(0)
     if not isinstance(prefix, str):
         raise TypeError(f"device_print prefix must be a string, got {type(prefix)}")
 
-    # Build the arguments for the print call
     call_args = [create(ast.Constant, value=prefix)]
 
     # Handle varargs - they come as a tuple in the second argument due to *args
     if len(state.proxy_args) > 1:
-        # The varargs are passed as a single tuple argument in FX
-        # varargs_tuple = state.proxy_args[1]
-
         # The corresponding AST nodes should be in ast_args[1]
         if len(state.ast_args) > 1:
             ast_varargs = state.ast_args[1]

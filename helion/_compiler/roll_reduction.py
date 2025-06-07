@@ -97,9 +97,6 @@ class ReductionRoller:
             assert isinstance(stored_node, torch.fx.Node)
             val = stored_node.meta["val"]
         else:
-            assert "val" in node.meta, (
-                f"node: {node}, node.target: {node.target}, node.op: {node.op}, node.args: {node.args}, node.kwargs: {node.kwargs}"
-            )
             val = node.meta["val"]
 
         num_rdims = 0

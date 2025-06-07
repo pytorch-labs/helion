@@ -13,6 +13,19 @@ from helion._testing import DEVICE
 from helion._testing import code_and_output
 import helion.language as hl
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _disable_capture_for_this_file(capsys):
+    """
+    Disable output-capturing for the duration of **each** test in *this* file.
+
+    `capsys.disabled()` is the same mechanism pytest itself uses when you
+    give the -s / --capture=no flag.
+    """
+    with capsys.disabled():
+        yield
 
 class TestPrint(TestCase):
     maxDiff = 16384
@@ -62,7 +75,7 @@ class TestPrint(TestCase):
 
         return code, result, output_str
 
-    def run_test_with_and_without_interpret(self, test_func):
+    def run_test_with_and_without_triton_interpret_envvar(self, test_func):
         """Helper to run a test function with and without TRITON_INTERPRET=1"""
         original_env = os.environ.get("TRITON_INTERPRET")
 
@@ -109,21 +122,15 @@ class TestPrint(TestCase):
             self.assertIn("tl.device_print('tensor value:'", code)
 
             output_lines = [line for line in output.strip().split("\n") if line]
-
-            # We should always have output in both modes
             self.assertGreater(
                 len(output_lines), 0, "Expected print output to be captured"
             )
-
-            # Check that each line contains our prefix and value
             for line in output_lines:
                 self.assertIn("tensor value:", line)
-                # Check for the value (might be formatted as 42.0 or 42.000000)
                 self.assertIn("42", line)
-                # Device print typically includes pid and idx info
                 self.assertTrue("pid" in line and "idx" in line)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_multiple_tensors(self):
         """Test print with multiple tensor arguments"""
@@ -154,20 +161,16 @@ class TestPrint(TestCase):
             self.assertIn("tl.device_print('x and y:'", code)
 
             output_lines = [line for line in output.strip().split("\n") if line]
-
-            # We should always have output in both modes
             self.assertGreater(
                 len(output_lines), 0, "Expected print output to be captured"
             )
-
-            # Check that each line contains our prefix
-            # Note: tl.device_print prints each operand on a separate line
+            # NOTE: tl.device_print prints each operand on a separate line
             for line in output_lines:
                 self.assertIn("x and y:", line)
                 # Each line will have either operand 0 (value 10) or operand 1 (value 20)
                 self.assertTrue("10" in line or "20" in line)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_no_prefix_error(self):
         """Test that print without arguments raises an error"""
@@ -189,7 +192,7 @@ class TestPrint(TestCase):
             ):
                 code_and_output(print_no_args_kernel, (x,))
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_non_string_prefix_error(self):
         """Test that print with non-string prefix raises an error"""
@@ -211,7 +214,7 @@ class TestPrint(TestCase):
             ):
                 code_and_output(print_bad_prefix_kernel, (x,))
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_compile_time_value_error(self):
         """Test that printing compile-time values raises an error"""
@@ -233,18 +236,16 @@ class TestPrint(TestCase):
             ):
                 code_and_output(print_shape_kernel, (x,))
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_prefix_only(self):
-        """Test print with only string prefix - this is allowed and will print just the message"""
-
         def run_test(interpret_mode):
             @helion.kernel
             def print_message_kernel(x: torch.Tensor) -> torch.Tensor:
                 out = torch.empty_like(x)
                 m, n = x.shape
                 for tile_m, tile_n in hl.tile([m, n]):
-                    print("processing tile")  # This is allowed
+                    print("processing tile")
                     out[tile_m, tile_n] = x[tile_m, tile_n] * 2
                 return out
 
@@ -261,21 +262,15 @@ class TestPrint(TestCase):
             self.assertIn("tl.device_print('processing tile'", code)
 
             output_lines = [line for line in output.strip().split("\n") if line]
-
-            # We should always have output in both modes
             self.assertGreater(
                 len(output_lines), 0, "Expected print output to be captured"
             )
-
-            # Check that each line contains our message
             for line in output_lines:
                 self.assertIn("processing tile", line)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_in_nested_loops(self):
-        """Test print statements in nested tile loops (like in matmul)"""
-
         def run_test(interpret_mode):
             @helion.kernel
             def print_nested_kernel(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -291,7 +286,6 @@ class TestPrint(TestCase):
                         y_val = y[tile_k, tile_n]
                         print("inner loop x:", x_val)
                         print("inner loop y:", y_val)
-                        # Use torch.addmm like in the matmul example
                         acc = torch.addmm(acc, x_val, y_val)
                     print("accumulator:", acc)
                     out[tile_m, tile_n] = acc
@@ -324,10 +318,10 @@ class TestPrint(TestCase):
             self.assertTrue("inner loop y:" in output_str)
             self.assertTrue("accumulator:" in output_str)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_outside_tile_loops(self):
-        """Test print statements before and after tile loops"""
+        """Test print statements outside tile loops"""
 
         def run_test(interpret_mode):
             @helion.kernel
@@ -352,10 +346,10 @@ class TestPrint(TestCase):
 
             self.assertIn("print('starting kernel')", code)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_with_conditional(self):
-        """Test print inside conditional statements"""
+        """Test print with conditional statements"""
 
         def run_test(interpret_mode):
             @helion.kernel
@@ -389,7 +383,7 @@ class TestPrint(TestCase):
                 len(output_lines), 0, "Expected print output to be captured"
             )
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_computed_values(self):
         """Test print with computed/derived values"""
@@ -435,11 +429,11 @@ class TestPrint(TestCase):
             # For x=8, y=4: sum=12, product=32, ratio=2
             self.assertTrue("8" in output_str or "12" in output_str)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
-    @unittest.skip("TODO(yf225): make printing reduction result work")
+    @unittest.skip("TODO(yf225): make printing reduction output work")
     def test_print_reduction(self):
-        """Test print in reduction context - simple case"""
+        """Test print reduction output"""
 
         def run_test(interpret_mode):
             @helion.kernel
@@ -480,7 +474,7 @@ class TestPrint(TestCase):
             self.assertTrue("6" in output_str)
             self.assertTrue("15" in output_str)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
     def test_print_multiple_data_types(self):
         """Test print with different tensor data types"""
@@ -501,7 +495,9 @@ class TestPrint(TestCase):
                     out[tile_m, tile_n] = f_val + i_val.to(x_float.dtype)
                 return out
 
-            x_float = torch.tensor([[math.pi, math.e]], device=DEVICE, dtype=torch.float32)
+            x_float = torch.tensor(
+                [[math.pi, math.e]], device=DEVICE, dtype=torch.float32
+            )
             x_int = torch.tensor([[42, 100]], device=DEVICE, dtype=torch.int32)
 
             # Run kernel and capture output
@@ -524,7 +520,7 @@ class TestPrint(TestCase):
             self.assertTrue("3.14" in output_str or "2.71" in output_str)
             self.assertTrue("42" in output_str or "100" in output_str)
 
-        self.run_test_with_and_without_interpret(run_test)
+        self.run_test_with_and_without_triton_interpret_envvar(run_test)
 
 
 if __name__ == "__main__":

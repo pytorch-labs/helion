@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import builtins
 from collections.abc import Callable
 import contextlib
 import dataclasses
@@ -746,10 +747,7 @@ class WalkDeviceAST(NodeVisitor):
         return hl.subscript(self.visit(value), self._subscript_slice_proxy(node.slice))
 
     def visit_Call(self, node: ast.Call) -> object:
-        # Special handling for builtin print function
-        import builtins
-
-        # Check if this is a print call before visiting
+        # Handle Python builtin print call
         if (
             isinstance(node.func, ast.Name)
             and node.func.id == "print"
@@ -757,7 +755,7 @@ class WalkDeviceAST(NodeVisitor):
             and isinstance(type_info := node.func._type_info, CallableType)
             and type_info.value is builtins.print
         ):
-            # Convert print to device_print
+            # Convert print to hl.device_print
             args = []
             for arg in node.args:
                 if isinstance(arg, ast.Starred):
