@@ -489,4 +489,14 @@ class TestPrint(TestCase):
 
 
 if __name__ == "__main__":
+    import os, sys
+    if "PYTEST_CURRENT_TEST" not in os.environ:
+        sys.stderr.write(
+            "\n"
+            "✘  This test suite is meant to be run with **pytest**.\n"
+            "   Instead of  `python {file}`\n"
+            "   use         `pytest {file}`.\n"
+            "\n".format(file=os.path.basename(__file__))
+        )
+        sys.exit(1)
     unittest.main()
