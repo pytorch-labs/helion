@@ -27,6 +27,7 @@ def _store_capfd_on_class(request, capfd):
 class TestPrint(TestCase):
     maxDiff = 16384
 
+    # TODO: enable this version only when under `pytest ...`
     def run_kernel_and_capture_output(self, kernel_fn, args):
         # (re)compile the kernel and run it
         kernel_fn.reset()
@@ -39,6 +40,52 @@ class TestPrint(TestCase):
         # grab what pytest captured:  stdout + stderr
         out, err = self._capfd.readouterr()
         return code, result, out + err
+
+    # TODO: enable this version only when under `python ...`
+    def run_kernel_and_capture_output(self, kernel_fn, args):
+        """Helper to run kernel and capture output"""
+        import sys
+        import tempfile
+
+        # Reset kernel to ensure compilation happens
+        kernel_fn.reset()
+
+        # Create a temporary file to capture output
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        # Save original stdout file descriptor
+        stdout_fd = sys.stdout.fileno()
+        stdout_copy = os.dup(stdout_fd)
+
+        try:
+            # Open temp file and redirect stdout to it at the file descriptor level
+            with open(temp_filename, "w+") as f:
+                os.dup2(f.fileno(), stdout_fd)
+                sys.stdout.flush()
+
+                # Get the generated code and result
+                code, result = code_and_output(kernel_fn, args)
+
+                # Force GPU synchronization to ensure all device prints complete
+                if hasattr(result, "device") and result.device.type == "cuda":
+                    torch.cuda.synchronize()
+
+                # Ensure all output is flushed
+                sys.stdout.flush()
+
+            # Read captured output
+            with open(temp_filename) as f:
+                output_str = f.read()
+
+        finally:
+            # Restore original stdout
+            os.dup2(stdout_copy, stdout_fd)
+            os.close(stdout_copy)
+            # Clean up temp file
+            os.unlink(temp_filename)
+
+        return code, result, output_str
 
     def run_test_with_and_without_triton_interpret_envvar(self, test_func):
         """Helper to run a test function with and without TRITON_INTERPRET=1"""
@@ -489,14 +536,4 @@ class TestPrint(TestCase):
 
 
 if __name__ == "__main__":
-    import os, sys
-    if "PYTEST_CURRENT_TEST" not in os.environ:
-        sys.stderr.write(
-            "\n"
-            "✘  This test suite is meant to be run with **pytest**.\n"
-            "   Instead of  `python {file}`\n"
-            "   use         `pytest {file}`.\n"
-            "\n".format(file=os.path.basename(__file__))
-        )
-        sys.exit(1)
     unittest.main()
