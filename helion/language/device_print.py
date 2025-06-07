@@ -47,6 +47,7 @@ def _(state: CodegenState) -> None:
     call_args = [create(ast.Constant, value=prefix)]
 
     # Handle varargs - they come as a tuple in the second argument due to *args
+    # TODO NOW: make this look nicer and cleaner
     if len(state.proxy_args) > 1:
         # The corresponding AST nodes should be in ast_args[1]
         if len(state.ast_args) > 1:
