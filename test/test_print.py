@@ -13,67 +13,32 @@ from helion._testing import DEVICE
 from helion._testing import code_and_output
 import helion.language as hl
 
-import pytest
-
 
 @pytest.fixture(autouse=True)
-def _disable_capture_for_this_file(capsys):
+def _store_capfd_on_class(request, capfd):
     """
-    Disable output-capturing for the duration of **each** test in *this* file.
+    Expose pytest's capfd fixture as `self._capfd` inside the TestPrint class
+    (works for unittest.TestCase-style tests).
+    """
+    if request.cls is not None:
+        request.cls._capfd = capfd
 
-    `capsys.disabled()` is the same mechanism pytest itself uses when you
-    give the -s / --capture=no flag.
-    """
-    with capsys.disabled():
-        yield
 
 class TestPrint(TestCase):
     maxDiff = 16384
 
     def run_kernel_and_capture_output(self, kernel_fn, args):
-        """Helper to run kernel and capture output"""
-        import sys
-        import tempfile
-
-        # Reset kernel to ensure compilation happens
+        # (re)compile the kernel and run it
         kernel_fn.reset()
+        code, result = code_and_output(kernel_fn, args)
 
-        # Create a temporary file to capture output
-        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
-            temp_filename = temp_file.name
+        # wait for any device prints to reach the host
+        if hasattr(result, "device") and result.device.type == "cuda":
+            torch.cuda.synchronize()
 
-        # Save original stdout file descriptor
-        stdout_fd = sys.stdout.fileno()
-        stdout_copy = os.dup(stdout_fd)
-
-        try:
-            # Open temp file and redirect stdout to it at the file descriptor level
-            with open(temp_filename, "w+") as f:
-                os.dup2(f.fileno(), stdout_fd)
-                sys.stdout.flush()
-
-                # Get the generated code and result
-                code, result = code_and_output(kernel_fn, args)
-
-                # Force GPU synchronization to ensure all device prints complete
-                if hasattr(result, "device") and result.device.type == "cuda":
-                    torch.cuda.synchronize()
-
-                # Ensure all output is flushed
-                sys.stdout.flush()
-
-            # Read captured output
-            with open(temp_filename) as f:
-                output_str = f.read()
-
-        finally:
-            # Restore original stdout
-            os.dup2(stdout_copy, stdout_fd)
-            os.close(stdout_copy)
-            # Clean up temp file
-            os.unlink(temp_filename)
-
-        return code, result, output_str
+        # grab what pytest captured:  stdout + stderr
+        out, err = self._capfd.readouterr()
+        return code, result, out + err
 
     def run_test_with_and_without_triton_interpret_envvar(self, test_func):
         """Helper to run a test function with and without TRITON_INTERPRET=1"""
