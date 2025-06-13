@@ -39,3 +39,27 @@ jobs:
         ./.github/scripts/install_triton.sh
         pip install -r requirements.txt
         python -m unittest discover -s test/ -p "*.py" -v -t .
+
+  test_cpu_triton:
+    name: test-cpu-py${{ matrix.python-version }}-triton-cpu
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.12"]
+        include:
+          - name: CPU
+            runs-on: linux.2xlarge
+            torch-spec: 'torch'
+    uses: pytorch/test-infra/.github/workflows/linux_job_v2.yml@main
+    with:
+      timeout: 60
+      runner: ${{ matrix.runs-on }}
+      submodules: recursive
+      script: |
+        conda create -n venv python=${{ matrix.python-version }} -y
+        conda activate venv
+        python -m pip install --upgrade pip
+        pip install ${{ matrix.torch-spec }}
+        ./.github/scripts/install_triton.sh --cpu
+        pip install -r requirements.txt
+        TRITON_CPU_BACKEND=1 python -m unittest discover -s test/ -p "*.py" -v -t .

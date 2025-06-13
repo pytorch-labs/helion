@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 from typing import TYPE_CHECKING
 
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from .runtime.kernel import Kernel
 
 
-DEVICE = torch.device("cuda")
+DEVICE = torch.device("cuda" if os.environ.get("TRITON_CPU_BACKEND") != "1" else "cpu")
 
 
 def import_path(filename: Path) -> types.ModuleType:
