@@ -11,6 +11,7 @@ from .loops import tile as tile
 from .memory_ops import atomic_add as atomic_add
 from .memory_ops import load as load
 from .memory_ops import store as store
+from .signal_wait import wait as wait
 from .tile_ops import tile_begin as tile_begin
 from .tile_ops import tile_block_size as tile_block_size
 from .tile_ops import tile_end as tile_end
