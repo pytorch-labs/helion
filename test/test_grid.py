@@ -787,34 +787,55 @@ import triton
 import triton.language as tl
 
 @triton.jit
-def _range_step_kernel_kernel(out, x, out_stride_0, x_stride_0, batch, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr):
+def _range_step_kernel_kernel(out, x, out_stride_0, x_stride_0, batch, _BLOCK_SIZE_0: tl.constexpr):
     pid_0 = tl.program_id(0)
     offset_0 = pid_0 * _BLOCK_SIZE_0
     indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
     mask_0 = indices_0 < batch
-    for offset_1 in range(1, 10, _BLOCK_SIZE_1):
-        load = tl.load(out + indices_0 * out_stride_0, mask_0, other=0)
-        load_1 = tl.load(x + indices_0 * x_stride_0, mask_0, other=0)
-        v_0 = offset_1.to(tl.float32)
-        v_1 = load_1 / v_0
-        v_2 = load + v_1
-        tl.store(out + indices_0 * out_stride_0, v_2, mask_0)
+    load = tl.load(out + indices_0 * out_stride_0, mask_0, other=0)
+    load_1 = tl.load(x + indices_0 * x_stride_0, mask_0, other=0)
+    v_0 = 1.0
+    v_1 = load_1 * v_0
+    v_2 = load + v_1
+    tl.store(out + indices_0 * out_stride_0, v_2, mask_0)
+    load_2 = tl.load(out + indices_0 * out_stride_0, mask_0, other=0)
+    load_3 = tl.load(x + indices_0 * x_stride_0, mask_0, other=0)
+    v_3 = 0.3333333333333333
+    v_4 = load_3 * v_3
+    v_5 = load_2 + v_4
+    tl.store(out + indices_0 * out_stride_0, v_5, mask_0)
+    load_4 = tl.load(out + indices_0 * out_stride_0, mask_0, other=0)
+    load_5 = tl.load(x + indices_0 * x_stride_0, mask_0, other=0)
+    v_6 = 0.2
+    v_7 = load_5 * v_6
+    v_8 = load_4 + v_7
+    tl.store(out + indices_0 * out_stride_0, v_8, mask_0)
+    load_6 = tl.load(out + indices_0 * out_stride_0, mask_0, other=0)
+    load_7 = tl.load(x + indices_0 * x_stride_0, mask_0, other=0)
+    v_9 = 0.14285714285714285
+    v_10 = load_7 * v_9
+    v_11 = load_6 + v_10
+    tl.store(out + indices_0 * out_stride_0, v_11, mask_0)
+    load_8 = tl.load(out + indices_0 * out_stride_0, mask_0, other=0)
+    load_9 = tl.load(x + indices_0 * x_stride_0, mask_0, other=0)
+    v_12 = 0.1111111111111111
+    v_13 = load_9 * v_12
+    v_14 = load_8 + v_13
+    tl.store(out + indices_0 * out_stride_0, v_14, mask_0)
 
 def range_step_kernel(x: torch.Tensor):
     batch = x.size(0)
     out = x.new_zeros(batch)
     _BLOCK_SIZE_0 = 8
-    _BLOCK_SIZE_1 = 2
-    _range_step_kernel_kernel[triton.cdiv(batch, _BLOCK_SIZE_0),](out, x, out.stride(0), x.stride(0), batch, _BLOCK_SIZE_0, _BLOCK_SIZE_1, num_warps=4, num_stages=3)
+    _range_step_kernel_kernel[triton.cdiv(batch, _BLOCK_SIZE_0),](out, x, out.stride(0), x.stride(0), batch, _BLOCK_SIZE_0, num_warps=4, num_stages=3)
     return out
 
 def _range_step_kernel_make_precompiler(x: torch.Tensor):
     batch = x.size(0)
     out = x.new_zeros(batch)
     _BLOCK_SIZE_0 = 8
-    _BLOCK_SIZE_1 = 2
     from helion.runtime.precompile_shim import make_precompiler
-    return make_precompiler(_range_step_kernel_kernel)(out, x, out.stride(0), x.stride(0), batch, _BLOCK_SIZE_0, _BLOCK_SIZE_1, num_warps=4, num_stages=3)""",
+    return make_precompiler(_range_step_kernel_kernel)(out, x, out.stride(0), x.stride(0), batch, _BLOCK_SIZE_0, num_warps=4, num_stages=3)""",
         )
 
     def test_range_with_tensor_size(self):
