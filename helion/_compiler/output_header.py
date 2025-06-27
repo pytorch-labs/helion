@@ -23,6 +23,7 @@ library_imports: dict[str, str] = {
     "triton_helpers": "from torch._inductor.runtime import triton_helpers",
     "tl_math": "from torch._inductor.runtime.triton_helpers import math as tl_math",
     "libdevice": "from torch._inductor.runtime.triton_compat import libdevice",
+    "hl_ext": "from helion import _triton_ext as hl_ext",
 }
 
 if supports_tensor_descriptor():
