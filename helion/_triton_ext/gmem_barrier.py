@@ -4,6 +4,51 @@ from __future__ import annotations
 import triton
 import triton.language as tl
 
+__all__ = ["_triton_send_signal", "_triton_wait_multiple_signal", "_triton_wait_signal"]
+
+
+@triton.jit
+def _triton_send_signal(
+    addr,  # can be a scalar or a vector of pointers.
+    update: tl.constexpr,
+    sem: tl.constexpr,
+    scope: tl.constexpr,
+    op: tl.constexpr,
+    skip_sync: tl.constexpr,
+) -> None:
+    """
+    Send a signal to a global memory barrier.
+
+    This function implements a spin-wait loop that continuously checks a memory location
+    until it reaches the expected value, providing synchronization across GPU threads.
+
+    Args:
+        addr: Memory address of the barrier to wait on (Must be a scalar)
+        expect: Expected value to wait for
+        update: Update
+    """
+    if not skip_sync:
+        tl.inline_asm_elementwise(
+            "bar.sync 0;", "=r", [], dtype=tl.int32, is_pure=False, pack=1
+        )
+
+    tl.static_assert(
+        sem == "release" or sem == "relaxed",
+        "Invalid memory semantic. options: 'release', 'relaxed'. ",
+    )
+    tl.static_assert(
+        scope == "gpu" or scope == "sys", "Invalid scope. options: 'gpu','sys'. "
+    )
+
+    if op == "atomic_xchg":
+        tl.atomic_xchg(addr, update, sem=sem, scope=scope)
+    elif op == "atomic_add":
+        tl.atomic_add(addr, update, sem=sem, scope=scope)
+    else:
+        raise NotImplementedError(
+            f"Unsupported op '{op}' for send signal on gmem barrier. "
+        )
+
 
 @triton.jit
 def _triton_wait_signal(

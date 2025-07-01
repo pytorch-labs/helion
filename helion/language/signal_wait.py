@@ -6,12 +6,16 @@ import torch
 from torch.fx import has_side_effect
 
 from .. import exc
+from .._compiler.indexing_strategy import SubscriptIndexing
 from . import _decorators
 
 if TYPE_CHECKING:
     import ast
 
     from .._compiler.inductor_lowering import CodegenState
+    from helion._compiler.type_propagation import SymIntType
+
+__all__ = ["signal", "wait"]
 
 
 @has_side_effect
@@ -194,4 +198,101 @@ def _(state: CodegenState) -> ast.AST:
         offset=indices.index_expr,
         signal=signal_expr,
         update=update_expr,
+    )
+
+
+@has_side_effect
+@_decorators.api(tiles_as_sizes=True)
+def signal(
+    signal_pad: torch.Tensor,
+    index: list[object],
+    signal: int = 1,
+    op: str = "atomic_xchg",
+    sem: str = "release",
+    scope: str = "gpu",
+    skip_sync: bool = False,
+) -> torch.Tensor | SymIntType:
+    raise exc.NotInsideKernel
+
+
+@_decorators.prepare_args(signal)
+def _(
+    signal_pad: torch.Tensor,
+    index: list[object],
+    signal: int = 1,
+    op: str = "atomic_xchg",
+    sem: str = "release",
+    scope: str = "gpu",
+    skip_sync: bool = False,
+) -> tuple[torch.Tensor, object, int, str, str, str, bool]:
+    from helion.language.tile_proxy import Tile
+
+    valid_ops = {"atomic_add", "atomic_xchg"}
+    valid_sems = {"relaxed", "release", "acq_rel"}
+    valid_scopes = {"sys", "gpu"}
+
+    if op not in valid_ops:
+        raise ValueError(f"Invalid signal op '{op}'. Must be one of {valid_ops}. ")
+
+    if sem not in valid_sems:
+        raise ValueError(
+            f"Invalid memory semantic '{sem}'. Must be one of {valid_sems}."
+        )
+
+    if scope not in valid_scopes:
+        raise ValueError(f"Invalid scope '{scope}'. Must be one of {valid_scopes}.")
+
+    index = Tile._prepare_index(index)
+    index = Tile._tiles_to_sizes(index)
+
+    return (signal_pad, index, signal, op, sem, scope, skip_sync)
+
+
+@_decorators.register_fake(signal)
+def _(
+    signal_pad: torch.Tensor,
+    index: list[object],
+    signal: int = 1,
+    op: str = "atomic_xchg",
+    sem: str = "release",
+    scope: str = "gpu",
+    skip_sync: bool = False,
+) -> torch.Tensor:
+    return signal_pad.new_empty(SubscriptIndexing.compute_shape(signal_pad, index))
+
+
+@_decorators.codegen(signal)
+def _(state: CodegenState) -> ast.AST:
+    import ast
+
+    from .._compiler.ast_extension import expr_from_string
+    from .._compiler.indexing_strategy import SubscriptIndexing
+
+    signal_pad = state.proxy_arg(0)
+    index = state.proxy_arg(1)
+    signal = state.proxy_arg(2)
+    op = state.proxy_arg(3)
+    sem = state.proxy_arg(4)
+    scope = state.proxy_arg(5)
+    skip_sync = state.proxy_arg(6)
+
+    assert isinstance(signal_pad, torch.Tensor)
+    assert isinstance(index, list)
+
+    indices = SubscriptIndexing.create(state, signal_pad, index)
+    signal_pad_name = state.device_function.tensor_arg(signal_pad).name
+
+    signal_expr = ast.Constant(value=signal)
+    assert type(op) is str
+    assert type(sem) is str
+    assert type(scope) is str
+
+    hl_ext_call_triton_send_signal = f"hl_ext._triton_send_signal(addr={signal_pad_name} + offset, update=signal, sem='{sem}', scope='{scope}', op='{op}', skip_sync={skip_sync})"
+
+    # lock_spin_ptx = get_lock_spin_ptx(signal_pad_name, op, sem, scope)
+
+    return expr_from_string(
+        hl_ext_call_triton_send_signal,
+        offset=indices.index_expr,
+        signal=signal_expr,
     )
