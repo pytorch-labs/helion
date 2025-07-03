@@ -209,6 +209,10 @@ Contains one entry per loop dimension, controlling the `flatten`
 parameter for `tl.range()` calls. `True` sets `flatten=True`,
 `False` sets `flatten=False`, and `None` omits the parameter.
 
+* **static\_ranges** (`list[bool]`):
+Contains one entry per loop dimension, controlling whether to use
+`tl.static_range()` calls. `True` uses `tl.static_range()`, `False` uses `tl.range()`.
+
 * **range\_warp\_specializes** (`list[bool | None]`):
 Contains one entry per loop dimension, controlling the `warp_specialize`
 parameter for `tl.range()` calls. `True` sets `warp_specialize=True`,
