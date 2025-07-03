@@ -110,6 +110,10 @@ class BlockIdSequence(MutableSequence[_BlockIdItemT]):
         """Return the index of the block_id in the config."""
         return self._data[self._block_id_to_index[block_id]]
 
+    def valid_block_ids(self) -> list[int]:
+        """Return the list of valid block_ids."""
+        return list(self._block_id_to_index.keys())
+
     def disable_block_id(self, block_id: int) -> None:
         """Remove configuration choice for the given block_id."""
         self._data = [x for x in self._data if block_id not in x.block_ids]

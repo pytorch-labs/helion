@@ -111,6 +111,15 @@ class TileStrategy:
         assert fn is not None
         return fn
 
+    def get_range_fn_name(self, state: CodegenState, block_idx: int) -> str:
+        env = CompileEnvironment.current()
+        range_static = env.config_spec.static_ranges.config_get(
+            state.config.static_ranges, block_idx, None
+        )
+        if range_static is True:
+            return "tl.static_range"
+        return "tl.range"
+
     def offset_var(self, block_idx: int) -> str:
         return self.offset_vars[block_idx]
 
@@ -400,11 +409,12 @@ class FlattenedTileStrategy(BlockSizeTileStrategy):
         dtype = CompileEnvironment.current().triton_index_type()
         lid = self.new_var("lid")
         range_extra = self.get_tl_range_kwargs(state, self.block_ids[0])
+        range_fn = self.get_range_fn_name(state, self.block_ids[0])
         for_node = create(
             ast.For,
             target=create(ast.Name, id=lid, ctx=ast.Store()),
             iter=expr_from_string(
-                f"tl.range(tl.cdiv({state.sympy_expr(total_numel)}, {block_size_var}){range_extra})"
+                f"{range_fn}(tl.cdiv({state.sympy_expr(total_numel)}, {block_size_var}){range_extra})"
             ),
             body=(
                 body := [
@@ -610,11 +620,12 @@ class _BaseNDTileStrategy(BlockSizeTileStrategy):
             )
 
             range_extra = self.get_tl_range_kwargs(state, block_idx)
+            range_fn = self.get_range_fn_name(state, self.block_ids[0])
             for_node = create(
                 ast.For,
                 target=create(ast.Name, id=offset_var, ctx=ast.Store()),
                 iter=expr_from_string(
-                    f"tl.range(begin, end, {block_size_var}{range_extra})",
+                    f"{range_fn}(begin, end, {block_size_var}{range_extra})",
                     begin=self._to_ast(begin, to_dtype=dtype),
                     end=self._to_ast(end, to_dtype=dtype),
                 ),
