@@ -1203,6 +1203,18 @@ class SequenceType(CollectionType):
         for i, subtype in enumerate(self.element_types):
             subtype.populate_symbol_origins(GetItemOrigin(origin, i))
 
+    def propagate_getitem(self, key: TypeInfo, origin: Origin) -> TypeInfo:
+        # Check if all elements have the same type
+        first_type = self.element_types[0]
+        for element_type in self.element_types[1:]:
+            if type(element_type) != type(first_type):
+                raise exc.TypeInferenceError(
+                    f"Sequence contains mixed types: cannot safely index. "
+                    f"Found {type(first_type).__name__} and {type(element_type).__name__}"
+                )
+
+        return first_type
+
     def merge(self, other: TypeInfo) -> TypeInfo:
         if isinstance(other, SequenceType):
             self_elements = self.element_types
