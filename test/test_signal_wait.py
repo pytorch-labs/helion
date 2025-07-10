@@ -230,6 +230,142 @@ class TestWait(TestCase):
         )
         self.assertIn("atomic_cas", code)
 
+    def test_wait_pointers(self):
+        @helion.kernel
+        def gmem_wait_pointers_kernel(
+            signal_pad_ptrs: torch.Tensor, pad_shape: hl.constexpr
+        ) -> torch.Tensor:
+            out = torch.empty(
+                pad_shape, device=signal_pad_ptrs.device, dtype=torch.int32
+            )
+            N = signal_pad_ptrs.size(0)
+            for i in hl.grid(pad_shape):
+                offset = i * 4  # number of btypes of each pointer (torch.int32)
+                for multicast_tile in hl.tile(N, block_size=N):
+                    signal_pads = (
+                        signal_pad_ptrs[multicast_tile] + offset
+                    )  # Load the pointers, and broadcast the offset
+                    hl.wait(signal_pads, signal=1, as_ptrs=True)
+                    out[i] = i
+            return out
+
+        signal_pad_list = [
+            torch.ones(4, device=DEVICE, dtype=torch.int32) for _ in range(4)
+        ]
+        signal_pad_ptrs = torch.as_tensor(
+            [p.data_ptr() for p in signal_pad_list], device=DEVICE, dtype=torch.uint64
+        )
+        code, result = code_and_output(gmem_wait_pointers_kernel, (signal_pad_ptrs, 4))
+        torch.testing.assert_close(
+            result, torch.arange(4, device=DEVICE, dtype=torch.int32)
+        )
+        self.assertExpectedJournal(code)
+
+    def test_signal_pointers(self):
+        @helion.kernel
+        def gmem_signal_pointers_kernel(
+            signal_pad_ptrs: torch.Tensor, pad_shape: hl.constexpr
+        ) -> torch.Tensor:
+            N = signal_pad_ptrs.size(0)
+            for i in hl.grid(pad_shape):
+                offset = i * 4  # number of btypes of each pointer (torch.int32)
+                for multicast_tile in hl.tile(N, block_size=N):
+                    signal_pads = signal_pad_ptrs[multicast_tile] + offset
+                    hl.signal(signal_pads, signal=1, as_ptrs=True)
+            return signal_pad_ptrs
+
+        signal_pad_list = [
+            torch.zeros(4, device=DEVICE, dtype=torch.int32) for _ in range(4)
+        ]
+        signal_pad_ptrs = torch.as_tensor(
+            [p.data_ptr() for p in signal_pad_list], device=DEVICE, dtype=torch.uint64
+        )
+        code, result = code_and_output(
+            gmem_signal_pointers_kernel, (signal_pad_ptrs, 4)
+        )
+
+        for tensor in signal_pad_list:
+            torch.testing.assert_close(
+                tensor, torch.ones(4, device=DEVICE, dtype=torch.int32)
+            )
+        self.assertExpectedJournal(code)
+
+    def test_global_sync_on_pointers(self):
+        @helion.kernel
+        def gmem_multi_bar_sync_ptrs_kernel(
+            signal_pad_ptrs: torch.Tensor,
+            pad_shape: hl.constexpr,
+        ) -> torch.Tensor:
+            N = hl.specialize(signal_pad_ptrs.size(0))
+            for i in hl.grid(pad_shape):
+                signal_offset = (
+                    i * 4
+                )  # 4 = number of btypes of each pointer (torch.int32)
+                for multicast_tile in hl.tile(N, block_size=N):
+                    hl.signal(
+                        signal_pad_ptrs[multicast_tile] + signal_offset,
+                        signal=1,
+                        skip_sync=True,
+                        as_ptrs=True,
+                    )
+                wait_offsets = torch.arange(N, device=DEVICE, dtype=torch.uint64) * 4
+                wait_ptrs = signal_pad_ptrs[i] + wait_offsets
+                hl.wait(wait_ptrs, signal=1, as_ptrs=True)
+
+        signal_pad_list = [
+            torch.zeros(4, device=DEVICE, dtype=torch.int32) for _ in range(4)
+        ]
+        signal_pad_ptrs = torch.as_tensor(
+            [p.data_ptr() for p in signal_pad_list], device=DEVICE, dtype=torch.uint64
+        )
+
+        code, result = code_and_output(
+            gmem_multi_bar_sync_ptrs_kernel, (signal_pad_ptrs, 4)
+        )
+        for tensor in signal_pad_list:
+            torch.testing.assert_close(
+                tensor, torch.ones(4, device=DEVICE, dtype=torch.int32)
+            )
+
+    def test_global_sync_on_pointers_cas(self):
+        @helion.kernel
+        def gmem_multi_bar_sync_ptrs_kernel(
+            signal_pad_ptrs: torch.Tensor,
+            pad_shape: hl.constexpr,
+        ) -> torch.Tensor:
+            N = hl.specialize(signal_pad_ptrs.size(0))
+            for i in hl.grid(pad_shape):
+                signal_offset = (
+                    i * 4
+                )  # 4 = number of btypes of each pointer (torch.int32)
+                for multicast_tile in hl.tile(N, block_size=N):
+                    hl.signal(
+                        signal_pad_ptrs[multicast_tile] + signal_offset,
+                        wait_for=0,
+                        signal=1,
+                        op="atomic_cas",
+                        skip_sync=True,
+                        as_ptrs=True,
+                    )
+                wait_offsets = torch.arange(N, device=DEVICE, dtype=torch.uint64) * 4
+                wait_ptrs = signal_pad_ptrs[i] + wait_offsets
+                hl.wait(wait_ptrs, signal=1, update=0, op="atomic_cas", as_ptrs=True)
+
+        signal_pad_list = [
+            torch.zeros(4, device=DEVICE, dtype=torch.int32) for _ in range(4)
+        ]
+        signal_pad_ptrs = torch.as_tensor(
+            [p.data_ptr() for p in signal_pad_list], device=DEVICE, dtype=torch.uint64
+        )
+
+        code, result = code_and_output(
+            gmem_multi_bar_sync_ptrs_kernel, (signal_pad_ptrs, 4)
+        )
+        for tensor in signal_pad_list:
+            torch.testing.assert_close(
+                tensor, torch.zeros(4, device=DEVICE, dtype=torch.int32)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
