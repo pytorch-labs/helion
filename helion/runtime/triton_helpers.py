@@ -171,6 +171,11 @@ def triton_wait_multiple_signal(
         "Invalid barrier value type. Only supports int32 for multi barrier signal. ",
     )
 
+    if sync_before:
+        tl.inline_asm_elementwise(
+            "bar.sync 0;", "=r", [], dtype=tl.int32, is_pure=False, pack=1
+        )
+
     addr = tl.ravel(addr)
 
     tl.static_assert(len(addr.shape) == 1, "addr must be a 1D tensor. ")
