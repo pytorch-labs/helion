@@ -69,6 +69,11 @@ KERNEL_MAPPINGS: dict[str, tuple[str, str, str]] = {
         "examples.fp8_attention",
         "fp8_attention_tritonbench",
     ),
+    "softmax": (
+        "tritonbench.operators.softmax.operator",
+        "examples.softmax",
+        "softmax",
+    ),
 }
 
 
