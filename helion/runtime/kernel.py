@@ -60,6 +60,8 @@ class Kernel(Generic[_R]):
         *,
         configs: list[ConfigLike] | None = None,
         settings: Settings | None,
+        ref_eager: bool = False,
+        ref_compile: bool = False,
     ) -> None:
         """
         Initialize the Kernel object.  This is typically called from the `@helion.kernel` decorator.
@@ -68,6 +70,8 @@ class Kernel(Generic[_R]):
             fn: The function to be compiled as a Helion kernel.
             configs: A list of configurations to use for the kernel.
             settings: The settings to be used by the Kernel. If None, default settings are used.
+            ref_eager: If True, run the kernel in ref eager mode for debugging.
+            ref_compile: If True, run the kernel in ref compile mode (torch.compile) for debugging.
         """
         super().__init__()
         assert isinstance(fn, types.FunctionType)
@@ -76,6 +80,8 @@ class Kernel(Generic[_R]):
         self.fn: types.FunctionType = fn
         self.signature: inspect.Signature = inspect.signature(fn)
         self.settings: Settings = settings or Settings.default()
+        self.ref_eager: bool = ref_eager
+        self.ref_compile: bool = ref_compile
         self.configs: list[Config] = [
             Config(**c) if isinstance(c, dict) else c  # pyright: ignore[reportArgumentType]
             for c in configs or []
@@ -133,7 +139,7 @@ class Kernel(Generic[_R]):
                 # we had default args that needed to be applied
                 bound_kernel = self.bind(normalized_args)
             else:
-                bound_kernel = BoundKernel(self, args)
+                bound_kernel = BoundKernel(self, args, ref_eager=self.ref_eager, ref_compile=self.ref_compile)
             if signature_extra is None:
                 self._specialize_extra[signature] = extra_fns = (
                     bound_kernel._specialize_extra()
@@ -260,7 +266,7 @@ class Kernel(Generic[_R]):
 
 
 class BoundKernel(Generic[_R]):
-    def __init__(self, kernel: Kernel[_R], args: tuple[object, ...]) -> None:
+    def __init__(self, kernel: Kernel[_R], args: tuple[object, ...], ref_eager: bool = False, ref_compile: bool = False) -> None:
         """
         Initialize a BoundKernel object.
 
@@ -270,12 +276,28 @@ class BoundKernel(Generic[_R]):
         Args:
             kernel: The Kernel object to bind.
             args: A tuple of arguments to bind to the kernel.
+            ref_eager: If True, run the kernel in ref eager mode for debugging.
+            ref_compile: If True, run the kernel in ref compile mode (torch.compile) for debugging.
         """
         super().__init__()
         self.kernel = kernel
+        self.ref_eager = ref_eager
+        self.ref_compile = ref_compile
+        self.args = args  # Store original args for ref mode dtype detection
         self._run: Callable[..., _R] | None = None
         self._config: Config | None = None
         self._compile_cache: dict[Config, CompiledConfig] = {}
+        self._ref_func: Callable[..., _R] | None = None
+        self._ref_code: str | None = None
+        
+        # If in ref mode (either eager or compile), skip all compilation infrastructure
+        if self.ref_eager or self.ref_compile:
+            # No need to create fake args or compile environment
+            self.env = None
+            self.fake_args = None
+            self.host_function = None
+            return
+            
         self.env = CompileEnvironment(_find_device(args), self.kernel.settings)
         with self.env:
             assert len(args) == len(self.kernel.signature.parameters)
@@ -327,6 +349,8 @@ class BoundKernel(Generic[_R]):
         Returns:
             ConfigSpec: The configuration specification.
         """
+        if self.ref_eager or self.ref_compile:
+            raise RuntimeError("config_spec is not available in eager mode")
         return self.env.config_spec
 
     @property
@@ -349,6 +373,8 @@ class BoundKernel(Generic[_R]):
         Returns:
             str: The generated Triton code as a string.
         """
+        if self.ref_eager or self.ref_compile:
+            raise RuntimeError("to_triton_code is not available in eager mode")
         if config is None:
             config = self._require_implicit_config()
         with self.env:
@@ -371,6 +397,8 @@ class BoundKernel(Generic[_R]):
         Returns:
             CompiledConfig: A callable object representing the compiled kernel.
         """
+        if self.ref_eager or self.ref_compile:
+            raise RuntimeError("compile_config is not available in eager mode")
         if config is None:
             config = self._require_implicit_config()
         if not isinstance(config, Config):
@@ -397,6 +425,8 @@ class BoundKernel(Generic[_R]):
         Returns:
             str: A string containing debug information about the kernel.
         """
+        if self.ref_eager or self.ref_compile:
+            return "Debug information not available in eager mode"
         with self.env:
             return self.host_function.debug_str()
 
@@ -424,6 +454,8 @@ class BoundKernel(Generic[_R]):
         Returns:
             Config: The best configuration found during autotuning.
         """
+        if self.ref_eager or self.ref_compile:
+            raise RuntimeError("autotune is not available in eager mode")
         force = force or self.settings.force_autotune
         if not force and self.kernel.configs:
             if len(self.kernel.configs) == 1:
@@ -457,6 +489,8 @@ class BoundKernel(Generic[_R]):
         Args:
             config: The configuration to set.
         """
+        if self.ref_eager or self.ref_compile:
+            raise RuntimeError("set_config is not available in eager mode")
         if not isinstance(config, Config):
             config = Config(
                 **config  # pyright: ignore[reportArgumentType]
@@ -472,6 +506,9 @@ class BoundKernel(Generic[_R]):
         Returns:
             list[Callable[[Sequence[object]], Hashable]]: A list of functions that generate extra specialization keys.
         """
+        if self.ref_eager or self.ref_compile:
+            return []  # No specialization in eager mode
+            
         if not self.env.specialized_vars:
             return []
 
@@ -501,6 +538,8 @@ class BoundKernel(Generic[_R]):
         """
         Returns a single config that is implicitly used by this kernel, if any.
         """
+        if self.ref_eager or self.ref_compile:
+            return None  # No config needed in eager mode
         configs = self.kernel.configs
         if self._config is not None:
             return self._config
@@ -517,6 +556,98 @@ class BoundKernel(Generic[_R]):
         if (config := self._implicit_config()) is None:
             raise RuntimeError("no config provided and no implicit config available")
         return config
+    
+    def run_ref(self, *args: object) -> _R:
+        """
+        Execute the kernel in ref mode using PyTorch operations.
+        
+        This method:
+        1. Compiles the Helion kernel to generate Python/PyTorch code
+        2. Executes the generated code directly without Helion runtime
+        
+        Args:
+            args: The arguments to pass to the kernel.
+            
+        Returns:
+            _R: The result of the kernel execution.
+        """
+        if self._ref_func is None:
+            # In ref mode, we execute the kernel with runtime replacements
+            import helion.language as hl_original
+            from helion.ref import runtime as ref_runtime
+            
+            # Create a wrapper that replaces hl with ref runtime and wraps tensors
+            def ref_wrapper(*args):
+                # Save original hl
+                import sys
+                original_hl = sys.modules.get('helion.language')
+                
+                # Don't wrap tensor arguments - just pass them through
+                wrapped_args = args
+                
+                # Apply mixed precision patches for eager mode
+                from helion.ref.runtime import mixed_precision_patch_context
+                
+                try:
+                    # Replace hl with ref runtime
+                    sys.modules['helion.language'] = ref_runtime
+                    
+                    # Save and replace references in the kernel's globals
+                    saved_globals = {}
+                    if hasattr(self.kernel.fn, '__globals__'):
+                        globals_dict = self.kernel.fn.__globals__
+                        
+                        # Replace hl
+                        if 'hl' in globals_dict:
+                            saved_globals['hl'] = globals_dict['hl']
+                            globals_dict['hl'] = ref_runtime
+                    
+                    # Check which mode to use
+                    import os
+                    if self.ref_compile:
+                        # Apply patches OUTSIDE torch.compile as requested
+                        with mixed_precision_patch_context:
+                            # Call the original function with torch.compile
+                            result = torch.compile(self.kernel.fn, fullgraph=True)(*wrapped_args)
+                    else:
+                        # Default to eager mode (HELION_REF_EAGER)
+                        with mixed_precision_patch_context:
+                            result = self.kernel.fn(*wrapped_args)
+                    
+                    # Unwrap if needed
+                    if hasattr(result, 'unwrap'):
+                        result = result.unwrap()
+                    
+                    return result
+                finally:
+                    # Restore original hl
+                    if original_hl is not None:
+                        sys.modules['helion.language'] = original_hl
+                    
+                    # Restore saved globals
+                    if hasattr(self.kernel.fn, '__globals__'):
+                        for key, value in saved_globals.items():
+                            self.kernel.fn.__globals__[key] = value
+            
+            self._ref_func = ref_wrapper
+            
+            # Always generate the ref code for inspection
+            import inspect
+            import os
+            mode = "torch.compile(fullgraph=True)" if self.ref_compile else "ref"
+            self._ref_code = f"# Reference implementation mode: {mode}\n"
+            self._ref_code += f"# hl.* functions are replaced with ref implementations\n\n"
+            self._ref_code += inspect.getsource(self.kernel.fn)
+            
+            # Only print if requested
+            import os
+            if self.kernel.settings.print_output_code or os.environ.get("HELION_PRINT_OUTPUT_CODE", "").lower() in ("1", "true", "yes"):
+                print(f"Generated PyTorch ref code for {self.kernel.name}:", file=sys.stderr)
+                print(self._ref_code, file=sys.stderr)
+        
+        # Call the generated ref function
+        return self._ref_func(*args)
+    
 
     def __call__(self, *args: object) -> _R:
         """
@@ -528,6 +659,9 @@ class BoundKernel(Generic[_R]):
         Returns:
             _R: The result of the kernel execution.
         """
+        if self.ref_eager or self.ref_compile:
+            return self.run_ref(*args)
+        
         if self._run is None:
             if (config := self._implicit_config()) is not None:
                 self.set_config(config)
@@ -550,6 +684,8 @@ def kernel(
     *,
     config: ConfigLike | None = None,
     configs: list[ConfigLike] | None = None,
+    ref_eager: bool = False,
+    ref_compile: bool = False,
     **settings: object,
 ) -> Kernel[_R]: ...
 
@@ -560,6 +696,8 @@ def kernel(
     *,
     config: ConfigLike | None = None,
     configs: list[ConfigLike] | None = None,
+    ref_eager: bool = False,
+    ref_compile: bool = False,
     **settings: object,
 ) -> _KernelDecorator: ...
 
@@ -569,6 +707,8 @@ def kernel(
     *,
     config: ConfigLike | None = None,
     configs: list[ConfigLike] | None = None,
+    ref_eager: bool = False,
+    ref_compile: bool = False,
     **settings: object,
 ) -> Kernel[_R] | _KernelDecorator:
     """
@@ -579,6 +719,8 @@ def kernel(
         config: A single configuration to use for the kernel. See :class:`~helion.Config` for details.
         configs: A list of configurations to use for the kernel.  Can only specify one of config or configs.
                 See :class:`~helion.Config` for details.
+        ref_eager: If True, run the kernel in ref eager mode for debugging and correctness validation.
+        ref_compile: If True, run the kernel in ref compile mode (torch.compile) for debugging and correctness validation.
         settings: Keyword arguments representing settings for the Kernel.
                  Can also use settings=Settings(...) to pass a Settings object directly.
                  See :class:`~helion.Settings` for available options.
@@ -602,9 +744,17 @@ def kernel(
     else:
         settings_obj = Settings(**settings)
 
+    # Check environment variables for reference implementation modes if not already set
+    import os
+    if not ref_eager and not ref_compile:
+        if os.environ.get("HELION_REF_EAGER", "").lower() in ("1", "true", "yes"):
+            ref_eager = True
+        elif os.environ.get("HELION_REF_COMPILE", "").lower() in ("1", "true", "yes"):
+            ref_compile = True
+    
     if fn is None:
-        return functools.partial(kernel, configs=configs, settings=settings_obj)
-    return Kernel(fn, configs=configs, settings=settings_obj)
+        return functools.partial(kernel, configs=configs, settings=settings_obj, ref_eager=ref_eager, ref_compile=ref_compile)
+    return Kernel(fn, configs=configs, settings=settings_obj, ref_eager=ref_eager, ref_compile=ref_compile)
 
 
 def _tensor_key(fn: Kernel, obj: torch.Tensor) -> Hashable:

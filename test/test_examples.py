@@ -90,7 +90,7 @@ class TestExamples(TestCase):
         version.parse(torch.__version__.split("+")[0]) < version.parse("2.8"),
         "Requires torch 2.8+",
     )
-    def test_bmm(self):
+    def test_bmm(self, atol=1e-1, rtol=1e-2):
         args = (
             torch.randn([16, 512, 768], device=DEVICE, dtype=torch.float16),
             torch.randn([16, 768, 1024], device=DEVICE, dtype=torch.float16),
@@ -101,6 +101,8 @@ class TestExamples(TestCase):
                 args,
                 torch.bmm(args[0], args[1]),
                 block_sizes=[16, 16, 16, 16],
+                atol=atol,
+                rtol=rtol,
             )
         )
 

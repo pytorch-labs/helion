@@ -45,6 +45,31 @@ def code_and_output(
     args: tuple[object, ...],
     **kwargs: object,
 ) -> tuple[str, object]:
+    bound = fn.bind(args)
+    
+    if bound.ref_eager or bound.ref_compile:
+        # For ref mode, we need to get the config from a non-ref binding
+        # Create a temporary non-ref BoundKernel to get the config
+        from .runtime.kernel import BoundKernel
+        temp_bound = BoundKernel(fn, args, ref_eager=False, ref_compile=False)
+        
+        # Determine the config to use
+        if kwargs:
+            config = Config(
+                **kwargs  # pyright: ignore[reportArgumentType]
+            )
+        elif fn.configs:
+            (config,) = fn.configs
+        else:
+            config = temp_bound.config_spec.default_config()
+        
+        # In ref mode, run the kernel and get the generated code
+        result = fn(*args)
+        # Get the generated code from the bound kernel
+        code = bound._ref_code if bound._ref_code else ""
+        return code, result
+    
+    # Determine the config to use
     if kwargs:
         config = Config(
             **kwargs  # pyright: ignore[reportArgumentType]
@@ -52,9 +77,10 @@ def code_and_output(
     elif fn.configs:
         (config,) = fn.configs
     else:
-        config = fn.bind(args).config_spec.default_config()
-    code = fn.bind(args).to_triton_code(config)
-    compiled_kernel = fn.bind(args).compile_config(config)
+        config = bound.config_spec.default_config()
+    
+    code = bound.to_triton_code(config)
+    compiled_kernel = bound.compile_config(config)
     try:
         result = compiled_kernel(*args)
     except Exception:
@@ -137,6 +163,8 @@ def check_example(
     fn_name: str | None = None,
     skip_accuracy: bool = False,
     static_shapes: bool | None = None,
+    atol: float = 1e-1,
+    rtol: float = 1e-2,
     **kwargs: object,
 ) -> str:
     """Helper used in unit tests to run a single example kernel and check its output."""
@@ -153,8 +181,8 @@ def check_example(
     skip_accuracy or torch.testing.assert_close(
         result.to(torch.float32),  # pyright: ignore[reportAttributeAccessIssue]
         expected.to(torch.float32),
-        atol=1e-1,
-        rtol=1e-2,
+        atol=atol,
+        rtol=rtol,
     )  # pyright: ignore[reportUnusedExpression]
     return code
 
@@ -302,6 +330,10 @@ class TestCase(unittest.TestCase):
         Note:
             Use EXPECTTEST_ACCEPT=1 environment variable to update expected outputs.
         """
+        # Skip expected journal checks in reference implementation modes - focus on accuracy
+        if os.environ.get("HELION_REF_EAGER") == "1" or os.environ.get("HELION_REF_COMPILE") == "1":
+            return
+            
         value, expected = self._expected_journal.lookup(self.id(), value)
         self.assertMultiLineEqual(
             value,

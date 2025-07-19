@@ -48,7 +48,9 @@ def jagged_mean_kernel(
     # Process rows in tiles
     for tile_b in hl.tile(num_rows):
         starts = x_offsets[tile_b]
-        ends = x_offsets[tile_b.index + 1]
+        # Use hl.tile_index() for torch.compile compatibility
+        tile_b_indices = hl.tile_index(tile_b)
+        ends = x_offsets[tile_b_indices + 1]
         nnz = ends - starts
         max_nnz = nnz.amax()
 
@@ -58,7 +60,9 @@ def jagged_mean_kernel(
         # Process features in tiles
         for tile_m in hl.tile(max_M):
             # Create mask for valid features
-            feature_valid = tile_m.index < feature_counts[:, None]
+            # Use hl.tile_index() for torch.compile compatibility
+            tile_m_indices = hl.tile_index(tile_m)
+            feature_valid = tile_m_indices < feature_counts[:, None]
 
             # Initialize accumulator
             row_sums = hl.zeros([tile_b, tile_m], dtype=x_data.dtype)
@@ -66,13 +70,15 @@ def jagged_mean_kernel(
             # Process elements within each row
             for tile_k in hl.tile(0, max_nnz):
                 # Compute flattened indices
-                base_indices = starts[:, None] + tile_k.index[None, :]
+                # Use hl.tile_index() for torch.compile compatibility
+                tile_k_indices = hl.tile_index(tile_k)
+                base_indices = starts[:, None] + tile_k_indices[None, :]
                 flat_indices = (
-                    base_indices[:, :, None] * max_M + tile_m.index[None, None, :]
+                    base_indices[:, :, None] * max_M + tile_m_indices[None, None, :]
                 )
 
                 # Combined mask: valid row element AND valid feature
-                row_mask = tile_k.index[None, :] < nnz[:, None]
+                row_mask = tile_k_indices[None, :] < nnz[:, None]
                 combined_mask = row_mask[:, :, None] & feature_valid[:, None, :]
 
                 x_slice = hl.load(
