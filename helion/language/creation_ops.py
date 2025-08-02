@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Sequence
 
 import torch
 from torch._inductor.utils import triton_type
@@ -9,14 +10,49 @@ from .._compiler.ast_extension import expr_from_string
 from .._compiler.compile_environment import CompileEnvironment
 from ..exc import NotInsideKernel
 from . import _decorators
+from .ref_tensor import RefTensor
 from .ref_tile import RefTile
 
 if TYPE_CHECKING:
     import ast
 
     from .._compiler.inductor_lowering import CodegenState
+    from .ref_tensor import DimSize
 
 __all__ = ["arange", "full", "zeros"]
+
+
+def _create_dim_size_map_for_shape(
+    shape: Sequence[int | object],
+) -> tuple[list[int], dict[int, DimSize]]:
+    """Process shape and create dimension info that tracks physical vs logical sizes.
+
+    This allows tensors to have a physical allocation size (e.g., power of 2)
+    while maintaining knowledge of their logical size for operations.
+    """
+    from .ref_tensor import DimSize
+
+    processed_shape = []
+    dim_size_map = {}
+
+    for dim, s in enumerate(shape):
+        if isinstance(s, RefTile):
+            size = s.end - s.begin
+            processed_shape.append(size)
+            dim_size_map[dim] = DimSize(logical_size=size, physical_size=size)
+        elif isinstance(s, DimSize):
+            processed_shape.append(s.physical_size)
+            dim_size_map[dim] = s
+        else:
+            # s should be convertible to int
+            assert isinstance(s, (int, torch.SymInt)), (
+                f"Expected int or SymInt, got {type(s)}"
+            )
+            size = int(s)
+            processed_shape.append(size)
+            dim_size_map[dim] = DimSize(logical_size=size, physical_size=size)
+
+    return processed_shape, dim_size_map
 
 
 def zeros(shape: list[object], dtype: torch.dtype = torch.float32) -> torch.Tensor:
@@ -151,14 +187,12 @@ def _(
     value: float,
     dtype: torch.dtype = torch.float32,
 ) -> torch.Tensor:
-    processed_shape = []
-    for s in shape:
-        if isinstance(s, RefTile):
-            processed_shape.append(s.end - s.begin)
-        else:
-            processed_shape.append(s)
+    processed_shape, dim_size_map = _create_dim_size_map_for_shape(shape)
+
     env = CompileEnvironment.current()
-    return torch.full(processed_shape, value, dtype=dtype, device=env.device)
+    data = torch.full(processed_shape, value, dtype=dtype, device=env.device)
+
+    return RefTensor(data, dim_size_map)
 
 
 def arange(

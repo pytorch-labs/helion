@@ -58,7 +58,7 @@ class RefTile(TileInterface, torch.Tensor):
             return tensor[index._slice]
 
         if isinstance(index, tuple):
-            new_index = cls._convert_tile_indices_to_slices(index)
+            new_index = cls._convert_tile_indices_to_slices(tensor, index)
             return tensor[tuple(new_index)]  # pyright: ignore[reportArgumentType]
 
         # Non-tile index in ref mode
@@ -81,7 +81,7 @@ class RefTile(TileInterface, torch.Tensor):
             return None
 
         if isinstance(index, tuple):
-            new_index = cls._convert_tile_indices_to_slices(index)
+            new_index = cls._convert_tile_indices_to_slices(tensor, index)
             tensor[tuple(new_index)] = value  # pyright: ignore[reportArgumentType]
             return None
 
@@ -91,15 +91,25 @@ class RefTile(TileInterface, torch.Tensor):
 
     @classmethod
     def _convert_tile_indices_to_slices(
-        cls, indices: tuple[object, ...]
+        cls, tensor: torch.Tensor | None, indices: tuple[object, ...]
     ) -> list[object]:
         """Convert RefTile objects in a tuple of indices to slices."""
+        from .ref_tensor import RefTensor
+
         new_index = []
-        for idx in indices:
+        for dim, idx in enumerate(indices):
             if isinstance(idx, RefTile):
-                new_index.append(idx._slice)
-            else:
-                new_index.append(idx)
+                idx = idx._slice
+            elif isinstance(idx, slice) and idx == slice(None):  # Colon (:)
+                # Check if tensor has logical size info for this dimension
+                if (
+                    isinstance(tensor, RefTensor)
+                    and dim in tensor._dim_size_map
+                    and tensor._dim_size_map[dim].has_custom_logical_size()
+                ):
+                    logical_size = tensor._dim_size_map[dim].logical_size
+                    idx = slice(0, logical_size)
+            new_index.append(idx)
         return new_index
 
     def __repr__(self, tensor_contents: None = None) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -107,3 +117,28 @@ class RefTile(TileInterface, torch.Tensor):
 
     def __index__(self) -> int:
         return self.block_size
+
+    @property
+    def index(self) -> torch.Tensor:
+        """Return tensor of indices for .index attribute access in ref mode."""
+        from .._compiler.compile_environment import CompileEnvironment
+
+        env = CompileEnvironment.current()
+        return torch.arange(
+            self._slice.start, self._slice.stop, dtype=torch.int32, device=env.device
+        )
+
+
+def convert_size_arg(size: object) -> object:
+    """Convert a size argument that may contain RefTile objects.
+
+    Handles:
+    - Single RefTile -> int
+    - List/tuple containing RefTiles -> list with converted sizes
+    - Other values -> unchanged
+    """
+    if isinstance(size, (list, tuple)):
+        return [convert_size_arg(item) for item in size]
+    if isinstance(size, RefTile):
+        return size._slice.stop - size._slice.start
+    return size

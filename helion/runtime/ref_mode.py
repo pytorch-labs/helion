@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import enum
+import threading
+import typing
 from typing import TYPE_CHECKING
+from typing import Callable
+from typing import Protocol
 from typing import cast
 
 import torch
@@ -10,11 +14,20 @@ from torch.overrides import BaseTorchFunctionMode
 from helion._compiler.compile_environment import CompileEnvironment
 from helion._compiler.compile_environment import NoCurrentEnvironment
 from helion._compiler.compile_environment import tls as ce_tls
+from helion.language.ref_tile import convert_size_arg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .. import Config
     from .settings import Settings
+
+    class _RefModeTLS(Protocol):
+        context: RefModeContext | None
+
+
+# Thread-local storage for RefModeContext
+ref_mode_tls: _RefModeTLS = typing.cast("_RefModeTLS", threading.local())
 
 
 class RefMode(enum.Enum):
@@ -41,26 +54,103 @@ def is_in_ref_mode_context() -> bool:
         return False
 
 
+class NoCurrentRefModeContext(RuntimeError):
+    """Raised when RefModeContext.current() is called but no context is active."""
+
+
 class RefModeContext:
     """Context manager to enable ref mode execution."""
 
-    def __init__(self, env: CompileEnvironment) -> None:
+    def __init__(self, env: CompileEnvironment, config: Config | None) -> None:
         self.env = env
         self.func_mode = RefModeTorchFunctionMode()
+        self.config = config
 
     def __enter__(self) -> Self:
+        assert getattr(ref_mode_tls, "context", None) is None, (
+            "RefModeContext already active"
+        )
         ce_tls.env = self.env
+        ref_mode_tls.context = self
         self.func_mode.__enter__()
         return self
 
     def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> bool:
         self.func_mode.__exit__(exc_type, exc_val, exc_tb)
+        ref_mode_tls.context = None
         ce_tls.env = None
         return False
+
+    @staticmethod
+    def current() -> RefModeContext:
+        """Get the currently active RefModeContext.
+
+        Returns:
+            The active RefModeContext
+
+        Raises:
+            NoCurrentRefModeContext: If no RefModeContext is active
+        """
+        try:
+            if (context := ref_mode_tls.context) is not None:
+                return context
+        except AttributeError:
+            pass
+        raise NoCurrentRefModeContext from None
+
+    @staticmethod
+    def has_current() -> bool:
+        """Check if a RefModeContext is currently active."""
+        try:
+            RefModeContext.current()
+            return True
+        except NoCurrentRefModeContext:
+            return False
 
 
 class RefModeTorchFunctionMode(BaseTorchFunctionMode):
     """Torch function mode for Helion ref mode operations."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        # Map functions to their handlers
+        self._func_handlers = {
+            torch.addmm: lambda args, kwargs: self._handle_mm_with_bias(
+                args, kwargs, torch.mm, "addmm"
+            ),
+            torch.baddbmm: lambda args, kwargs: self._handle_mm_with_bias(
+                args, kwargs, torch.bmm, "baddbmm"
+            ),
+            torch.Tensor.expand: lambda args, kwargs: self._handle_view_method(
+                args, kwargs, "expand"
+            ),
+            torch.Tensor.view: lambda args, kwargs: self._handle_view_method(
+                args, kwargs, "view"
+            ),
+            torch.reshape: self._handle_reshape,
+            torch.zeros: lambda args, kwargs: self._handle_factory_func(
+                args, kwargs, torch.zeros, has_fill=False
+            ),
+            torch.ones: lambda args, kwargs: self._handle_factory_func(
+                args, kwargs, torch.ones, has_fill=False
+            ),
+            torch.full: lambda args, kwargs: self._handle_factory_func(
+                args, kwargs, torch.full, has_fill=True
+            ),
+        }
+
+        # Map method names to their handlers for tensor methods
+        self._method_handlers = {
+            "new_zeros": lambda args, kwargs: self._handle_factory_method(
+                args, kwargs, "new_zeros", has_fill=False
+            ),
+            "new_ones": lambda args, kwargs: self._handle_factory_method(
+                args, kwargs, "new_ones", has_fill=False
+            ),
+            "new_full": lambda args, kwargs: self._handle_factory_method(
+                args, kwargs, "new_full", has_fill=True
+            ),
+        }
 
     def __torch_function__(
         self,
@@ -72,19 +162,27 @@ class RefModeTorchFunctionMode(BaseTorchFunctionMode):
         if kwargs is None:
             kwargs = {}
 
-        # Handle matrix multiplication operations
-        if func == torch.addmm:
-            return self._handle_addmm(args, kwargs)
-        if func == torch.baddbmm:
-            return self._handle_baddbmm(args, kwargs)
+        # Check function mapping
+        if func in self._func_handlers:
+            return self._func_handlers[func](args, kwargs)
+
+        # Check method mapping
+        if hasattr(func, "__name__"):
+            func_name = getattr(func, "__name__", None)
+            if func_name and func_name in self._method_handlers:
+                return self._method_handlers[func_name](args, kwargs)
 
         return super().__torch_function__(func, types, args, kwargs)
 
-    def _handle_addmm(
-        self, args: tuple[object, ...], kwargs: dict[str, object]
+    def _handle_mm_with_bias(
+        self,
+        args: tuple[object, ...],
+        kwargs: dict[str, object],
+        mm_func: object,
+        op_name: str,
     ) -> torch.Tensor:
-        """Handle torch.addmm with mixed precision support (e.g. torch.addmm(fp32, bf16, bf16))."""
-        assert len(args) >= 3, "addmm requires at least 3 arguments"
+        """Handle torch.addmm/baddbmm with mixed precision support."""
+        assert len(args) >= 3, f"{op_name} requires at least 3 arguments"
         bias = cast("torch.Tensor", args[0])
         mat1 = cast("torch.Tensor", args[1])
         mat2 = cast("torch.Tensor", args[2])
@@ -92,11 +190,13 @@ class RefModeTorchFunctionMode(BaseTorchFunctionMode):
         alpha = cast("float", kwargs.get("alpha", 1))
 
         assert mat1.dtype == mat2.dtype, (
-            f"Matrix dtypes must match for torch.addmm: "
+            f"Matrix dtypes must match for torch.{op_name}: "
             f"mat1.dtype={mat1.dtype}, mat2.dtype={mat2.dtype}"
         )
 
-        result = torch.mm(mat1, mat2, out_dtype=bias.dtype)
+        # Cast mm_func to callable since we know it's a function
+        mm_func_callable = cast("Callable[..., torch.Tensor]", mm_func)
+        result = mm_func_callable(mat1, mat2, out_dtype=bias.dtype)
         if alpha != 1:
             result = result * alpha
         if result.dtype != bias.dtype:
@@ -105,27 +205,63 @@ class RefModeTorchFunctionMode(BaseTorchFunctionMode):
             return result
         return result + (beta * bias)
 
-    def _handle_baddbmm(
+    def _handle_view_method(
+        self, args: tuple[object, ...], kwargs: dict[str, object], method_name: str
+    ) -> torch.Tensor:
+        """Handle tensor methods that take size arguments (expand, view)."""
+        tensor = cast("torch.Tensor", args[0])
+        sizes = args[1:]
+        new_sizes = convert_size_arg(sizes)
+        method = getattr(tensor, method_name)
+        # convert_size_arg returns a list when given a tuple/list
+        assert isinstance(new_sizes, list)
+        return method(*new_sizes, **kwargs)
+
+    def _handle_reshape(
         self, args: tuple[object, ...], kwargs: dict[str, object]
     ) -> torch.Tensor:
-        """Handle torch.baddbmm with mixed precision support (e.g. torch.baddbmm(fp32, bf16, bf16))."""
-        assert len(args) >= 3, "baddbmm requires at least 3 arguments"
-        bias = cast("torch.Tensor", args[0])
-        batch1 = cast("torch.Tensor", args[1])
-        batch2 = cast("torch.Tensor", args[2])
-        beta = cast("float", kwargs.get("beta", 1))
-        alpha = cast("float", kwargs.get("alpha", 1))
+        """Handle torch.reshape() with RefTile arguments."""
+        tensor = cast("torch.Tensor", args[0])
+        if len(args) > 1:
+            shape = convert_size_arg(args[1])
+            # Reshape expects a sequence of ints, cast appropriately
+            shape_seq = cast("list[int] | tuple[int, ...]", shape)
+            return torch.reshape(tensor, shape_seq, **kwargs)
+        # If shape is in kwargs, convert it
+        if "shape" in kwargs:
+            converted_shape = convert_size_arg(kwargs["shape"])
+            kwargs["shape"] = cast("list[int] | tuple[int, ...]", converted_shape)
+        # kwargs may contain shape that needs type casting
+        return torch.reshape(tensor, **kwargs)  # type: ignore[arg-type]
 
-        assert batch1.dtype == batch2.dtype, (
-            f"Matrix dtypes must match for torch.baddbmm: "
-            f"mat1.dtype={batch1.dtype}, mat2.dtype={batch2.dtype}"
-        )
+    def _handle_factory_func(
+        self,
+        args: tuple[object, ...],
+        kwargs: dict[str, object],
+        func: object,
+        has_fill: bool,
+    ) -> torch.Tensor:
+        """Handle torch tensor factory functions (zeros, ones, full) with RefTile arguments."""
+        size = convert_size_arg(args[0])
+        # Cast func to callable
+        func_callable = cast("Callable[..., torch.Tensor]", func)
+        if has_fill:
+            fill_value = args[1]
+            return func_callable(size, fill_value, *args[2:], **kwargs)
+        return func_callable(size, *args[1:], **kwargs)
 
-        result = torch.bmm(batch1, batch2, out_dtype=bias.dtype)
-        if alpha != 1:
-            result = result * alpha
-        if result.dtype != bias.dtype:
-            result = result.to(bias.dtype)
-        if beta == 0:
-            return result
-        return result + (beta * bias)
+    def _handle_factory_method(
+        self,
+        args: tuple[object, ...],
+        kwargs: dict[str, object],
+        method_name: str,
+        has_fill: bool,
+    ) -> torch.Tensor:
+        """Handle tensor.new_* factory methods (new_zeros, new_ones, new_full) with RefTile arguments."""
+        tensor = cast("torch.Tensor", args[0])
+        size = convert_size_arg(args[1])
+        method = getattr(tensor, method_name)
+        if has_fill:
+            fill_value = args[2]
+            return method(size, fill_value, *args[3:], **kwargs)
+        return method(size, *args[2:], **kwargs)
