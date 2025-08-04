@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest import skipUnless
 
 import torch
 
@@ -733,7 +734,6 @@ class TestIndexing(RefEagerTestBase, TestCase):
         torch.testing.assert_close(src2_result, expected_src2)
         torch.testing.assert_close(dst2_result, expected_dst2)
 
-    @skipIfNormalMode("InternalError: Negative indexes")
     def test_negative_indexing(self):
         """Test both setter from scalar and getter for [-1]"""
 
@@ -749,7 +749,6 @@ class TestIndexing(RefEagerTestBase, TestCase):
         N = 128
         src = torch.zeros([N], device=DEVICE)
         dst = torch.zeros([N], device=DEVICE)
-
         src_result, dst_result = kernel(src, dst)
 
         # Only last element should be one
@@ -759,9 +758,67 @@ class TestIndexing(RefEagerTestBase, TestCase):
         torch.testing.assert_close(src_result, expected_src)
         torch.testing.assert_close(dst_result, expected_dst)
 
-    @skipIfNormalMode(
-        "RankMismatch: Cannot assign a tensor of rank 2 to a buffer of rank 3"
+    def test_negative_indexing_block_ptr(self):
+        """Test both setter from scalar and getter for [-1] with block_ptr indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            for _ in hl.grid(1):
+                dst[-1] = 1.0  # Test setter with scalar
+                src[-1] = dst[-1]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 128
+        src = torch.zeros([N], device=DEVICE)
+        dst = torch.zeros([N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="block_ptr",
+        )
+
+        # Only last element should be one
+        expected_src = torch.zeros([N], device=DEVICE)
+        expected_src[-1] = 1.0
+        expected_dst = expected_src.clone()
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
+    @skipUnless(
+        supports_tensor_descriptor(), "Tensor descriptor indexing not supported"
     )
+    def test_negative_indexing_tensor_descriptor(self):
+        """Test both setter from scalar and getter for [-1] with tensor_descriptor indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            for _ in hl.grid(1):
+                dst[-1] = 1.0  # Test setter with scalar
+                src[-1] = dst[-1]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 128
+        src = torch.zeros([N], device=DEVICE)
+        dst = torch.zeros([N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="tensor_descriptor",
+        )
+
+        # Only last element should be one
+        expected_src = torch.zeros([N], device=DEVICE)
+        expected_src[-1] = 1.0
+        expected_dst = expected_src.clone()
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
     def test_ellipsis_indexing(self):
         """Test both setter from scalar and getter for [..., i]"""
 
@@ -778,7 +835,6 @@ class TestIndexing(RefEagerTestBase, TestCase):
         N = 32
         src = torch.zeros([2, 3, N], device=DEVICE)
         dst = torch.zeros([2, 3, N], device=DEVICE)
-
         src_result, dst_result = kernel(src, dst)
 
         # All elements should be ones after the kernel
@@ -787,9 +843,67 @@ class TestIndexing(RefEagerTestBase, TestCase):
         torch.testing.assert_close(src_result, expected_src)
         torch.testing.assert_close(dst_result, expected_dst)
 
-    @skipIfNormalMode(
-        "RankMismatch: Cannot assign a tensor of rank 2 to a buffer of rank 3"
+    def test_ellipsis_indexing_block_ptr(self):
+        """Test both setter from scalar and getter for [..., i] with block_ptr indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            N = src.shape[-1]
+            for i in hl.grid(N):
+                dst[..., i] = 1.0  # Test setter with scalar
+                src[..., i] = dst[..., i]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 32
+        src = torch.zeros([2, 3, N], device=DEVICE)
+        dst = torch.zeros([2, 3, N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="block_ptr",
+        )
+
+        # All elements should be ones after the kernel
+        expected_src = torch.ones([2, 3, N], device=DEVICE)
+        expected_dst = torch.ones([2, 3, N], device=DEVICE)
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
+    @skipUnless(
+        supports_tensor_descriptor(), "Tensor descriptor indexing not supported"
     )
+    def test_ellipsis_indexing_tensor_descriptor(self):
+        """Test both setter from scalar and getter for [..., i] with tensor_descriptor indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            N = src.shape[-1]
+            for i in hl.grid(N):
+                dst[..., i] = 1.0  # Test setter with scalar
+                src[..., i] = dst[..., i]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 32
+        src = torch.zeros([2, 3, N], device=DEVICE)
+        dst = torch.zeros([2, 3, N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="tensor_descriptor",
+        )
+
+        # All elements should be ones after the kernel
+        expected_src = torch.ones([2, 3, N], device=DEVICE)
+        expected_dst = torch.ones([2, 3, N], device=DEVICE)
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
     def test_multi_dim_slice(self):
         """Test both setter from scalar and getter for [:, :, i]"""
 
@@ -806,7 +920,6 @@ class TestIndexing(RefEagerTestBase, TestCase):
         N = 32
         src = torch.zeros([2, 3, N], device=DEVICE)
         dst = torch.zeros([2, 3, N], device=DEVICE)
-
         src_result, dst_result = kernel(src, dst)
 
         # All elements should be ones after the kernel
@@ -815,9 +928,67 @@ class TestIndexing(RefEagerTestBase, TestCase):
         torch.testing.assert_close(src_result, expected_src)
         torch.testing.assert_close(dst_result, expected_dst)
 
-    @skipIfNormalMode(
-        "RankMismatch: Expected ndim=2, but got ndim=1 - tensor value assignment shape mismatch"
+    def test_multi_dim_slice_block_ptr(self):
+        """Test both setter from scalar and getter for [:, :, i] with block_ptr indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            N = src.shape[-1]
+            for i in hl.grid(N):
+                dst[:, :, i] = 1.0  # Test setter with scalar
+                src[:, :, i] = dst[:, :, i]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 32
+        src = torch.zeros([2, 3, N], device=DEVICE)
+        dst = torch.zeros([2, 3, N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="block_ptr",
+        )
+
+        # All elements should be ones after the kernel
+        expected_src = torch.ones([2, 3, N], device=DEVICE)
+        expected_dst = torch.ones([2, 3, N], device=DEVICE)
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
+    @skipUnless(
+        supports_tensor_descriptor(), "Tensor descriptor indexing not supported"
     )
+    def test_multi_dim_slice_tensor_descriptor(self):
+        """Test both setter from scalar and getter for [:, :, i] with tensor_descriptor indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            N = src.shape[-1]
+            for i in hl.grid(N):
+                dst[:, :, i] = 1.0  # Test setter with scalar
+                src[:, :, i] = dst[:, :, i]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 32
+        src = torch.zeros([2, 3, N], device=DEVICE)
+        dst = torch.zeros([2, 3, N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="tensor_descriptor",
+        )
+
+        # All elements should be ones after the kernel
+        expected_src = torch.ones([2, 3, N], device=DEVICE)
+        expected_dst = torch.ones([2, 3, N], device=DEVICE)
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
     def test_tensor_value(self):
         """Test both setter from tensor value and getter for [i]"""
 
@@ -832,10 +1003,9 @@ class TestIndexing(RefEagerTestBase, TestCase):
             return src, dst
 
         N = 32
+        val = torch.ones([4], device=DEVICE)
         src = torch.zeros([N, 4], device=DEVICE)
         dst = torch.zeros([N, 4], device=DEVICE)
-        val = torch.ones([4], device=DEVICE)
-
         src_result, dst_result = kernel(src, dst, val)
 
         # All rows should be equal to val
@@ -843,6 +1013,69 @@ class TestIndexing(RefEagerTestBase, TestCase):
         expected_dst = val.expand(N, -1)
         torch.testing.assert_close(src_result, expected_src)
         torch.testing.assert_close(dst_result, expected_dst)
+
+    def test_tensor_value_block_ptr(self):
+        """Test both setter from tensor value and getter for [i] with block_ptr indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor, val: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            N = src.shape[0]
+            for i in hl.grid(N):
+                dst[i] = val  # Test setter with tensor value
+                src[i] = dst[i]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 32
+        val = torch.ones([4], device=DEVICE)
+        src = torch.zeros([N, 4], device=DEVICE)
+        dst = torch.zeros([N, 4], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst, val),
+            indexing="block_ptr",
+        )
+
+        # All rows should be equal to val
+        expected_src = val.expand(N, -1)
+        expected_dst = val.expand(N, -1)
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
+    @skipUnless(
+        supports_tensor_descriptor(), "Tensor descriptor indexing not supported"
+    )
+    def test_tensor_value_tensor_descriptor(self):
+        """Test both setter from tensor value and getter for [i] with tensor_descriptor indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor, val: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            N = src.shape[0]
+            for i in hl.grid(N):
+                dst[i] = val  # Test setter with tensor value
+                src[i] = dst[i]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 32
+        val = torch.ones([4], device=DEVICE)
+        src = torch.zeros([N, 4], device=DEVICE)
+        dst = torch.zeros([N, 4], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst, val),
+            indexing="tensor_descriptor",
+        )
+
+        # All rows should be equal to val
+        expected_src = val.expand(N, -1)
+        expected_dst = val.expand(N, -1)
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
 
     def test_slice_to_slice(self):
         """buf[:] = zeros[:] - Full slice to slice assignment"""
@@ -887,7 +1120,6 @@ class TestIndexing(RefEagerTestBase, TestCase):
         torch.testing.assert_close(src_result, expected_src)
         torch.testing.assert_close(dst_result, expected_dst)
 
-    @skipIfNormalMode("InternalError: Unexpected type <class 'slice'>")
     def test_range_slice(self):
         """Test both setter from scalar and getter for [10:20]"""
 
@@ -903,7 +1135,6 @@ class TestIndexing(RefEagerTestBase, TestCase):
         N = 128
         src = torch.zeros([N], device=DEVICE)
         dst = torch.zeros([N], device=DEVICE)
-
         src_result, dst_result = kernel(src, dst)
 
         # Only indices 10:20 should be ones
@@ -913,8 +1144,69 @@ class TestIndexing(RefEagerTestBase, TestCase):
         torch.testing.assert_close(src_result, expected_src)
         torch.testing.assert_close(dst_result, expected_dst)
 
+    def test_range_slice_block_ptr(self):
+        """Test both setter from scalar and getter for [10:20] with block_ptr indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            for _ in hl.grid(1):
+                dst[10:20] = 1.0  # Test setter with scalar
+                src[10:20] = dst[10:20]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 128
+        src = torch.zeros([N], device=DEVICE)
+        dst = torch.zeros([N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="block_ptr",
+        )
+
+        # Only indices 10:20 should be ones
+        expected_src = torch.zeros([N], device=DEVICE)
+        expected_src[10:20] = 1.0
+        expected_dst = expected_src.clone()
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
+    @skipUnless(
+        supports_tensor_descriptor(), "Tensor descriptor indexing not supported"
+    )
+    def test_range_slice_tensor_descriptor(self):
+        """Test both setter from scalar and getter for [10:20] with tensor_descriptor indexing"""
+
+        @helion.kernel(use_default_config=True)
+        def kernel(
+            src: torch.Tensor, dst: torch.Tensor
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            for _ in hl.grid(1):
+                dst[10:20] = 1.0  # Test setter with scalar
+                src[10:20] = dst[10:20]  # Test getter from dst and setter to src
+            return src, dst
+
+        N = 128
+        src = torch.zeros([N], device=DEVICE)
+        dst = torch.zeros([N], device=DEVICE)
+        code, (src_result, dst_result) = code_and_output(
+            kernel,
+            (src, dst),
+            indexing="tensor_descriptor",
+        )
+
+        # Only indices 10:20 should be ones
+        expected_src = torch.zeros([N], device=DEVICE)
+        expected_src[10:20] = 1.0
+        expected_dst = expected_src.clone()
+        torch.testing.assert_close(src_result, expected_src)
+        torch.testing.assert_close(dst_result, expected_dst)
+        self.assertExpectedJournal(code)
+
     @skipIfNormalMode(
-        "InternalError: AssertionError in type_propagation.py - slice indexing error"
+        "Dynamic slices (i:i+1) are not supported - FX cannot trace symbolic slice indices"
     )
     def test_range_slice_dynamic(self):
         """Test both [i:i+1] = scalar and [i] = [i:i+1] patterns"""

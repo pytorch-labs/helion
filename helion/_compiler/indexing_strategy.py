@@ -18,6 +18,7 @@ from .device_function import DeviceFunction
 from .host_function import HostFunction
 from .tile_strategy import DeviceLoopState
 from .utils import compute_slice_size
+from .utils import get_slice_start
 from .variable_origin import BlockSizeOrigin
 
 if TYPE_CHECKING:
@@ -26,9 +27,128 @@ if TYPE_CHECKING:
     from ..runtime.config import Config
     from .device_function import TensorDescriptorArg
     from .inductor_lowering import CodegenState
+    from .tile_dispatch import TileStrategyDispatch
 
     SymIntLike = torch.SymInt | int
     ShapeLike = Sequence[SymIntLike]
+
+
+def _normalize_negative_index(
+    k: int,
+    dim_idx: int,
+    fake_value: torch.Tensor,
+    state: CodegenState,
+) -> str:
+    """Normalize negative indices to positive ones.
+
+    Args:
+        k: The negative index value
+        dim_idx: The dimension index
+        fake_value: The fake tensor to get dimension size from
+        state: The codegen state
+
+    Returns:
+        String representation of the normalized index
+    """
+    assert k < 0, "This function should only be called for negative indices"
+
+    dim_size = fake_value.size(dim_idx)
+    # Handle both concrete and symbolic dimension sizes
+    if isinstance(dim_size, int):
+        normalized_k = k + dim_size
+        return repr(normalized_k)
+    # For symbolic dimensions, we need to generate the proper expression
+    # The state.codegen is a GenerateAST instance which has device_function
+    sympy_expr = dim_size._sympy_() + k
+    return f"({state.codegen.device_function.user_sympy_expr(sympy_expr)})"
+
+
+def _append_remaining_dimensions(
+    input_size: collections.deque,
+    output_size: list[int | torch.SymInt],
+    env: CompileEnvironment,
+) -> None:
+    """Append remaining dimensions from input to output for partial indexing.
+
+    Args:
+        input_size: Deque of remaining input dimensions
+        output_size: List to append output dimensions to
+        env: The compile environment
+    """
+    while input_size:
+        size = input_size.popleft()
+        if size != 1:
+            rdim = env.allocate_reduction_dimension(size)
+            output_size.append(rdim.var)
+        else:
+            output_size.append(1)
+
+
+def _handle_remaining_index_dimensions(
+    index_values: list[str],
+    mask_values: dict[str, None],
+    output_size: list[int | torch.SymInt],
+    output_idx: int,
+    fake_value: torch.Tensor,
+    state: CodegenState,
+    tile_strategy: TileStrategyDispatch,
+    env: CompileEnvironment,
+    dtype: str,
+) -> int:
+    """Handle remaining dimensions for partial indexing in SubscriptIndexing.create.
+
+    Args:
+        index_values: List to append index expressions to
+        mask_values: Dict to add mask expressions to
+        output_size: The output shape
+        output_idx: Current output index
+        fake_value: The tensor being indexed
+        state: The codegen state
+        tile_strategy: The tile strategy
+        env: The compile environment
+        dtype: The triton index type
+
+    Returns:
+        Updated output_idx
+    """
+    while len(index_values) < fake_value.ndim:
+        expand = tile_strategy.expand_str(output_size, output_idx)
+        size = fake_value.size(len(index_values))
+        if size != 1:
+            rdim = env.allocate_reduction_dimension(size)
+            block_idx = rdim.block_id
+            index_var = state.codegen.index_var(block_idx)
+            index_values.append(f"({index_var}){expand}")
+            if mask := state.codegen.mask_var(block_idx):
+                mask_values.setdefault(f"({mask}){expand}")
+        else:
+            index_values.append(f"tl.zeros([1], {dtype}){expand}")
+        output_idx += 1
+    return output_idx
+
+
+def _generate_slice_index(
+    start: int | torch.SymInt,
+    index_var: str,
+    expand: str,
+    step: int | None = None,
+) -> str:
+    """Generate slice index expression with optional step."""
+    if step is not None:
+        # Strided index: start + index * step
+        return f"({start} + ({index_var}) * {step}){expand}"
+    if start != 0:
+        # Index with offset: start + index
+        return f"({start} + ({index_var})){expand}"
+    # Simple index
+    return f"({index_var}){expand}"
+
+
+def _generate_offset_expr(start: int | torch.SymInt, offset: str) -> str:
+    """Generate offset expression with optional start."""
+    if start != 0:
+        return f"({start} + {offset})"
+    return offset
 
 
 class IndexingStrategy:
@@ -102,6 +222,32 @@ class PointerIndexingStrategy(IndexingStrategy):
     ) -> ast.AST:
         indexing = SubscriptIndexing.create(state, fake_tensor, subscript, extra_mask)
         name = state.device_function.tensor_arg(fake_tensor).name
+
+        # Check if value is a tensor load (Name node with id matching a tensor arg)
+        if isinstance(value, ast.Name) and hasattr(
+            state.device_function, "_tensor_args"
+        ):
+            # Check if this name corresponds to a tensor argument
+            tensor = None
+            for t, tensor_arg in state.device_function._tensor_args.items():
+                if tensor_arg.name == value.id:
+                    tensor = t
+                    break
+
+            if tensor is not None:
+                # Get the shape of the slice we're storing to
+                output_shape = SubscriptIndexing.compute_shape(fake_tensor, subscript)
+                if len(output_shape) == 1 and tensor.ndim == 1:
+                    # Load the entire 1D tensor
+                    value_indexing = SubscriptIndexing.create(
+                        state, tensor, [slice(None)], None
+                    )
+                    value = expr_from_string(
+                        f"tl.load({value.id} + offset, mask)",
+                        offset=value_indexing.index_expr,
+                        mask=value_indexing.mask_expr,
+                    )
+
         return expr_from_string(
             f"tl.store({name} + offset, value, mask)",
             value=value,
@@ -120,7 +266,21 @@ class BlockPtrIndexingStrategy(IndexingStrategy):
         subscript: list[object],
         extra_mask: ast.AST | None,
     ) -> ast.AST:
-        if not BlockedSubscriptIndexing.is_supported(
+        # Check if we have a non-power-of-2 slice
+        has_non_power_of_2_slice = False
+        for k in subscript:
+            if isinstance(k, slice):
+                from .utils import compute_slice_size, get_slice_start
+                size = fake_tensor.size(subscript.index(k)) if subscript.index(k) < fake_tensor.ndim else 1
+                start = get_slice_start(k)
+                slice_size = compute_slice_size(k, size)
+                is_full_slice = (start == 0 and slice_size == size)
+                if not is_full_slice and slice_size != 1:
+                    if slice_size & (slice_size - 1) != 0:
+                        has_non_power_of_2_slice = True
+                        break
+        
+        if has_non_power_of_2_slice or not BlockedSubscriptIndexing.is_supported(
             state, fake_tensor, subscript, extra_mask
         ):
             return PointerIndexingStrategy().codegen_load(
@@ -144,7 +304,21 @@ class BlockPtrIndexingStrategy(IndexingStrategy):
         value: ast.AST,
         extra_mask: ast.AST | None,
     ) -> ast.AST:
-        if not BlockedSubscriptIndexing.is_supported(
+        # Check if we have a non-power-of-2 slice
+        has_non_power_of_2_slice = False
+        for k in subscript:
+            if isinstance(k, slice):
+                from .utils import compute_slice_size, get_slice_start
+                size = fake_tensor.size(subscript.index(k)) if subscript.index(k) < fake_tensor.ndim else 1
+                start = get_slice_start(k)
+                slice_size = compute_slice_size(k, size)
+                is_full_slice = (start == 0 and slice_size == size)
+                if not is_full_slice and slice_size != 1:
+                    if slice_size & (slice_size - 1) != 0:
+                        has_non_power_of_2_slice = True
+                        break
+        
+        if has_non_power_of_2_slice or not BlockedSubscriptIndexing.is_supported(
             state, fake_tensor, subscript, extra_mask
         ):
             return PointerIndexingStrategy().codegen_store(
@@ -152,6 +326,44 @@ class BlockPtrIndexingStrategy(IndexingStrategy):
             )
         assert extra_mask is None
         indexing = BlockedSubscriptIndexing.create(state, fake_tensor, subscript)
+        
+        # Check if value is a tensor argument that needs to be loaded
+        if isinstance(value, ast.Name):
+            # Check if this is a tensor argument
+            df = state.device_function
+            tensor_arg = None
+            for arg in df.arguments:
+                if hasattr(arg, 'name') and arg.name == value.id:
+                    from .device_function import TensorArg
+                    if isinstance(arg, TensorArg):
+                        tensor_arg = arg
+                        break
+            
+            if tensor_arg:
+                # This is a tensor argument - we need to load it with block_ptr
+                val_tensor = tensor_arg.fake_value
+                val_indexing = BlockedSubscriptIndexing(
+                    val_tensor,
+                    reshaped_size=list(val_tensor.shape),
+                )
+                # Add offsets and block_shape for all dimensions
+                env = CompileEnvironment.current()
+                for dim in range(val_tensor.ndim):
+                    size = val_tensor.size(dim)
+                    if size != 1:
+                        rdim = env.allocate_reduction_dimension(size)
+                        val_indexing.offsets.append("0")
+                        val_indexing.block_shape.append(rdim.var)
+                    else:
+                        val_indexing.offsets.append("0")
+                        val_indexing.block_shape.append(1)
+                
+                # Load the tensor value
+                value = expr_from_string(
+                    f"tl.load(val_block_ptr, boundary_check={val_indexing.boundary_check(state)}, padding_option='zero')",
+                    val_block_ptr=val_indexing.make_block_ptr(state),
+                )
+        
         return expr_from_string(
             f"tl.store(block_ptr, value, boundary_check={indexing.boundary_check(state)})",
             block_ptr=indexing.make_block_ptr(state),
@@ -227,6 +439,9 @@ class TensorDescriptorIndexingStrategy(IndexingStrategy):
         for i, k in enumerate(subscript):
             if k is None:
                 continue
+            if k is Ellipsis:
+                # Ellipsis is not supported in tensor descriptor mode
+                return False
             size, stride = size_stride.popleft()
             if isinstance(k, slice):
                 # Slices with steps are not supported in tensor descriptor mode
@@ -447,6 +662,14 @@ class StackIndexingStrategy:
         )
 
 
+def _calculate_ellipsis_dims(
+    index: list[object], current_index: int, total_dims: int
+) -> int:
+    """Calculate how many dimensions an ellipsis should expand to."""
+    remaining_indices = len(index) - current_index - 1
+    return total_dims - current_index - remaining_indices
+
+
 class SubscriptIndexing(NamedTuple):
     index_expr: ast.AST
     mask_expr: ast.AST
@@ -462,12 +685,23 @@ class SubscriptIndexing(NamedTuple):
     ) -> list[int | torch.SymInt]:
         assert isinstance(tensor, torch.Tensor)
         assert isinstance(index, (list, tuple)), index
-        input_size = collections.deque(tensor.size())
+        input_size: collections.deque[int | torch.SymInt] = collections.deque(
+            tensor.size()
+        )
         output_size = []
         env = CompileEnvironment.current()
-        for k in index:
+        for i, k in enumerate(index):
             if k is None:
                 output_size.append(1)
+            elif k is Ellipsis:
+                ellipsis_dims = _calculate_ellipsis_dims(index, i, len(tensor.size()))
+                for _ in range(ellipsis_dims):
+                    size = input_size.popleft()
+                    if size != 1:
+                        rdim = env.allocate_reduction_dimension(size)
+                        output_size.append(rdim.var)
+                    else:
+                        output_size.append(1)
             elif isinstance(k, int):
                 input_size.popleft()
             elif isinstance(k, torch.SymInt):
@@ -484,7 +718,6 @@ class SubscriptIndexing(NamedTuple):
                 size = input_size.popleft()
                 # Handle slices with steps
                 slice_size = compute_slice_size(k, size)
-
                 if slice_size != 1:
                     rdim = env.allocate_reduction_dimension(slice_size)
                     output_size.append(rdim.var)
@@ -497,7 +730,8 @@ class SubscriptIndexing(NamedTuple):
                 output_size.extend(k.size())
             else:
                 raise exc.InvalidIndexingType(k)
-        assert len(input_size) == 0, "invalid subscript"
+        # For partial indexing, append remaining dimensions to output
+        _append_remaining_dimensions(input_size, output_size, env)
         return output_size
 
     @staticmethod
@@ -517,8 +751,30 @@ class SubscriptIndexing(NamedTuple):
         for n, k in enumerate(index):
             if k is None:
                 output_idx += 1
+            elif k is Ellipsis:
+                ellipsis_dims = _calculate_ellipsis_dims(index, n, fake_value.ndim)
+                for _ in range(ellipsis_dims):
+                    expand = tile_strategy.expand_str(output_size, output_idx)
+                    size = fake_value.size(len(index_values))
+                    if size != 1:
+                        rdim = env.allocate_reduction_dimension(size)
+                        block_idx = rdim.block_id
+                        index_var = state.codegen.index_var(block_idx)
+                        index_values.append(f"({index_var}){expand}")
+                        if mask := state.codegen.mask_var(block_idx):
+                            mask_values.setdefault(f"({mask}){expand}")
+                    else:
+                        index_values.append(f"tl.zeros([1], {dtype}){expand}")
+                    output_idx += 1
             elif isinstance(k, int):
-                index_values.append(repr(k))
+                # Normalize negative indices
+                if k < 0:
+                    dim_idx = len(index_values)
+                    index_values.append(
+                        _normalize_negative_index(k, dim_idx, fake_value, state)
+                    )
+                else:
+                    index_values.append(repr(k))
             elif isinstance(k, torch.SymInt):
                 symbol = k._sympy_()
                 origin = None
@@ -553,25 +809,29 @@ class SubscriptIndexing(NamedTuple):
                         rdim = env.allocate_reduction_dimension(slice_size)
                         block_idx = rdim.block_id
                         index_var = state.codegen.index_var(block_idx)
-                        # Generate strided index: start + index * step
                         index_values.append(
-                            f"({start} + ({index_var}) * {step}){expand}"
+                            _generate_slice_index(start, index_var, expand, step)
                         )
                         if mask := state.codegen.mask_var(block_idx):
                             mask_values.setdefault(f"({mask}){expand}")
                     else:
                         index_values.append(f"{start}{expand}")
                 else:
-                    # Full slice or slice without step
-                    if size != 1:
-                        rdim = env.allocate_reduction_dimension(size)
+                    # Handle slices with start/stop but no step
+                    start = get_slice_start(k)
+                    slice_size = compute_slice_size(k, size)
+
+                    if slice_size != 1:
+                        rdim = env.allocate_reduction_dimension(slice_size)
                         block_idx = rdim.block_id
                         index_var = state.codegen.index_var(block_idx)
-                        index_values.append(f"({index_var}){expand}")
+                        index_values.append(
+                            _generate_slice_index(start, index_var, expand)
+                        )
                         if mask := state.codegen.mask_var(block_idx):
                             mask_values.setdefault(f"({mask}){expand}")
                     else:
-                        index_values.append(f"tl.zeros([1], {dtype}){expand}")
+                        index_values.append(f"{start}{expand}")
                 output_idx += 1
             elif isinstance(k, torch.Tensor) and k.ndim == 1:
                 expand = tile_strategy.expand_str(output_size, output_idx)
@@ -603,6 +863,20 @@ class SubscriptIndexing(NamedTuple):
                         )
             else:
                 raise exc.InvalidIndexingType(type(k))
+
+        # Handle remaining dimensions for partial indexing
+        output_idx = _handle_remaining_index_dimensions(
+            index_values,
+            mask_values,
+            output_size,
+            output_idx,
+            fake_value,
+            state,
+            tile_strategy,
+            env,
+            dtype,
+        )
+
         assert len(output_size) == output_idx
         assert len(index_values) == fake_value.ndim
         index_expr = []
@@ -622,6 +896,26 @@ class SubscriptIndexing(NamedTuple):
             expr_from_string("+".join(index_expr)),
             expr_from_string("&".join(mask_values) or "None", **kwargs),
         )
+
+
+def decompose_into_power_of_2(size: int) -> list[int]:
+    """Decompose a size into power-of-2 chunks.
+    
+    For example:
+    - 10 = 8 + 2
+    - 15 = 8 + 4 + 2 + 1
+    - 20 = 16 + 4
+    """
+    chunks = []
+    remaining = size
+    while remaining > 0:
+        # Find the largest power of 2 that fits
+        power = 1
+        while power * 2 <= remaining:
+            power *= 2
+        chunks.append(power)
+        remaining -= power
+    return chunks
 
 
 @dataclasses.dataclass
@@ -728,9 +1022,19 @@ class BlockedSubscriptIndexing:
         if extra_mask is not None:
             # TODO(jansel): support block_ptr with extra_mask
             return False
-        input_sizes = collections.deque(fake_tensor.size())
-        for k in index:
-            input_size = 1 if k is None else input_sizes.popleft()
+        input_sizes: collections.deque[int | torch.SymInt] = collections.deque(
+            fake_tensor.size()
+        )
+        for n, k in enumerate(index):
+            if k is None:
+                input_size = 1
+            elif k is Ellipsis:
+                ellipsis_dims = _calculate_ellipsis_dims(index, n, fake_tensor.ndim)
+                for _ in range(ellipsis_dims):
+                    input_sizes.popleft()
+                continue
+            else:
+                input_size = input_sizes.popleft()
             if isinstance(k, torch.SymInt):
                 symbol = k._sympy_()
                 origin = None
@@ -760,6 +1064,7 @@ class BlockedSubscriptIndexing:
             if isinstance(k, torch.Tensor):
                 # indirect loads don't work with block_ptr
                 return False
+            # Slices are supported - we'll decompose non-power-of-2 if needed
         output_shape = SubscriptIndexing.compute_shape(fake_tensor, index)
         return len(output_shape) != 0
 
@@ -780,11 +1085,30 @@ class BlockedSubscriptIndexing:
             fake_value,
             reshaped_size=SubscriptIndexing.compute_shape(fake_value, index),
         )
-        for k in index:
+        for n, k in enumerate(index):
             if k is None:
                 pass  # handled by reshaped_size
+            elif k is Ellipsis:
+                ellipsis_dims = _calculate_ellipsis_dims(index, n, fake_value.ndim)
+                env = CompileEnvironment.current()
+                for _ in range(ellipsis_dims):
+                    size = fake_value.size(len(res.offsets))
+                    if size != 1:
+                        rdim = env.allocate_reduction_dimension(size)
+                        res.offsets.append(state.codegen.offset_var(rdim.block_id))
+                        res.block_shape.append(rdim.var)
+                    else:
+                        res.offsets.append("0")
+                        res.block_shape.append(1)
             elif isinstance(k, int):
-                res.offsets.append(repr(k))
+                # Normalize negative indices
+                if k < 0:
+                    dim_idx = len(res.offsets)
+                    res.offsets.append(
+                        _normalize_negative_index(k, dim_idx, fake_value, state)
+                    )
+                else:
+                    res.offsets.append(repr(k))
                 res.block_shape.append(1)
             elif isinstance(k, torch.SymInt):
                 symbol = k._sympy_()
@@ -809,16 +1133,53 @@ class BlockedSubscriptIndexing:
                     raise exc.InvalidIndexingType(
                         f"Strided slices not supported in block_ptr mode: {k}"
                     )
-                # Full slice or slice without step
+                
+                # Calculate slice parameters
+                start = get_slice_start(k)
+                slice_size = compute_slice_size(k, size)
+                
+                # Check if this is a full slice ([:] or equivalent)
+                is_full_slice = (start == 0 and slice_size == size)
+                
+                if is_full_slice:
+                    # Full slice - use the entire dimension
+                    if size != 1:
+                        env = CompileEnvironment.current()
+                        rdim = env.allocate_reduction_dimension(size)
+                        res.offsets.append(state.codegen.offset_var(rdim.block_id))
+                        res.block_shape.append(rdim.var)
+                    else:
+                        res.offsets.append("0")
+                        res.block_shape.append(1)
+                else:
+                    # Partial slice with start/stop
+                    if slice_size != 1:
+                        env = CompileEnvironment.current()
+                        
+                        # Allocate reduction dimension for the slice
+                        rdim = env.allocate_reduction_dimension(slice_size)
+                        offset = state.codegen.offset_var(rdim.block_id)
+                        res.offsets.append(_generate_offset_expr(start, offset))
+                        res.block_shape.append(rdim.var)
+                    else:
+                        res.offsets.append(str(start))
+                        res.block_shape.append(1)
+            else:
+                raise exc.InvalidIndexingType(k)
+        
+        # Handle partial indexing - add remaining dimensions
+        dims_processed = len(res.offsets)
+        if dims_processed < fake_value.ndim:
+            env = CompileEnvironment.current()
+            for dim in range(dims_processed, fake_value.ndim):
+                size = fake_value.size(dim)
                 if size != 1:
-                    env = CompileEnvironment.current()
                     rdim = env.allocate_reduction_dimension(size)
                     res.offsets.append(state.codegen.offset_var(rdim.block_id))
                     res.block_shape.append(rdim.var)
                 else:
                     res.offsets.append("0")
                     res.block_shape.append(1)
-            else:
-                raise exc.InvalidIndexingType(k)
+        
         res.validate()
         return res
