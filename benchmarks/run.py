@@ -38,6 +38,41 @@ import time
 #   - Multiple kernels with args: (tritonbench_module, [(helion_module, helion_func), ...], args_dict)
 KERNEL_MAPPINGS: dict[str, tuple[str, ...]] = {  # pyright: ignore[reportAssignmentType]
     # <tritonbench_op_name>: (<tritonbench_module_path>, <helion_kernel_module_path>, <helion_kernel_function_name>)
+    "rms_norm": (
+        "tritonbench.operators.rms_norm.operator",
+        "examples.rms_norm",
+        "rms_norm_tritonbench",
+        {
+            "num_inputs": 3
+        },  # TODO(yf225): reduction dim size = 8192 currently throws error
+    ),
+    "layer_norm": (
+        "tritonbench.operators.layer_norm.operator",
+        "examples.layer_norm",
+        "layer_norm_fwd",
+    ),
+    "softmax": (
+        "tritonbench.operators.softmax.operator",
+        "examples.softmax",
+        "softmax",
+    ),
+    "cross_entropy": (
+        "tritonbench.operators.cross_entropy.operator",
+        "examples.cross_entropy",
+        "cross_entropy",
+        {"B": 4, "T": 512, "v_range": "10,15"}
+        if os.environ.get("HELION_DEV_LOW_VRAM", "0") == "1"
+        else {},
+    ),
+    "sum": ("tritonbench.operators.sum.operator", "examples.sum", "sum_tritonbench"),
+    "jagged_mean": (
+        "tritonbench.operators.jagged_mean.operator",
+        "examples.jagged_mean",
+        "jagged_mean_tritonbench",
+        {"B": 32, "M": 8, "seqlen": 64}
+        if os.environ.get("HELION_DEV_LOW_VRAM", "0") == "1"
+        else {},
+    ),
     "vector_add": ("tritonbench.operators.vector_add.operator", "examples.add", "add"),
     "embedding": (
         "tritonbench.operators.embedding.operator",
@@ -49,68 +84,61 @@ KERNEL_MAPPINGS: dict[str, tuple[str, ...]] = {  # pyright: ignore[reportAssignm
         "examples.exp",
         "exp_tritonbench",
     ),
-    "rms_norm": (
-        "tritonbench.operators.rms_norm.operator",
-        "examples.rms_norm",
-        "rms_norm_tritonbench",
-        {
-            "num_inputs": 3
-        },  # TODO(yf225): reduction dim size = 8192 currently throws error
-    ),
-    "sum": ("tritonbench.operators.sum.operator", "examples.sum", "sum_tritonbench"),
-    "softmax": (
-        "tritonbench.operators.softmax.operator",
-        "examples.softmax",
-        "softmax",
-    ),
-    "jagged_mean": (
-        "tritonbench.operators.jagged_mean.operator",
-        "examples.jagged_mean",
-        "jagged_mean_tritonbench",
-        {"B": 32, "M": 8, "seqlen": 64}
-        if os.environ.get("HELION_DEV_LOW_VRAM", "0") == "1"
-        else {},
-    ),
-    "fp8_gemm": (
-        "tritonbench.operators.fp8_gemm.fp8_gemm",
-        "examples.fp8_gemm",
-        "fp8_gemm_tritonbench",
-    ),
-    "flash_attention": (
-        "tritonbench.operators.flash_attention.operator",
-        "examples.attention",
-        "attention",
-        {
-            "d_head": 128
-        },  # Set default head dimension to 128 for TLX attention compatibility
-    ),
-    "cross_entropy": (
-        "tritonbench.operators.cross_entropy.operator",
-        "examples.cross_entropy",
-        "cross_entropy",
-        {"B": 4, "T": 512, "v_range": "10,15"}
-        if os.environ.get("HELION_DEV_LOW_VRAM", "0") == "1"
-        else {},
-    ),
-    "fp8_attention": (
-        "tritonbench.operators.fp8_attention.operator",
-        "examples.fp8_attention",
-        "fp8_attention_tritonbench",
-    ),
-    "layer_norm": (
-        "tritonbench.operators.layer_norm.operator",
-        "examples.layer_norm",
-        "layer_norm_fwd",
-    ),
-    # Multiple kernel variants:
-    "gemm": (
-        "tritonbench.operators.gemm.operator",
-        [
-            ("examples.matmul", "matmul_tritonbench"),
-            ("examples.matmul_split_k", "matmul_split_k_tritonbench"),
-        ],
-    ),
+    # "fp8_gemm": (
+    #     "tritonbench.operators.fp8_gemm.fp8_gemm",
+    #     "examples.fp8_gemm",
+    #     "fp8_gemm_tritonbench",
+    # ),
+    # "flash_attention": (
+    #     "tritonbench.operators.flash_attention.operator",
+    #     "examples.attention",
+    #     "attention",
+    #     {
+    #         "d_head": 128
+    #     },  # Set default head dimension to 128 for TLX attention compatibility
+    # ),
+    # "fp8_attention": (
+    #     "tritonbench.operators.fp8_attention.operator",
+    #     "examples.fp8_attention",
+    #     "fp8_attention_tritonbench",
+    # ),
+    # # Multiple kernel variants:
+    # "gemm": (
+    #     "tritonbench.operators.gemm.operator",
+    #     [
+    #         ("examples.matmul", "matmul_tritonbench"),
+    #         ("examples.matmul_split_k", "matmul_split_k_tritonbench"),
+    #     ],
+    # ),
 }
+# KERNEL_MAPPINGS: dict[str, tuple[str, ...]] = {  # pyright: ignore[reportAssignmentType]
+#     "flash_attention": (
+#         "tritonbench.operators.flash_attention.operator",
+#         "examples.attention",
+#         "attention",
+#         {
+#             "d_head": 128
+#         },  # Set default head dimension to 128 for TLX attention compatibility
+#     ),
+#     # Multiple kernel variants:
+#     "gemm": (
+#         "tritonbench.operators.gemm.operator",
+#         [
+#             ("examples.matmul", "matmul_tritonbench"),
+#             ("examples.matmul_split_k", "matmul_split_k_tritonbench"),
+#         ],
+#     ),
+#     "fp8_gemm": (
+#         "tritonbench.operators.fp8_gemm.fp8_gemm",
+#         "examples.fp8_gemm",
+#         "fp8_gemm_tritonbench",
+#     ),
+#     "fp8_attention": (
+#         "tritonbench.operators.fp8_attention.operator",
+#         "examples.fp8_attention",
+#         "fp8_attention_tritonbench",
+#     ),   
+# }
 
 
 def get_system_memory_gb() -> float:
@@ -297,6 +325,23 @@ def run_kernel_variants(
     operator_args: dict[str, Any] | None = None,
 ) -> None:
     """Run kernel variants in the same benchmark run."""
+
+    # Configure Helion to use fewer generations for faster autotuning during benchmarks
+    import helion
+    from helion.autotuner import DifferentialEvolutionSearch, LocalAutotuneCache
+    from helion.runtime.kernel import BoundKernel
+    from typing import Sequence
+    
+    def fast_autotuner_fn(
+        bound_kernel: BoundKernel, args: Sequence[object], **kwargs: object
+    ) -> LocalAutotuneCache:
+        # Use only 1 generation instead of default 20 for faster benchmarking
+        return LocalAutotuneCache(
+            DifferentialEvolutionSearch(bound_kernel, args, num_generations=1, **kwargs)
+        )
+    
+    # Set the custom autotuner function
+    helion.set_default_settings(helion.Settings(autotuner_fn=fast_autotuner_fn))
 
     # Import tritonbench components
     try:
