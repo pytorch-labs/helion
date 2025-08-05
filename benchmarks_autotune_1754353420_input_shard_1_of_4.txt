@@ -1,0 +1,635 @@
+Running cross_entropy benchmark with Helion implementation...
+
+Running input shard 1/4: inputs 0 to 1 (of 6 total)
+  0%|          | 0/2 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 33.98ms to get benchmark function for inductor_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 1.29ms to get benchmark function for inductor_cross_entropy_loss
+/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/cross_entropy/operator.py:73: UserWarning: Using `torch.compile(module)` when there are global hooks on modules (e.g., from `register_module_forward_hook`); this will cause the hooks to fire an extra time for the `OptimizedModule` created by `torch.compile(module)`. If this causes undesired behavior, please try using `module.compile()`, or use the per-module hooks instead
+  return lambda: compiled(input, target)
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=1, crossover_rate=0.8
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 7 outliers from 168 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 25 outliers from 375 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Process ForkProcess-7:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-29:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-33:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-67:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+  0%|          | 0/2 [00:36<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1203, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 441, in _inner
+    result = kfunc(*args)
+             ^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 581, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 473, in autotune
+    config = self.settings.autotuner_fn(self, args, **kwargs).autotune()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_cache.py", line 165, in autotune
+    config = self.autotuner.autotune()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 260, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 97, in _autotune
+    self.initial_two_generations()
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 59, in initial_two_generations
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 376, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 230, in parallel_benchmark
+    is_workings = PrecompileFuture.wait_for_all(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 506, in wait_for_all
+    remaining = PrecompileFuture._wait_for_all_step(remaining)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 524, in _wait_for_all_step
+    connection.wait(
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-50:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-41:
+Process ForkProcess-11:
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-66:
+Process ForkProcess-69:
+Process ForkProcess-38:
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+KeyboardInterrupt
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-3:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 351, in make_llir
+    llvm_mod = llvm.to_module(mod, context)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-6:
+Process ForkProcess-31:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-47:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 460, in <lambda>
+    stages["ptx"] = lambda src, metadata: self.make_ptx(src, metadata, options, self.target.arch)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 385, in make_ptx
+    ret = llvm.translate_to_asm(src, triple, proc, features, [], opt.enable_fp_fusion, False)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-53:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-49:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 460, in <lambda>
+    stages["ptx"] = lambda src, metadata: self.make_ptx(src, metadata, options, self.target.arch)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 385, in make_ptx
+    ret = llvm.translate_to_asm(src, triple, proc, features, [], opt.enable_fp_fusion, False)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Process ForkProcess-27:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-46:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-44:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 344, in make_llir
+    pm.run(mod)
+KeyboardInterrupt
+Process ForkProcess-76:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt

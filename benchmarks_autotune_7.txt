@@ -1,0 +1,33 @@
+Running 6 kernels...
+
+
+============================================================
+Kernel: jagged_mean
+============================================================
+
+Running jagged_mean benchmark with Helion implementation...
+
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 486, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 482, in main
+    run_kernel(kernel_name, tritonbench_args.copy())
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 334, in run_kernel
+    op = Operator(tb_args=tb_args, extra_args=unknown_args)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 662, in __call__
+    obj.__post__init__()
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 771, in __post__init__
+    self._available_num_inputs = self.count_example_inputs()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1143, in count_example_inputs
+    total_possible = sum(1 for _ in self.get_input_iter())
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1143, in <genexpr>
+    total_possible = sum(1 for _ in self.get_input_iter())
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/jagged_mean/operator.py", line 209, in get_input_iter
+    for nt, B, M, max_seqlen, sparsity in generate_random_nested_tensors(
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/jagged_utils.py", line 230, in generate_random_nested_tensors
+    tensors.append(t)
+KeyboardInterrupt

@@ -1,0 +1,3 @@
+(M, H);llama_rms-gbps;llama_rms-tflops;liger_rms-accuracy;liger_rms-gbps;liger_rms-speedup;liger_rms-tflops;inductor_rms-accuracy;inductor_rms-gbps;inductor_rms-speedup;inductor_rms-tflops;helion_rms_norm_tritonbench-accuracy;helion_rms_norm_tritonbench-gbps;helion_rms_norm_tritonbench-speedup;helion_rms_norm_tritonbench-tflops
+(2048, 1024);;0.0;1.0;;3.4100530328770886;0.0;1.0;;3.3393783346411205;0.0;1.0;;2.808278930095009;0.0
+average;;0.0;1.0;;3.4100530328770886;0.0;1.0;;3.3393783346411205;0.0;1.0;;2.808278930095009;0.0

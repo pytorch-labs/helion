@@ -1,0 +1,158 @@
+Running rms_norm benchmark with Helion implementation...
+
+Running input shard 1/4: inputs 0 to 0 (of 3 total)
+  0%|          | 0/1 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 1.80ms to get benchmark function for llama_rms
+INFO:tritonbench.utils.triton_op:Took 0.23ms to get benchmark function for llama_rms
+INFO:tritonbench.utils.triton_op:Took 0.12ms to get benchmark function for liger_rms
+INFO:tritonbench.utils.triton_op:Took 0.26ms to get benchmark function for liger_rms
+INFO:tritonbench.utils.triton_op:Took 34.40ms to get benchmark function for inductor_rms
+INFO:tritonbench.utils.triton_op:Took 1.28ms to get benchmark function for inductor_rms
+/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/rms_norm/operator.py:92: UserWarning: Using `torch.compile(module)` when there are global hooks on modules (e.g., from `register_module_forward_hook`); this will cause the hooks to fire an extra time for the `OptimizedModule` created by `torch.compile(module)`. If this causes undesired behavior, please try using `module.compile()`, or use the per-module hooks instead
+  return lambda: compiled(input)
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for helion_rms_norm_tritonbench
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _rms_norm_kernel(x, weight, out, eps, _BLOCK_SIZE_0: tl.constexpr, _REDUCTION_BLOCK_1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mean_x_squared_extra_acc = tl.full([_BLOCK_SIZE_0, _REDUCTION_BLOCK_1], 0, tl.float32)
+    for roffset_1 in tl.range(0, 1024, _REDUCTION_BLOCK_1):
+        rindex_1 = roffset_1 + tl.arange(0, _REDUCTION_BLOCK_1).to(tl.int32)
+        x_tile = tl.load(x + (indices_0[:, None] * 1024 + rindex_1[None, :] * 1), None)
+        v_0 = x_tile * x_tile
+        v_1 = mean_x_squared_extra_acc + v_0
+        mean_x_squared_extra_acc = v_1
+    mean_x_squared_extra = tl.reshape(tl.sum(mean_x_squared_extra_acc, 1), [_BLOCK_SIZE_0, 1])
+    v_2 = 1024
+    v_3 = mean_x_squared_extra / v_2.to(tl.float32)
+    v_4 = v_3 + eps
+    v_5 = libdevice.rsqrt(v_4)
+    for roffset_1 in tl.range(0, 1024, _REDUCTION_BLOCK_1):
+        rindex_1 = roffset_1 + tl.arange(0, _REDUCTION_BLOCK_1).to(tl.int32)
+        v_5_copy = v_5
+        x_tile_1 = tl.load(x + (indices_0[:, None] * 1024 + rindex_1[None, :] * 1), None)
+        v_6 = x_tile_1 * v_5_copy
+        load_1 = tl.load(weight + rindex_1 * 1, None)
+        v_7 = load_1[None, :]
+        v_8 = v_6 * v_7
+        tl.store(out + (indices_0[:, None] * 1024 + rindex_1[None, :] * 1), v_8, None)
+
+def rms_norm(x: torch.Tensor, weight: torch.Tensor, eps: float=1e-05, *, _launcher=_default_launcher):
+    """
+    Performs Root Mean Square (RMS) normalization on the input tensor.
+
+    RMS normalization normalizes by the root mean square of the elements:
+    output = x / sqrt(mean(x^2) + eps) * weight
+
+    Args:
+        x: Input tensor of shape [M, N]
+        weight: Scale parameter of shape [N]
+        eps: Small constant for numerical stability
+
+    Returns:
+        Output tensor of shape [M, N] with RMS normalization applied
+    """
+    m, n = x.size()
+    assert weight.size(0) == n, f'weight size mismatch {weight.size(0)} != {n}'
+    out = torch.empty([m, n], dtype=x.dtype, device=x.device)
+    _BLOCK_SIZE_0 = 4
+    _REDUCTION_BLOCK_1 = 512
+    _launcher(_rms_norm_kernel, (triton.cdiv(2048, _BLOCK_SIZE_0),), x, weight, out, eps, _BLOCK_SIZE_0, _REDUCTION_BLOCK_1, num_warps=4, num_stages=3)
+    return out
+INFO:tritonbench.utils.triton_op:Took 0.28ms to get benchmark function for helion_rms_norm_tritonbench
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _rms_norm_kernel(x, weight, out, eps, _BLOCK_SIZE_0: tl.constexpr, _REDUCTION_BLOCK_1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mean_x_squared_extra_acc = tl.full([_BLOCK_SIZE_0, _REDUCTION_BLOCK_1], 0, tl.float32)
+    for roffset_1 in tl.range(0, 1024, _REDUCTION_BLOCK_1):
+        rindex_1 = roffset_1 + tl.arange(0, _REDUCTION_BLOCK_1).to(tl.int32)
+        x_tile = tl.load(x + (indices_0[:, None] * 1024 + rindex_1[None, :] * 1), None)
+        v_0 = x_tile * x_tile
+        v_1 = mean_x_squared_extra_acc + v_0
+        mean_x_squared_extra_acc = v_1
+    mean_x_squared_extra = tl.reshape(tl.sum(mean_x_squared_extra_acc, 1), [_BLOCK_SIZE_0, 1])
+    v_2 = 1024
+    v_3 = mean_x_squared_extra / v_2.to(tl.float32)
+    v_4 = v_3 + eps
+    v_5 = libdevice.rsqrt(v_4)
+    for roffset_1 in tl.range(0, 1024, _REDUCTION_BLOCK_1):
+        rindex_1 = roffset_1 + tl.arange(0, _REDUCTION_BLOCK_1).to(tl.int32)
+        v_5_copy = v_5
+        x_tile_1 = tl.load(x + (indices_0[:, None] * 1024 + rindex_1[None, :] * 1), None)
+        v_6 = x_tile_1 * v_5_copy
+        load_1 = tl.load(weight + rindex_1 * 1, None)
+        v_7 = load_1[None, :]
+        v_8 = v_6 * v_7
+        tl.store(out + (indices_0[:, None] * 1024 + rindex_1[None, :] * 1), v_8, None)
+
+def rms_norm(x: torch.Tensor, weight: torch.Tensor, eps: float=1e-05, *, _launcher=_default_launcher):
+    """
+    Performs Root Mean Square (RMS) normalization on the input tensor.
+
+    RMS normalization normalizes by the root mean square of the elements:
+    output = x / sqrt(mean(x^2) + eps) * weight
+
+    Args:
+        x: Input tensor of shape [M, N]
+        weight: Scale parameter of shape [N]
+        eps: Small constant for numerical stability
+
+    Returns:
+        Output tensor of shape [M, N] with RMS normalization applied
+    """
+    m, n = x.size()
+    assert weight.size(0) == n, f'weight size mismatch {weight.size(0)} != {n}'
+    out = torch.empty([m, n], dtype=x.dtype, device=x.device)
+    _BLOCK_SIZE_0 = 4
+    _REDUCTION_BLOCK_1 = 512
+    _launcher(_rms_norm_kernel, (triton.cdiv(2048, _BLOCK_SIZE_0),), x, weight, out, eps, _BLOCK_SIZE_0, _REDUCTION_BLOCK_1, num_warps=4, num_stages=3)
+    return out
+100%|██████████| 1/1 [00:01<00:00,  1.48s/it]100%|██████████| 1/1 [00:01<00:00,  1.48s/it]
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 5 outliers from 681 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 24 outliers from 597 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+(M, H);llama_rms-gbps;llama_rms-tflops;liger_rms-accuracy;liger_rms-gbps;liger_rms-speedup;liger_rms-tflops;inductor_rms-accuracy;inductor_rms-gbps;inductor_rms-speedup;inductor_rms-tflops;helion_rms_norm_tritonbench-accuracy;helion_rms_norm_tritonbench-gbps;helion_rms_norm_tritonbench-speedup;helion_rms_norm_tritonbench-tflops
+(2048, 1024);;0.0;1.0;;3.4100530328770886;0.0;1.0;;3.3393783346411205;0.0;1.0;;2.808278930095009;0.0
+average;;0.0;1.0;;3.4100530328770886;0.0;1.0;;3.3393783346411205;0.0;1.0;;2.808278930095009;0.0
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7f670db66020>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 264, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 

@@ -1,0 +1,6 @@
+(B, T, D, V);torch_embedding-tflops;torch_embedding-gbps;liger_embedding-tflops;liger_embedding-accuracy;liger_embedding-speedup;liger_embedding-gbps;inductor_embedding-tflops;inductor_embedding-accuracy;inductor_embedding-speedup;inductor_embedding-gbps;helion_embedding_tritonbench-tflops;helion_embedding_tritonbench-accuracy;helion_embedding_tritonbench-speedup;helion_embedding_tritonbench-gbps
+(32, 512, 768, 1024);0.0;;0.0;1.0;0.9332626989966639;;0.0;1.0;1.0045610382335401;;0.0;1.0;0.8620352542507256;
+(32, 512, 768, 2048);0.0;;0.0;1.0;1.0090633959392976;;0.0;1.0;1.0172587774193524;;0.0;1.0;0.9515669137700754;
+(32, 512, 768, 4096);0.0;;0.0;1.0;1.0586641783768427;;0.0;1.0;1.0085984175924672;;0.0;1.0;1.0173459831919707;
+(32, 512, 768, 8192);0.0;;0.0;1.0;1.0921584916037448;;0.0;1.0;1.0127436376715435;;0.0;1.0;1.0320856290305138;
+average;0.0;;0.0;1.0;1.0232871912291372;;0.0;1.0;1.0107904677292259;;0.0;1.0;0.9657584450608213;

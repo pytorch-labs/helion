@@ -1,0 +1,317 @@
+Running part 1/4: kernels 1 to 2 of 7 total
+Running 2 kernels...
+
+
+============================================================
+Kernel: sum
+============================================================
+
+Running sum benchmark with Helion implementation...
+
+  0%|          | 0/14 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_sum
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for triton_sum
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_sum
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 6 outliers from 126 samples
+[11s] Initial population: min=0.0046 mid=0.0069 max=0.0310 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[25s] Generation 2: replaced=20 min=0.0046 mid=0.0050 max=0.0067 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[41s] Generation 3: replaced=20 min=0.0046 mid=0.0048 max=0.0051 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[58s] Generation 4: replaced=13 min=0.0046 mid=0.0047 max=0.0051 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[74s] Generation 5: replaced=8 min=0.0046 mid=0.0047 max=0.0051 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[90s] Generation 6: replaced=5 min=0.0046 mid=0.0047 max=0.0050 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[106s] Generation 7: replaced=11 min=0.0046 mid=0.0047 max=0.0049 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[121s] Generation 8: replaced=4 min=0.0046 mid=0.0046 max=0.0049 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[135s] Generation 9: replaced=7 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[150s] Generation 10: replaced=5 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[164s] Generation 11: replaced=3 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[178s] Generation 12: replaced=4 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[191s] Generation 13: replaced=7 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[204s] Generation 14: replaced=3 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[217s] Generation 15: replaced=2 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=4, indexing='pointer', pid_type='flat')
+[232s] Generation 16: replaced=6 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=4, indexing='pointer', pid_type='flat')
+[249s] Generation 17: replaced=0 min=0.0046 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=4, indexing='pointer', pid_type='flat')
+[263s] Generation 18: replaced=1 min=0.0042 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='persistent_interleaved')
+[280s] Generation 19: replaced=2 min=0.0042 mid=0.0046 max=0.0047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='persistent_interleaved')
+[280s] Autotuning complete in 280.8s after searching 1520 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='persistent_interleaved'))
+
+  7%|▋         | 1/14 [04:41<1:01:01, 281.62s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_sum
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for triton_sum
+INFO:tritonbench.utils.triton_op:Took 4.43ms to get benchmark function for helion_sum
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 3 outliers from 704 samples
+Removed 4 outliers from 820 samples
+Removed 4 outliers from 718 samples
+[13s] Initial population: min=0.0047 mid=0.0098 max=0.1038 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[37s] Generation 2: replaced=18 min=0.0047 mid=0.0055 max=0.0080 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[59s] Generation 3: replaced=22 min=0.0047 mid=0.0052 max=0.0059 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[79s] Generation 4: replaced=16 min=0.0047 mid=0.0051 max=0.0059 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[99s] Generation 5: replaced=15 min=0.0047 mid=0.0049 max=0.0056 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[118s] Generation 6: replaced=13 min=0.0047 mid=0.0048 max=0.0053 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[137s] Generation 7: replaced=10 min=0.0044 mid=0.0048 max=0.0052 best=Config(block_sizes=[1], reduction_loops=[1024], range_unroll_factors=[0], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[157s] Generation 8: replaced=10 min=0.0042 mid=0.0048 max=0.0051 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='persistent_blocked')
+[176s] Generation 9: replaced=7 min=0.0042 mid=0.0047 max=0.0051 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='persistent_blocked')
+[202s] Generation 10: replaced=5 min=0.0042 mid=0.0047 max=0.0049 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='persistent_blocked')
+[233s] Generation 11: replaced=4 min=0.0042 mid=0.0047 max=0.0049 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='persistent_blocked')
+[252s] Generation 12: replaced=4 min=0.0042 mid=0.0047 max=0.0049 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='persistent_blocked')
+[269s] Generation 13: replaced=1 min=0.0042 mid=0.0047 max=0.0049 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[287s] Generation 14: replaced=6 min=0.0042 mid=0.0047 max=0.0048 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[306s] Generation 15: replaced=9 min=0.0042 mid=0.0047 max=0.0048 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[323s] Generation 16: replaced=2 min=0.0042 mid=0.0047 max=0.0048 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[339s] Generation 17: replaced=2 min=0.0042 mid=0.0047 max=0.0048 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[356s] Generation 18: replaced=1 min=0.0042 mid=0.0047 max=0.0048 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[374s] Generation 19: replaced=4 min=0.0042 mid=0.0047 max=0.0048 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[374s] Autotuning complete in 374.1s after searching 1520 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked'))
+
+ 14%|█▍        | 2/14 [10:56<1:07:15, 336.32s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_sum
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for triton_sum
+INFO:tritonbench.utils.triton_op:Took 5.28ms to get benchmark function for helion_sum
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 13 outliers from 820 samples
+Removed 1 outliers from 744 samples
+[12s] Initial population: failed=1 min=0.0052 mid=0.0126 max=0.3385 best=Config(block_sizes=[1], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[38s] Generation 2: replaced=23 min=0.0052 mid=0.0067 max=0.0116 best=Config(block_sizes=[1], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[109s] Generation 3: replaced=17 min=0.0049 mid=0.0062 max=0.0116 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[155s] Generation 4: replaced=12 min=0.0049 mid=0.0059 max=0.0116 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[174s] Generation 5: replaced=15 min=0.0049 mid=0.0056 max=0.0116 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[200s] Generation 6: replaced=11 min=0.0049 mid=0.0055 max=0.0069 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[219s] Generation 7: replaced=12 min=0.0049 mid=0.0054 max=0.0069 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[236s] Generation 8: replaced=11 min=0.0049 mid=0.0053 max=0.0064 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[253s] Generation 9: replaced=8 min=0.0049 mid=0.0053 max=0.0064 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[269s] Generation 10: replaced=8 min=0.0049 mid=0.0052 max=0.0064 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[284s] Generation 11: replaced=12 min=0.0049 mid=0.0052 max=0.0057 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[299s] Generation 12: replaced=11 min=0.0049 mid=0.0051 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[313s] Generation 13: replaced=3 min=0.0049 mid=0.0051 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[327s] Generation 14: replaced=7 min=0.0049 mid=0.0051 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[340s] Generation 15: replaced=8 min=0.0049 mid=0.0051 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='block_ptr', pid_type='flat')
+[352s] Generation 16: replaced=5 min=0.0049 mid=0.0050 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='block_ptr', pid_type='flat')
+[365s] Generation 17: replaced=5 min=0.0049 mid=0.0050 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat')
+[378s] Generation 18: replaced=5 min=0.0049 mid=0.0049 max=0.0054 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat')
+[392s] Generation 19: replaced=3 min=0.0049 mid=0.0049 max=0.0053 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat')
+[392s] Autotuning complete in 392.4s after searching 1520 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat'))
+
+ 21%|██▏       | 3/14 [17:29<1:06:23, 362.18s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_sum
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for triton_sum
+INFO:tritonbench.utils.triton_op:Took 3.82ms to get benchmark function for helion_sum
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 26 outliers from 827 samples
+Removed 5 outliers from 791 samples
+[12s] Initial population: min=0.0069 mid=0.0421 max=1.8194 best=Config(block_sizes=[1], reduction_loops=[16384], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[48s] Generation 2: replaced=14 min=0.0062 mid=0.0153 max=0.0409 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[90s] Generation 3: replaced=20 min=0.0062 mid=0.0101 max=0.0340 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[125s] Generation 4: replaced=15 min=0.0062 mid=0.0089 max=0.0314 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[159s] Generation 5: replaced=14 min=0.0062 mid=0.0079 max=0.0314 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+Process ForkProcess-4998:
+Exception ignored in: <generator object tqdm.__iter__ at 0x7fe4e15bcdc0>
+Process ForkProcess-4997:
+Exception ignored in sys.unraisablehook: <built-in function unraisablehook>
+KeyboardInterrupt: 
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 878, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1179, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 300, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/sum.py", line 27, in sum_tritonbench
+    result = sum_kernel(x_2d)
+             ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 83, in evolve_population
+    for i, candidate in self.iter_candidates():
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 76, in iter_candidates
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 358, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 212, in parallel_benchmark
+    is_workings = PrecompileFuture.wait_for_all(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 487, in wait_for_all
+    remaining = PrecompileFuture._wait_for_all_step(remaining)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 505, in _wait_for_all_step
+    connection.wait(
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2051, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2009, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 486, in <module>
+    main()
+
+During handling of the above exception, another exception occurred:
+
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 482, in main
+Traceback (most recent call last):
+    run_kernel(kernel_name, tritonbench_args.copy())
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 339, in run_kernel
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2030, in _wait
+    if self._waitpid_lock.acquire(False):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 424, in make_cubin
+    subprocess.run(ptxas_cmd, check=True, close_fds=False, stderr=flog)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 566, in run
+    process.kill()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2211, in kill
+    def kill(self):
+    
+KeyboardInterrupt
+    op.run(warmup=warmup, rep=rep)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 403, in make_cubin
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.ptx') as fsrc, \
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in run
+  File "/home/willfeng/local/miniconda3/lib/python3.12/tempfile.py", line 516, in __exit__
+    def __exit__(self, exc, value, tb):
+    
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 461, in <lambda>
+    stages["cubin"] = lambda src, metadata: self.make_cubin(src, metadata, options, self.target.arch)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 403, in make_cubin
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.ptx') as fsrc, \
+  File "/home/willfeng/local/miniconda3/lib/python3.12/tempfile.py", line 517, in __exit__
+    result = self.file.__exit__(exc, value, tb)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 317, in _bootstrap
+    util._exit_function()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/util.py", line 363, in _exit_function
+    _run_finalizers()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/util.py", line 309, in _run_finalizers
+    _finalizer_registry.clear()
+KeyboardInterrupt
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 878, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1179, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 300, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/sum.py", line 27, in sum_tritonbench
+    result = sum_kernel(x_2d)
+             ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 83, in evolve_population
+    for i, candidate in self.iter_candidates():
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 76, in iter_candidates
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 358, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 212, in parallel_benchmark
+    is_workings = PrecompileFuture.wait_for_all(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 487, in wait_for_all
+    remaining = PrecompileFuture._wait_for_all_step(remaining)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 505, in _wait_for_all_step
+    connection.wait(
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+ 21%|██▏       | 3/14 [20:20<1:14:34, 406.78s/it]

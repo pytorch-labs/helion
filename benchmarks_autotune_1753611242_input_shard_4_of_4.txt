@@ -1,0 +1,1103 @@
+Running all 4 kernels...
+
+
+============================================================
+Kernel: gemm
+============================================================
+
+Running gemm benchmark with 2 Helion implementations...
+
+Running input shard 4/4: inputs 24 to 30 (of 31 total)
+  0%|          | 0/7 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.08ms to get benchmark function for matmul_partition_k
+/home/willfeng/local/pytorch-nightly/torch/backends/cuda/__init__.py:131: UserWarning: Please use the new API settings to control TF32 behavior, such as torch.backends.cudnn.conv.fp32_precision = 'tf32' or torch.backends.cuda.matmul.fp32_precision = 'ieee'. Old settings, e.g, torch.backends.cuda.matmul.allow_tf32 = True, torch.backends.cudnn.allow_tf32 = True, allowTF32CuDNN() and allowTF32CuBLAS() will be deprecated after Pytorch 2.9. Please see https://pytorch.org/docs/main/notes/cuda.html#tensorfloat-32-tf32-on-ampere-and-later-devices (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:78.)
+  return torch._C._get_cublas_allow_tf32()
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 23.65ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 43.80ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 31.35ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_matmul_tritonbench
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 14 outliers from 387 samples
+Removed 3 outliers from 453 samples
+Removed 3 outliers from 459 samples
+[5s] PTXASError compiling config: Config(block_sizes=[1024, 128, 16], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[2, 2], range_num_stages=[3, 1], range_multi_buffers=[True, False], range_flattens=[None, False], num_warps=32, num_stages=7, indexing='pointer', pid_type='persistent_interleaved')
+[18s] Initial population: failed=5 min=0.4407 mid=4.6300 max=65.0939 best=Config(block_sizes=[128, 16, 128], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=8, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[46s] Generation 2: replaced=18 min=0.4407 mid=1.4807 max=4.6300 best=Config(block_sizes=[128, 16, 128], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=8, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[75s] Generation 3: replaced=20 min=0.1700 mid=1.1235 max=2.9225 best=Config(block_sizes=[128, 128, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[4, 1], range_num_stages=[3, 3], range_multi_buffers=[False, None], range_flattens=[True, False], num_warps=8, num_stages=1, indexing='pointer', pid_type='persistent_interleaved')
+[96s] PTXASError compiling config: Config(block_sizes=[128, 512, 16], loop_orders=[[0, 1]], l2_groupings=[1], range_unroll_factors=[2, 1], range_num_stages=[3, 3], range_multi_buffers=[False, True], range_flattens=[None, True], num_warps=16, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[109s] Generation 4: replaced=18 min=0.1700 mid=0.6449 max=2.6699 best=Config(block_sizes=[128, 128, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[4, 1], range_num_stages=[3, 3], range_multi_buffers=[False, None], range_flattens=[True, False], num_warps=8, num_stages=1, indexing='pointer', pid_type='persistent_interleaved')
+[114s] PTXASError compiling config: Config(block_sizes=[64, 1024, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[138s] Generation 5: replaced=11 min=0.1700 mid=0.5902 max=2.6699 best=Config(block_sizes=[128, 128, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[4, 1], range_num_stages=[3, 3], range_multi_buffers=[False, None], range_flattens=[True, False], num_warps=8, num_stages=1, indexing='pointer', pid_type='persistent_interleaved')
+[146s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[0, 1], range_num_stages=[0, 2], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=16, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[208s] Timeout after 60s compiling Config(block_sizes=[32, 1024, 32], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[2, 2], range_num_stages=[1, 3], range_multi_buffers=[True, None], range_flattens=[True, False], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[268s] Timeout after 60s compiling Config(block_sizes=[32, 16, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[3, 3], range_num_stages=[4, 3], range_multi_buffers=[None, False], range_flattens=[None, True], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[269s] PTXASError compiling config: Config(block_sizes=[128, 1024, 16], loop_orders=[[1, 0]], l2_groupings=[16], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=32, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[308s] Generation 6: replaced=8 min=0.1700 mid=0.5552 max=1.4983 best=Config(block_sizes=[128, 128, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[4, 1], range_num_stages=[3, 3], range_multi_buffers=[False, None], range_flattens=[True, False], num_warps=8, num_stages=1, indexing='pointer', pid_type='persistent_interleaved')
+[316s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 0], range_multi_buffers=[None, False], range_flattens=[None, False], num_warps=16, num_stages=2, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[379s] Timeout after 60s compiling Config(block_sizes=[64, 16, 128], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[1, 0], range_num_stages=[4, 4], range_multi_buffers=[False, False], range_flattens=[None, True], num_warps=1, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[385s] PTXASError compiling config: Config(block_sizes=[128, 1024, 16], loop_orders=[[0, 1]], l2_groupings=[32], range_unroll_factors=[0, 2], range_num_stages=[0, 4], range_multi_buffers=[None, False], range_flattens=[None, True], num_warps=32, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[397s] Generation 7: replaced=15 min=0.1553 mid=0.3977 max=1.4807 best=Config(block_sizes=[128, 256, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=32, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[401s] PTXASError compiling config: Config(block_sizes=[64, 1024, 32], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[3, 1], range_num_stages=[0, 4], range_multi_buffers=[False, True], range_flattens=[None, True], num_warps=32, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[403s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[0, 1]], l2_groupings=[1], range_unroll_factors=[4, 0], range_num_stages=[3, 3], range_multi_buffers=[True, False], range_flattens=[None, None], num_warps=32, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[405s] PTXASError compiling config: Config(block_sizes=[64, 1024, 128], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[1, 0], range_num_stages=[4, 0], range_multi_buffers=[None, True], range_flattens=[True, None], num_warps=32, num_stages=6, indexing='pointer', pid_type='persistent_blocked')
+[420s] PTXASError compiling config: Config(block_sizes=[64, 1024, 32], loop_orders=[[0, 1]], l2_groupings=[32], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[432s] PTXASError compiling config: Config(block_sizes=[128, 512, 128], loop_orders=[[0, 1]], l2_groupings=[2], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[None, True], range_flattens=[False, None], num_warps=32, num_stages=3, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[438s] Generation 8: replaced=13 min=0.1553 mid=0.3703 max=0.9187 best=Config(block_sizes=[128, 256, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=32, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[466s] PTXASError compiling config: Config(block_sizes=[256, 512, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[2, 0], range_num_stages=[3, 1], range_multi_buffers=[False, None], range_flattens=[True, False], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='persistent_interleaved')
+[476s] Generation 9: replaced=10 min=0.1553 mid=0.3308 max=0.8954 best=Config(block_sizes=[128, 256, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=32, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[478s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[2, 0], range_num_stages=[4, 2], range_multi_buffers=[False, True], range_flattens=[True, True], num_warps=32, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[498s] PTXASError compiling config: Config(block_sizes=[256, 512, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[4, 1], range_num_stages=[3, 4], range_multi_buffers=[False, None], range_flattens=[True, None], num_warps=16, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[513s] Generation 10: replaced=7 min=0.1437 mid=0.3078 max=0.8954 best=Config(block_sizes=[128, 256, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, False], num_warps=16, num_stages=7, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[525s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[1, 0]], l2_groupings=[64], range_unroll_factors=[2, 1], range_num_stages=[3, 3], range_multi_buffers=[True, True], range_flattens=[None, None], num_warps=32, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[545s] PTXASError compiling config: Config(block_sizes=[256, 256, 16], loop_orders=[[1, 0]], l2_groupings=[16], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=16, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[549s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[3, 2], range_num_stages=[3, 3], range_multi_buffers=[None, None], range_flattens=[True, True], num_warps=32, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[562s] Generation 11: replaced=8 min=0.1437 mid=0.2725 max=0.8954 best=Config(block_sizes=[128, 256, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, False], num_warps=16, num_stages=7, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[567s] PTXASError compiling config: Config(block_sizes=[64, 1024, 16], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=32, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[567s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[0, 1]], l2_groupings=[1], range_unroll_factors=[0, 1], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[570s] PTXASError compiling config: Config(block_sizes=[512, 128, 32], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=32, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[571s] PTXASError compiling config: Config(block_sizes=[128, 512, 128], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[1, 0], range_num_stages=[2, 3], range_multi_buffers=[True, False], range_flattens=[True, None], num_warps=32, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[574s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=32, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[576s] PTXASError compiling config: Config(block_sizes=[64, 1024, 64], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[0, 2], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=32, num_stages=8, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[579s] PTXASError compiling config: Config(block_sizes=[256, 256, 16], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[2, 1], range_num_stages=[1, 3], range_multi_buffers=[True, True], range_flattens=[True, None], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='persistent_interleaved')
+[581s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[4, 0], range_num_stages=[2, 3], range_multi_buffers=[False, False], range_flattens=[None, None], num_warps=32, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[595s] Generation 12: replaced=9 min=0.1346 mid=0.2448 max=0.6010 best=Config(block_sizes=[128, 256, 64], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[612s] PTXASError compiling config: Config(block_sizes=[512, 256, 32], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[1, 0], range_num_stages=[2, 2], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=32, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[617s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=32, num_stages=6, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[677s] Timeout after 60s compiling Config(block_sizes=[64, 256, 64], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[4, 0], range_num_stages=[4, 3], range_multi_buffers=[False, True], range_flattens=[True, None], num_warps=16, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[737s] Timeout after 60s compiling Config(block_sizes=[16, 32, 128], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=1, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[743s] Generation 13: replaced=8 min=0.1346 mid=0.2129 max=0.4080 best=Config(block_sizes=[128, 256, 64], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[751s] PTXASError compiling config: Config(block_sizes=[256, 256, 128], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 1], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=32, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[753s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 0]], l2_groupings=[16], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[756s] PTXASError compiling config: Config(block_sizes=[64, 1024, 16], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[1, 2], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=32, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[772s] PTXASError compiling config: Config(block_sizes=[256, 1024, 32], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[774s] PTXASError compiling config: Config(block_sizes=[128, 512, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 2], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=16, num_stages=2, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[788s] PTXASError compiling config: Config(block_sizes=[256, 512, 16], loop_orders=[[0, 1]], l2_groupings=[32], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=16, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[791s] Generation 14: replaced=4 min=0.1284 mid=0.1985 max=0.3952 best=Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[797s] PTXASError compiling config: Config(block_sizes=[256, 512, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[2, 0], range_num_stages=[3, 4], range_multi_buffers=[False, False], range_flattens=[False, False], num_warps=16, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[798s] PTXASError compiling config: Config(block_sizes=[128, 512, 64], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[0, 2], range_num_stages=[0, 3], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=32, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[799s] PTXASError compiling config: Config(block_sizes=[128, 512, 64], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, False], range_flattens=[None, False], num_warps=32, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[801s] PTXASError compiling config: Config(block_sizes=[64, 1024, 64], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[3, 1], range_num_stages=[2, 2], range_multi_buffers=[False, None], range_flattens=[None, False], num_warps=32, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[802s] PTXASError compiling config: Config(block_sizes=[256, 256, 16], loop_orders=[[0, 1]], l2_groupings=[8], range_unroll_factors=[4, 0], range_num_stages=[3, 3], range_multi_buffers=[True, True], range_flattens=[False, True], num_warps=16, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[822s] PTXASError compiling config: Config(block_sizes=[64, 1024, 32], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[3, 1], range_num_stages=[1, 3], range_multi_buffers=[False, True], range_flattens=[False, False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_interleaved')
+[824s] Generation 15: replaced=7 min=0.1284 mid=0.1908 max=0.3758 best=Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[830s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[3, 1], range_num_stages=[2, 0], range_multi_buffers=[False, None], range_flattens=[False, True], num_warps=16, num_stages=5, indexing='block_ptr', pid_type='persistent_interleaved')
+[831s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[0, 0], range_num_stages=[0, 1], range_multi_buffers=[None, False], range_flattens=[None, True], num_warps=16, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[833s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 0]], l2_groupings=[8], range_unroll_factors=[2, 1], range_num_stages=[1, 2], range_multi_buffers=[False, None], range_flattens=[True, True], num_warps=32, num_stages=7, indexing='pointer', pid_type='persistent_interleaved')
+[852s] PTXASError compiling config: Config(block_sizes=[256, 512, 64], loop_orders=[[1, 0]], l2_groupings=[64], range_unroll_factors=[4, 2], range_num_stages=[3, 3], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=32, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[853s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[2, 0], range_num_stages=[4, 3], range_multi_buffers=[None, None], range_flattens=[False, True], num_warps=16, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[854s] PTXASError compiling config: Config(block_sizes=[512, 256, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[0, 0], range_num_stages=[0, 2], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=32, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[870s] PTXASError compiling config: Config(block_sizes=[256, 256, 16], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[4, 1], range_num_stages=[3, 1], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='persistent_interleaved')
+[932s] Timeout after 60s compiling Config(block_sizes=[512, 64, 16], loop_orders=[[1, 0]], l2_groupings=[16], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=8, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[992s] Timeout after 60s compiling Config(block_sizes=[32, 512, 32], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[3, 1], range_num_stages=[3, 2], range_multi_buffers=[True, None], range_flattens=[None, False], num_warps=32, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[995s] Generation 16: replaced=5 min=0.1284 mid=0.1908 max=0.3758 best=Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1007s] PTXASError compiling config: Config(block_sizes=[64, 1024, 64], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[1, 0], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[False, None], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='persistent_interleaved')
+[1007s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[0, 1]], l2_groupings=[2], range_unroll_factors=[0, 0], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=32, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1013s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[0, 1]], l2_groupings=[16], range_unroll_factors=[0, 1], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[None, True], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1019s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[1, 0]], l2_groupings=[64], range_unroll_factors=[3, 0], range_num_stages=[2, 4], range_multi_buffers=[False, False], range_flattens=[None, False], num_warps=16, num_stages=5, indexing='pointer', pid_type='persistent_interleaved')
+[1023s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[1, 0]], l2_groupings=[64], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, False], range_flattens=[None, False], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1083s] Timeout after 60s compiling Config(block_sizes=[64, 256, 64], loop_orders=[[1, 0]], l2_groupings=[8], range_unroll_factors=[3, 3], range_num_stages=[4, 3], range_multi_buffers=[False, False], range_flattens=[False, False], num_warps=16, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[1097s] Generation 17: replaced=8 min=0.1284 mid=0.1817 max=0.3200 best=Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1101s] PTXASError compiling config: Config(block_sizes=[128, 512, 64], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[2, 0], range_num_stages=[0, 3], range_multi_buffers=[False, None], range_flattens=[False, False], num_warps=32, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[1103s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[0, 2], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=16, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1120s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[1, 0]], l2_groupings=[2], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=16, num_stages=4, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[1123s] PTXASError compiling config: Config(block_sizes=[256, 256, 16], loop_orders=[[0, 1]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 0], range_multi_buffers=[None, False], range_flattens=[None, True], num_warps=16, num_stages=7, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[1136s] Generation 18: replaced=7 min=0.1284 mid=0.1782 max=0.3200 best=Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1140s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[1, 1], range_num_stages=[3, 4], range_multi_buffers=[True, False], range_flattens=[True, None], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_interleaved')
+[1144s] PTXASError compiling config: Config(block_sizes=[256, 512, 16], loop_orders=[[0, 1]], l2_groupings=[2], range_unroll_factors=[4, 0], range_num_stages=[4, 4], range_multi_buffers=[False, None], range_flattens=[False, None], num_warps=16, num_stages=6, indexing='pointer', pid_type='persistent_interleaved')
+[1164s] PTXASError compiling config: Config(block_sizes=[128, 512, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[3, 0], range_num_stages=[4, 3], range_multi_buffers=[None, False], range_flattens=[True, None], num_warps=16, num_stages=4, indexing='block_ptr', pid_type='persistent_interleaved')
+[1167s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[0, 1]], l2_groupings=[64], range_unroll_factors=[0, 0], range_num_stages=[2, 4], range_multi_buffers=[False, False], range_flattens=[None, False], num_warps=32, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[1227s] Timeout after 60s compiling Config(block_sizes=[256, 32, 64], loop_orders=[[0, 1]], l2_groupings=[32], range_unroll_factors=[4, 1], range_num_stages=[3, 4], range_multi_buffers=[False, True], range_flattens=[True, True], num_warps=8, num_stages=2, indexing='block_ptr', pid_type='persistent_interleaved')
+[1228s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 0]], l2_groupings=[8], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=16, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1229s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[0, 1]], l2_groupings=[32], range_unroll_factors=[2, 0], range_num_stages=[4, 3], range_multi_buffers=[False, None], range_flattens=[None, True], num_warps=32, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1233s] Generation 19: replaced=2 min=0.1284 mid=0.1764 max=0.3200 best=Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1233s] Autotuning complete in 1233.5s after searching 1511 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[256, 128, 32], loop_orders=[[1, 0]], l2_groupings=[4], range_unroll_factors=[4, 1], range_num_stages=[1, 0], range_multi_buffers=[False, None], range_flattens=[None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved'))
+
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+helion.runtime.set_triton_allocator()
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_2])
+    y_desc = tl.make_tensor_descriptor(y, [3328, 3328], [3328, 1], [_BLOCK_SIZE_1, _BLOCK_SIZE_2])
+    out_desc = tl.make_tensor_descriptor(out, [3328, 3328], [3328, 1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1])
+    total_pids = tl.cdiv(3328, _BLOCK_SIZE_1) * tl.cdiv(3328, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=4, num_stages=1, disallow_acc_multi_buffer=True):
+        num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_1)
+        num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+        inner_2d_pid = virtual_pid
+        num_pid_in_group = 4 * num_pid_n
+        group_id = inner_2d_pid // num_pid_in_group
+        first_pid_m = group_id * 4
+        group_size_m = min(num_pid_m - first_pid_m, 4)
+        pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+        pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 3328, _BLOCK_SIZE_2, loop_unroll_factor=1):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = x_desc.load([offset_0, offset_2])
+            load_1 = tl.permute(y_desc.load([offset_1, offset_2]), [1, 0])
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        out_desc.store([offset_0, offset_1], v_0)
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 128
+    _BLOCK_SIZE_0 = 256
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=8, num_stages=6)
+    return out
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for helion_matmul_split_k_tritonbench
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+[23s] Initial population: failed=5 min=0.4063 mid=9.3737 max=97.3970 best=Config(block_sizes=[512, 64, 32], loop_orders=[[1, 2, 0]], l2_groupings=[64], range_unroll_factors=[0, 4], range_num_stages=[0, 1], range_multi_buffers=[None, False], range_flattens=[None, False], num_warps=32, num_stages=1, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[38s] PTXASError compiling config: Config(block_sizes=[1024, 128, 64], loop_orders=[[1, 2, 0]], l2_groupings=[32], range_unroll_factors=[1, 3], range_num_stages=[2, 2], range_multi_buffers=[False, True], range_flattens=[None, False], num_warps=32, num_stages=2, indexing='block_ptr', pid_type='persistent_blocked', split_k=4)
+[62s] Generation 2: replaced=14 min=0.3784 mid=2.5017 max=10.8260 best=Config(block_sizes=[256, 64, 16], loop_orders=[[1, 0, 2]], l2_groupings=[64], range_unroll_factors=[0, 4], range_num_stages=[0, 0], range_multi_buffers=[None, None], range_flattens=[None, True], num_warps=16, num_stages=4, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[98s] Generation 3: replaced=17 min=0.3606 mid=1.1660 max=6.4034 best=Config(block_sizes=[64, 32, 64], loop_orders=[[2, 1, 0]], l2_groupings=[32], range_unroll_factors=[0, 4], range_num_stages=[0, 2], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=4, num_stages=2, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[104s] PTXASError compiling config: Config(block_sizes=[512, 128, 32], loop_orders=[[1, 2, 0]], l2_groupings=[32], range_unroll_factors=[0, 4], range_num_stages=[0, 2], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=32, num_stages=8, indexing='block_ptr', pid_type='flat', split_k=4, range_warp_specializes=[])
+[146s] Generation 4: replaced=13 min=0.3606 mid=0.9213 max=6.4034 best=Config(block_sizes=[64, 32, 64], loop_orders=[[2, 1, 0]], l2_groupings=[32], range_unroll_factors=[0, 4], range_num_stages=[0, 2], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=4, num_stages=2, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[202s] PTXASError compiling config: Config(block_sizes=[1024, 128, 16], loop_orders=[[2, 0, 1]], l2_groupings=[64], range_unroll_factors=[0, 4], range_num_stages=[3, 2], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=32, num_stages=2, indexing='block_ptr', pid_type='persistent_interleaved', split_k=2)
+[261s] Generation 5: replaced=13 min=0.2664 mid=0.7036 max=6.4034 best=Config(block_sizes=[128, 64, 32], loop_orders=[[1, 0, 2]], l2_groupings=[4], range_unroll_factors=[0, 3], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', split_k=8, range_warp_specializes=[])
+[307s] Generation 6: replaced=12 min=0.2664 mid=0.5413 max=2.7993 best=Config(block_sizes=[128, 64, 32], loop_orders=[[1, 0, 2]], l2_groupings=[4], range_unroll_factors=[0, 3], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', split_k=8, range_warp_specializes=[])
+[376s] Generation 7: replaced=12 min=0.2664 mid=0.4772 max=1.9713 best=Config(block_sizes=[128, 64, 32], loop_orders=[[1, 0, 2]], l2_groupings=[4], range_unroll_factors=[0, 3], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', split_k=8, range_warp_specializes=[])
+[436s] Generation 8: replaced=9 min=0.2664 mid=0.4383 max=1.3723 best=Config(block_sizes=[128, 64, 32], loop_orders=[[1, 0, 2]], l2_groupings=[4], range_unroll_factors=[0, 3], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', split_k=8, range_warp_specializes=[])
+[479s] Generation 9: replaced=12 min=0.2202 mid=0.4063 max=0.8407 best=Config(block_sizes=[128, 128, 32], loop_orders=[[2, 0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 2], range_multi_buffers=[None, None], range_flattens=[None, True], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', split_k=8, range_warp_specializes=[])
+[493s] PTXASError compiling config: Config(block_sizes=[1024, 256, 16], loop_orders=[[1, 2, 0]], l2_groupings=[64], range_unroll_factors=[0, 4], range_num_stages=[0, 0], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=32, num_stages=1, indexing='tensor_descriptor', pid_type='flat', split_k=2, range_warp_specializes=[])
+[514s] PTXASError compiling config: Config(block_sizes=[512, 128, 16], loop_orders=[[2, 1, 0]], l2_groupings=[64], range_unroll_factors=[0, 3], range_num_stages=[0, 1], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=32, num_stages=1, indexing='block_ptr', pid_type='flat', split_k=8, range_warp_specializes=[])
+[518s] Generation 10: replaced=11 min=0.1950 mid=0.3631 max=0.8407 best=Config(block_sizes=[128, 64, 64], loop_orders=[[1, 2, 0]], l2_groupings=[4], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat', split_k=2, range_warp_specializes=[])
+[536s] PTXASError compiling config: Config(block_sizes=[256, 256, 32], loop_orders=[[1, 2, 0]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 2], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=16, num_stages=8, indexing='block_ptr', pid_type='flat', split_k=2, range_warp_specializes=[])
+[559s] Generation 11: replaced=9 min=0.1950 mid=0.3451 max=0.8407 best=Config(block_sizes=[128, 64, 64], loop_orders=[[1, 2, 0]], l2_groupings=[4], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat', split_k=2, range_warp_specializes=[])
+[594s] Generation 12: replaced=9 min=0.1950 mid=0.2983 max=0.8407 best=Config(block_sizes=[128, 64, 64], loop_orders=[[1, 2, 0]], l2_groupings=[4], range_unroll_factors=[0, 1], range_num_stages=[0, 3], range_multi_buffers=[None, False], range_flattens=[None, None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat', split_k=2, range_warp_specializes=[])
+[605s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[0, 2, 1]], l2_groupings=[8], range_unroll_factors=[3, 1], range_num_stages=[4, 1], range_multi_buffers=[True, None], range_flattens=[None, False], num_warps=16, num_stages=6, indexing='pointer', pid_type='persistent_interleaved', split_k=1)
+[630s] Generation 13: replaced=13 min=0.1916 mid=0.2897 max=0.5218 best=Config(block_sizes=[64, 256, 64], loop_orders=[[1, 0, 2]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 3], range_multi_buffers=[None, None], range_flattens=[None, False], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', split_k=1, range_warp_specializes=[])
+[637s] PTXASError compiling config: Config(block_sizes=[512, 128, 32], loop_orders=[[1, 0, 2]], l2_groupings=[64], range_unroll_factors=[1, 4], range_num_stages=[4, 2], range_multi_buffers=[None, True], range_flattens=[True, None], num_warps=32, num_stages=1, indexing='pointer', pid_type='persistent_interleaved', split_k=8)
+[666s] PTXASError compiling config: Config(block_sizes=[256, 256, 64], loop_orders=[[1, 0, 2]], l2_groupings=[4], range_unroll_factors=[1, 3], range_num_stages=[2, 1], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=16, num_stages=8, indexing='pointer', pid_type='persistent_interleaved', split_k=4)
+[668s] Generation 14: replaced=8 min=0.1807 mid=0.2700 max=0.5218 best=Config(block_sizes=[64, 256, 64], loop_orders=[[0, 1, 2]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=8, num_stages=8, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[699s] Generation 15: replaced=13 min=0.1807 mid=0.2247 max=0.3934 best=Config(block_sizes=[64, 256, 64], loop_orders=[[0, 1, 2]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=8, num_stages=8, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[733s] Generation 16: replaced=9 min=0.1807 mid=0.2218 max=0.3594 best=Config(block_sizes=[64, 256, 64], loop_orders=[[0, 1, 2]], l2_groupings=[1], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=8, num_stages=8, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[767s] Generation 17: replaced=12 min=0.1642 mid=0.2169 max=0.3594 best=Config(block_sizes=[256, 128, 32], loop_orders=[[0, 2, 1]], l2_groupings=[16], range_unroll_factors=[0, 1], range_num_stages=[0, 4], range_multi_buffers=[None, False], range_flattens=[None, True], num_warps=8, num_stages=6, indexing='block_ptr', pid_type='flat', split_k=1, range_warp_specializes=[])
+[800s] Generation 18: replaced=9 min=0.1566 mid=0.2159 max=0.3195 best=Config(block_sizes=[128, 256, 64], loop_orders=[[2, 0, 1]], l2_groupings=[2], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=16, num_stages=7, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[833s] Generation 19: replaced=8 min=0.1566 mid=0.2101 max=0.2927 best=Config(block_sizes=[128, 256, 64], loop_orders=[[2, 0, 1]], l2_groupings=[2], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=16, num_stages=7, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[833s] Autotuning complete in 833.9s after searching 1520 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[128, 256, 64], loop_orders=[[2, 0, 1]], l2_groupings=[2], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=16, num_stages=7, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[]))
+
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_pid_m = tl.cdiv(3328, _BLOCK_SIZE_2)
+    num_pid_n = tl.cdiv(3328, _BLOCK_SIZE_0)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_2 = pid_0 * _BLOCK_SIZE_2
+    offset_0 = pid_1 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_2 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, num_stages=4, disallow_acc_multi_buffer=False, flatten=True):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 128
+    _BLOCK_SIZE_1 = 256
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(3328, _BLOCK_SIZE_2) * triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=16, num_stages=7)
+    return out
+ 14%|█▍        | 1/7 [34:37<3:27:43, 2077.21s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 26.36ms to get benchmark function for aten_tunableop_matmul
+AUTOTUNE mm(3456x3456, 3456x3456)
+strides: [3456, 1], [1, 3456]
+dtypes: torch.float16, torch.float16
+  mm 0.1154 ms 100.0% 
+  triton_mm_17 0.1345 ms 85.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=128, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=4
+  triton_mm_16 0.1431 ms 80.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=4
+  triton_mm_18 0.1466 ms 78.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=128, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=5, num_warps=8
+  triton_mm_11 0.1706 ms 67.6% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=4
+  triton_mm_12 0.1801 ms 64.1% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=4, num_warps=4
+  triton_mm_10 0.2088 ms 55.3% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=4, num_warps=8
+  triton_mm_14 0.2092 ms 55.1% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=4, num_warps=8
+  triton_mm_9 0.2242 ms 51.5% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=4
+  triton_mm_13 0.2330 ms 49.5% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=4
+SingleProcess AUTOTUNE benchmarking takes 0.6331 seconds and 0.4096 seconds precompiling for 20 choices
+INFO:tritonbench.utils.triton_op:Took 1237.07ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+ 14%|█▍        | 1/7 [34:48<3:28:48, 2088.02s/it]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1149, in _do_bench
+    fn = self._get_bm_func(fn_name)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 786, in _get_bm_func
+    fwd_fn = fwd_fn_lambda(*self.example_inputs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 612, in _inner
+    return function(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/gemm/operator.py", line 335, in pt2_cutlass_matmul
+    compiled(a, b)
+  File "/home/willfeng/local/pytorch-nightly/torch/_dynamo/eval_frame.py", line 816, in compile_wrapper
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 952, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 936, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1616, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1400, in codegen_and_compile
+    graph.run(*example_inputs)
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 915, in run
+    return super().run(*args)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 174, in run
+    self.env[node] = self.run_node(node)
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1595, in run_node
+    result = super().run_node(n)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 256, in run_node
+    return getattr(self, n.op)(n.target, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1262, in call_function
+    raise LoweringException(e, target, args, kwargs).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1252, in call_function
+    out = lowerings[target](*args, **kwargs)  # type: ignore[index]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/lowering.py", line 449, in wrapped
+    out = decomp_fn(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/kernel/mm.py", line 780, in tuned_mm
+    and use_cutlass_template(layout, m, n, k)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/utils.py", line 1649, in use_cutlass_template
+    if not try_import_cutlass():
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 146, in try_import_cutlass
+    link_and_append(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 140, in link_and_append
+    os.remove(dst_link)  # remove if exists
+    ^^^^^^^^^^^^^^^^^^^
+torch._inductor.exc.InductorError: LoweringException: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/torchinductor_willfeng/torch_cutlass/cutlass_library'
+  target: aten.mm.default
+  args[0]: TensorBox(StorageBox(
+    InputBuffer(name='arg0_1', layout=FixedLayout('cuda:0', torch.float16, size=[3456, 3456], stride=[3456, 1]))
+  ))
+  args[1]: TensorBox(StorageBox(
+    InputBuffer(name='arg1_1', layout=FixedLayout('cuda:0', torch.float16, size=[3456, 3456], stride=[1, 3456]))
+  ))
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+Removed 1 outliers from 440 samples
+Removed 5 outliers from 370 samples
+Removed 4 outliers from 435 samples
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 537, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 533, in main
+    run_kernel(kernel_name, tritonbench_args.copy(), input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 245, in run_kernel
+    run_kernel_variants(
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 442, in run_kernel_variants
+    op.run(warmup=warmup, rep=rep)
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1149, in _do_bench
+    fn = self._get_bm_func(fn_name)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 786, in _get_bm_func
+    fwd_fn = fwd_fn_lambda(*self.example_inputs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 612, in _inner
+    return function(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/gemm/operator.py", line 335, in pt2_cutlass_matmul
+    compiled(a, b)
+  File "/home/willfeng/local/pytorch-nightly/torch/_dynamo/eval_frame.py", line 816, in compile_wrapper
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 952, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 936, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1616, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1400, in codegen_and_compile
+    graph.run(*example_inputs)
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 915, in run
+    return super().run(*args)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 174, in run
+    self.env[node] = self.run_node(node)
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1595, in run_node
+    result = super().run_node(n)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 256, in run_node
+    return getattr(self, n.op)(n.target, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1262, in call_function
+    raise LoweringException(e, target, args, kwargs).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1252, in call_function
+    out = lowerings[target](*args, **kwargs)  # type: ignore[index]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/lowering.py", line 449, in wrapped
+    out = decomp_fn(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/kernel/mm.py", line 780, in tuned_mm
+    and use_cutlass_template(layout, m, n, k)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/utils.py", line 1649, in use_cutlass_template
+    if not try_import_cutlass():
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 146, in try_import_cutlass
+    link_and_append(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 140, in link_and_append
+    os.remove(dst_link)  # remove if exists
+    ^^^^^^^^^^^^^^^^^^^
+torch._inductor.exc.InductorError: LoweringException: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/torchinductor_willfeng/torch_cutlass/cutlass_library'
+  target: aten.mm.default
+  args[0]: TensorBox(StorageBox(
+    InputBuffer(name='arg0_1', layout=FixedLayout('cuda:0', torch.float16, size=[3456, 3456], stride=[3456, 1]))
+  ))
+  args[1]: TensorBox(StorageBox(
+    InputBuffer(name='arg1_1', layout=FixedLayout('cuda:0', torch.float16, size=[3456, 3456], stride=[1, 3456]))
+  ))
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+

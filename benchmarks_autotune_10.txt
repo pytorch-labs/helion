@@ -1,0 +1,1613 @@
+Running 6 kernels...
+
+
+============================================================
+Kernel: softmax
+============================================================
+
+Running softmax benchmark with Helion implementation...
+
+  0%|          | 0/5 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.09ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for helion_softmax
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 2 outliers from 108 samples
+Removed 5 outliers from 771 samples
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[False], num_warps=2, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[4], range_multi_buffers=[None], range_flattens=[True], num_warps=1, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[62s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[70s] Initial population: failed=7 min=0.0092 mid=0.0429 max=2.9102 best=Config(block_sizes=[16], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[108s] Generation 2: replaced=25 min=0.0088 mid=0.0144 max=0.0427 best=Config(block_sizes=[8], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[129s] Generation 3: replaced=18 min=0.0088 mid=0.0116 max=0.0352 best=Config(block_sizes=[8], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[147s] Generation 4: replaced=19 min=0.0087 mid=0.0101 max=0.0204 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[166s] Generation 5: replaced=10 min=0.0087 mid=0.0096 max=0.0170 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[185s] Generation 6: replaced=9 min=0.0087 mid=0.0095 max=0.0121 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[200s] Generation 7: replaced=13 min=0.0087 mid=0.0093 max=0.0113 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[215s] Generation 8: replaced=16 min=0.0087 mid=0.0092 max=0.0102 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat')
+[228s] Generation 9: replaced=13 min=0.0087 mid=0.0089 max=0.0099 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat')
+[240s] Generation 10: replaced=10 min=0.0087 mid=0.0088 max=0.0096 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat')
+[252s] Generation 11: replaced=9 min=0.0087 mid=0.0088 max=0.0096 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat')
+[263s] Generation 12: replaced=8 min=0.0087 mid=0.0088 max=0.0093 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat')
+[275s] Generation 13: replaced=3 min=0.0087 mid=0.0088 max=0.0092 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat')
+[286s] Generation 14: replaced=7 min=0.0087 mid=0.0088 max=0.0090 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat')
+[297s] Generation 15: replaced=3 min=0.0087 mid=0.0088 max=0.0090 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat')
+[308s] Generation 16: replaced=4 min=0.0087 mid=0.0088 max=0.0089 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat')
+[320s] Generation 17: replaced=5 min=0.0087 mid=0.0087 max=0.0089 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat')
+[331s] Generation 18: replaced=3 min=0.0087 mid=0.0087 max=0.0089 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat')
+[341s] Generation 19: replaced=4 min=0.0087 mid=0.0087 max=0.0089 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat')
+[341s] Autotuning complete in 341.9s after searching 1517 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='flat'))
+
+ 20%|██        | 1/5 [05:42<22:51, 342.76s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 2.86ms to get benchmark function for helion_softmax
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 15 outliers from 671 samples
+Removed 15 outliers from 798 samples
+[61s] Timeout after 60s compiling Config(block_sizes=[1024], reduction_loops=[128], range_unroll_factors=[2], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[False], num_warps=4, num_stages=6, indexing='pointer', pid_type='persistent_interleaved')
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[256], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[False], num_warps=2, num_stages=2, indexing='block_ptr', pid_type='persistent_blocked')
+[70s] Initial population: failed=6 min=0.0106 mid=0.0460 max=1.5845 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[92s] Generation 2: replaced=19 min=0.0106 mid=0.0168 max=0.0494 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[121s] Generation 3: replaced=10 min=0.0106 mid=0.0147 max=0.0441 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[140s] Generation 4: replaced=19 min=0.0105 mid=0.0137 max=0.0305 best=Config(block_sizes=[8], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[162s] Generation 5: replaced=14 min=0.0104 mid=0.0119 max=0.0249 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[181s] Generation 6: replaced=15 min=0.0104 mid=0.0113 max=0.0212 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[201s] Generation 7: replaced=6 min=0.0103 mid=0.0110 max=0.0144 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[222s] Generation 8: replaced=3 min=0.0103 mid=0.0110 max=0.0144 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[243s] Generation 9: replaced=5 min=0.0103 mid=0.0109 max=0.0144 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[263s] Generation 10: replaced=4 min=0.0103 mid=0.0108 max=0.0144 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[280s] Generation 11: replaced=3 min=0.0103 mid=0.0108 max=0.0128 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[299s] Generation 12: replaced=6 min=0.0103 mid=0.0108 max=0.0119 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[315s] Generation 13: replaced=7 min=0.0103 mid=0.0108 max=0.0119 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[331s] Generation 14: replaced=11 min=0.0103 mid=0.0106 max=0.0119 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[346s] Generation 15: replaced=10 min=0.0103 mid=0.0106 max=0.0111 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat')
+[361s] Generation 16: replaced=4 min=0.0103 mid=0.0106 max=0.0111 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat')
+[376s] Generation 17: replaced=10 min=0.0103 mid=0.0105 max=0.0111 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat')
+[393s] Generation 18: replaced=4 min=0.0103 mid=0.0105 max=0.0111 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat')
+[407s] Generation 19: replaced=3 min=0.0103 mid=0.0105 max=0.0111 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat')
+[407s] Autotuning complete in 407.5s after searching 1518 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='flat'))
+
+ 40%|████      | 2/5 [12:30<19:03, 381.09s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 4.76ms to get benchmark function for helion_softmax
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 2 outliers from 649 samples
+Removed 17 outliers from 792 samples
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[True], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[62s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[64], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='pointer', pid_type='persistent_blocked')
+[71s] Initial population: failed=7 min=0.0124 mid=0.0933 max=1.7073 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[98s] Generation 2: replaced=19 min=0.0121 mid=0.0202 max=0.0807 best=Config(block_sizes=[2], reduction_loops=[128], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[120s] Generation 3: replaced=19 min=0.0117 mid=0.0161 max=0.0769 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[205s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[128], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[True], num_warps=1, num_stages=5, indexing='pointer', pid_type='persistent_blocked')
+[208s] Generation 4: replaced=8 min=0.0117 mid=0.0153 max=0.0769 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[230s] Generation 5: replaced=13 min=0.0117 mid=0.0140 max=0.0769 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[282s] Generation 6: replaced=12 min=0.0117 mid=0.0131 max=0.0373 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[300s] Generation 7: replaced=16 min=0.0117 mid=0.0127 max=0.0198 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[322s] Generation 8: replaced=15 min=0.0117 mid=0.0125 max=0.0198 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[343s] Generation 9: replaced=11 min=0.0117 mid=0.0124 max=0.0137 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[358s] Generation 10: replaced=13 min=0.0117 mid=0.0122 max=0.0128 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[371s] Generation 11: replaced=7 min=0.0117 mid=0.0122 max=0.0127 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[384s] Generation 12: replaced=8 min=0.0117 mid=0.0121 max=0.0124 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[397s] Generation 13: replaced=8 min=0.0117 mid=0.0121 max=0.0124 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[410s] Generation 14: replaced=7 min=0.0117 mid=0.0121 max=0.0124 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[422s] Generation 15: replaced=5 min=0.0117 mid=0.0120 max=0.0124 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[435s] Generation 16: replaced=5 min=0.0117 mid=0.0120 max=0.0124 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[448s] Generation 17: replaced=4 min=0.0117 mid=0.0118 max=0.0122 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[461s] Generation 18: replaced=2 min=0.0117 mid=0.0117 max=0.0122 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[473s] Generation 19: replaced=1 min=0.0117 mid=0.0117 max=0.0122 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[473s] Autotuning complete in 473.3s after searching 1516 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat'))
+
+ 60%|██████    | 3/5 [20:24<14:06, 423.39s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 3.87ms to get benchmark function for helion_softmax
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 7 outliers from 784 samples
+Removed 2 outliers from 629 samples
+Removed 9 outliers from 777 samples
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[False], num_warps=32, num_stages=5, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[512], range_unroll_factors=[3], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=2, num_stages=5, indexing='block_ptr', pid_type='persistent_interleaved')
+[62s] Timeout after 60s compiling Config(block_sizes=[1024], reduction_loops=[128], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[False], num_warps=4, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[128], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[False], num_warps=1, num_stages=5, indexing='pointer', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[None], num_warps=2, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[4], range_multi_buffers=[None], range_flattens=[False], num_warps=1, num_stages=5, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[71s] Initial population: failed=7 min=0.0148 mid=0.0692 max=3.7852 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[133s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=8, indexing='block_ptr', pid_type='persistent_interleaved')
+[155s] Generation 2: replaced=16 min=0.0140 mid=0.0291 max=0.0716 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[181s] Generation 3: replaced=14 min=0.0140 mid=0.0234 max=0.0680 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[207s] Generation 4: replaced=15 min=0.0136 mid=0.0187 max=0.0452 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[274s] Generation 5: replaced=9 min=0.0136 mid=0.0173 max=0.0324 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[297s] Generation 6: replaced=15 min=0.0136 mid=0.0160 max=0.0291 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[318s] Generation 7: replaced=7 min=0.0136 mid=0.0158 max=0.0291 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[351s] Generation 8: replaced=13 min=0.0134 mid=0.0153 max=0.0212 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[377s] Generation 9: replaced=12 min=0.0134 mid=0.0148 max=0.0192 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[396s] Generation 10: replaced=8 min=0.0133 mid=0.0148 max=0.0192 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=6, indexing='block_ptr', pid_type='flat')
+[415s] Generation 11: replaced=13 min=0.0133 mid=0.0144 max=0.0162 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[430s] Generation 12: replaced=17 min=0.0133 mid=0.0142 max=0.0162 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[453s] Generation 13: replaced=10 min=0.0133 mid=0.0139 max=0.0162 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[468s] Generation 14: replaced=9 min=0.0133 mid=0.0138 max=0.0149 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[483s] Generation 15: replaced=8 min=0.0133 mid=0.0137 max=0.0149 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[497s] Generation 16: replaced=13 min=0.0133 mid=0.0136 max=0.0149 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[510s] Generation 17: replaced=6 min=0.0133 mid=0.0136 max=0.0144 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[524s] Generation 18: replaced=7 min=0.0133 mid=0.0136 max=0.0142 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[538s] Generation 19: replaced=3 min=0.0133 mid=0.0136 max=0.0142 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[538s] Autotuning complete in 538.6s after searching 1513 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[]))
+
+ 80%|████████  | 4/5 [29:23<07:49, 469.03s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 5.17ms to get benchmark function for helion_softmax
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 3 outliers from 772 samples
+Removed 4 outliers from 607 samples
+Removed 13 outliers from 759 samples
+[61s] Timeout after 60s compiling Config(block_sizes=[2048], reduction_loops=[256], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[True], num_warps=16, num_stages=6, indexing='pointer', pid_type='persistent_blocked')
+[62s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[63s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[71s] Initial population: failed=9 min=0.0162 mid=0.0742 max=8.6313 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[155s] Generation 2: replaced=13 min=0.0158 mid=0.0290 max=0.0789 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[219s] Generation 3: replaced=15 min=0.0154 mid=0.0238 max=0.0747 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[244s] Generation 4: replaced=12 min=0.0148 mid=0.0202 max=0.0459 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[304s] Generation 5: replaced=12 min=0.0148 mid=0.0181 max=0.0416 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[388s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[512], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[True], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_blocked')
+[393s] Generation 6: replaced=12 min=0.0148 mid=0.0169 max=0.0300 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[426s] Generation 7: replaced=13 min=0.0148 mid=0.0167 max=0.0236 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[444s] Generation 8: replaced=15 min=0.0148 mid=0.0158 max=0.0236 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[461s] Generation 9: replaced=13 min=0.0148 mid=0.0157 max=0.0193 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[478s] Generation 10: replaced=17 min=0.0148 mid=0.0154 max=0.0193 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[494s] Generation 11: replaced=14 min=0.0148 mid=0.0153 max=0.0172 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[510s] Generation 12: replaced=12 min=0.0148 mid=0.0150 max=0.0158 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[524s] Generation 13: replaced=4 min=0.0148 mid=0.0150 max=0.0158 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat')
+[540s] Generation 14: replaced=6 min=0.0148 mid=0.0149 max=0.0158 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat')
+[555s] Generation 15: replaced=4 min=0.0148 mid=0.0149 max=0.0158 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='block_ptr', pid_type='flat')
+[571s] Generation 16: replaced=5 min=0.0148 mid=0.0149 max=0.0158 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[587s] Generation 17: replaced=4 min=0.0148 mid=0.0149 max=0.0157 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[602s] Generation 18: replaced=7 min=0.0148 mid=0.0149 max=0.0155 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat')
+[617s] Generation 19: replaced=5 min=0.0148 mid=0.0149 max=0.0155 best=Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat')
+[617s] Autotuning complete in 617.6s after searching 1515 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[4], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat'))
+
+100%|██████████| 5/5 [39:41<00:00, 522.76s/it]100%|██████████| 5/5 [39:41<00:00, 476.28s/it]
+
+Benchmark Results:
+  x_val    triton_softmax-speedup    helion_softmax-speedup
+-------  ------------------------  ------------------------
+ 2176.0                   3.34576                   3.43902
+ 2240.0                   3.42771                   3.37685
+ 2304.0                   3.32817                   3.5
+ 2368.0                   3.19647                   3.36744
+ 2432.0                   3.13043                   3.43601
+average                   3.28571                   3.42387
+
+============================================================
+Kernel: cross_entropy
+============================================================
+
+Running cross_entropy benchmark with Helion implementation...
+
+Removed 17 outliers from 746 samples
+  0%|          | 0/5 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.10ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 32.16ms to get benchmark function for inductor_cross_entropy_loss
+/home/willfeng/local/pytorch-nightly/torch/backends/cuda/__init__.py:131: UserWarning: Please use the new API settings to control TF32 behavior, such as torch.backends.cudnn.conv.fp32_precision = 'tf32' or torch.backends.cuda.matmul.fp32_precision = 'ieee'. Old settings, e.g, torch.backends.cuda.matmul.allow_tf32 = True, torch.backends.cudnn.allow_tf32 = True, allowTF32CuDNN() and allowTF32CuBLAS() will be deprecated after Pytorch 2.9. Please see https://pytorch.org/docs/main/notes/cuda.html#tensorfloat-32-tf32-on-ampere-and-later-devices (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:78.)
+  return torch._C._get_cublas_allow_tf32()
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 24 outliers from 386 samples
+Process ForkProcess-7607:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-7629:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-7633:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-7667:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[False], num_warps=1, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[62s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[64], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=2, indexing='pointer', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[False], num_warps=2, num_stages=1, indexing='block_ptr', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[63s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[True], num_warps=2, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=5, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[64s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[2048], range_unroll_factors=[2], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[None], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_blocked')
+[64s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[False], num_warps=2, num_stages=2, indexing='block_ptr', pid_type='persistent_blocked')
+[65s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[65s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[65s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[2048], range_unroll_factors=[1], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[75s] Initial population: failed=22 min=0.1429 mid=0.6546 max=112.6075 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[137s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[2048], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[True], num_warps=2, num_stages=1, indexing='block_ptr', pid_type='persistent_interleaved')
+[137s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[1024], range_unroll_factors=[2], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[False], num_warps=8, num_stages=2, indexing='block_ptr', pid_type='persistent_interleaved')
+[137s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[512], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[True], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='persistent_interleaved')
+[177s] Generation 2: replaced=11 min=0.1429 mid=0.3485 max=1.3760 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[298s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[1024], range_unroll_factors=[2], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[False], num_warps=4, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[384s] Generation 3: replaced=12 min=0.1429 mid=0.2882 max=1.3760 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[448s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[544s] Generation 4: replaced=12 min=0.1429 mid=0.2852 max=0.7038 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[635s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[672s] Generation 5: replaced=15 min=0.1429 mid=0.2203 max=0.5335 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[735s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=1, indexing='pointer', pid_type='persistent_blocked')
+[784s] Generation 6: replaced=14 min=0.1429 mid=0.1619 max=0.4020 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[819s] Generation 7: replaced=13 min=0.1429 mid=0.1546 max=0.4020 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[880s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[1], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[True], num_warps=1, num_stages=5, indexing='pointer', pid_type='persistent_interleaved')
+[905s] Generation 8: replaced=15 min=0.1429 mid=0.1524 max=0.2548 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[940s] Generation 9: replaced=14 min=0.1429 mid=0.1501 max=0.2516 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[967s] Generation 10: replaced=9 min=0.1429 mid=0.1470 max=0.2516 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[990s] Generation 11: replaced=12 min=0.1429 mid=0.1457 max=0.1618 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1013s] Generation 12: replaced=14 min=0.1429 mid=0.1446 max=0.1618 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1033s] Generation 13: replaced=12 min=0.1427 mid=0.1442 max=0.1493 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1052s] Generation 14: replaced=17 min=0.1427 mid=0.1439 max=0.1493 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1070s] Generation 15: replaced=5 min=0.1427 mid=0.1439 max=0.1493 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1088s] Generation 16: replaced=9 min=0.1427 mid=0.1437 max=0.1493 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1107s] Generation 17: replaced=3 min=0.1427 mid=0.1437 max=0.1493 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1126s] Generation 18: replaced=8 min=0.1427 mid=0.1436 max=0.1451 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1144s] Generation 19: replaced=9 min=0.1427 mid=0.1435 max=0.1451 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat')
+[1144s] Autotuning complete in 1144.2s after searching 1499 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='block_ptr', pid_type='flat'))
+
+ 20%|██        | 1/5 [19:05<1:16:20, 1145.20s/it]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 1.88ms to get benchmark function for inductor_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 4.06ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 4 outliers from 127 samples
+Removed 5 outliers from 258 samples
+Process ForkProcess-9180:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-9187:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+[61s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[True], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[8], range_unroll_factors=[3], range_num_stages=[4], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='block_ptr', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[8192], reduction_loops=[64], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[True], num_warps=8, num_stages=8, indexing='pointer', pid_type='persistent_blocked')
+[62s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[False], num_warps=2, num_stages=3, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[62s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[32], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[False], num_warps=8, num_stages=3, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=5, indexing='block_ptr', pid_type='persistent_blocked')
+[63s] Timeout after 60s compiling Config(block_sizes=[1024], reduction_loops=[128], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[64s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[True], num_warps=2, num_stages=8, indexing='pointer', pid_type='persistent_blocked')
+[64s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[2], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=4, indexing='pointer', pid_type='persistent_interleaved')
+[65s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[4], range_multi_buffers=[False], range_flattens=[None], num_warps=1, num_stages=4, indexing='pointer', pid_type='persistent_blocked')
+[65s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=2, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[75s] Initial population: failed=19 min=0.2693 mid=1.0251 max=88.2905 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[None], num_warps=8, num_stages=8, indexing='block_ptr', pid_type='persistent_blocked')
+[210s] Generation 2: replaced=9 min=0.2693 mid=0.5748 max=2.3155 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[None], num_warps=8, num_stages=8, indexing='block_ptr', pid_type='persistent_blocked')
+[289s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[512], range_unroll_factors=[1], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[False], num_warps=2, num_stages=4, indexing='block_ptr', pid_type='persistent_interleaved')
+[355s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=2, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[430s] Generation 3: replaced=15 min=0.2587 mid=0.5296 max=1.6726 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[495s] Generation 4: replaced=13 min=0.2584 mid=0.5044 max=1.2868 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[581s] Generation 5: replaced=13 min=0.2583 mid=0.4810 max=1.0032 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[646s] Generation 6: replaced=19 min=0.2573 mid=0.3774 max=0.6838 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[682s] Generation 7: replaced=12 min=0.2573 mid=0.3445 max=0.5425 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[709s] Generation 8: replaced=18 min=0.2573 mid=0.2733 max=0.5425 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[735s] Generation 9: replaced=19 min=0.2572 mid=0.2652 max=0.5306 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[763s] Generation 10: replaced=15 min=0.2572 mid=0.2593 max=0.5306 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[787s] Generation 11: replaced=11 min=0.2572 mid=0.2590 max=0.2793 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[808s] Generation 12: replaced=13 min=0.2572 mid=0.2585 max=0.2669 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[828s] Generation 13: replaced=14 min=0.2572 mid=0.2581 max=0.2669 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[847s] Generation 14: replaced=8 min=0.2572 mid=0.2580 max=0.2607 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[865s] Generation 15: replaced=8 min=0.2572 mid=0.2575 max=0.2607 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[884s] Generation 16: replaced=8 min=0.2572 mid=0.2575 max=0.2607 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[904s] Generation 17: replaced=10 min=0.2572 mid=0.2574 max=0.2607 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[924s] Generation 18: replaced=4 min=0.2572 mid=0.2574 max=0.2598 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[944s] Generation 19: replaced=10 min=0.2572 mid=0.2574 max=0.2583 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[944s] Autotuning complete in 944.1s after searching 1506 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[]))
+
+ 40%|████      | 2/5 [34:50<51:22, 1027.34s/it]  INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 1.95ms to get benchmark function for inductor_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 4.04ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 2 outliers from 75 samples
+Removed 2 outliers from 159 samples
+Process ForkProcess-10662:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:36:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(labels + indices_0 * labels_stride_0, mask_0, other=0)
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(logits + (indices_0[:, None] * logits_stride_0 + indices_1[None, :] * logits_stride_1), mask_0[:, None] & mask_1[None, :], other=0)
+                                    ^
+ValueError('numel (8388608) exceeds triton maximum tensor numel (1048576)')
+Process ForkProcess-10668:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:40:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(labels + indices_0 * labels_stride_0, mask_0, other=0)
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(logits + (indices_0[:, None] * logits_stride_0 + indices_1[None, :] * logits_stride_1), mask_0[:, None] & mask_1[None, :], other=0)
+                                        ^
+ValueError('numel (16777216) exceeds triton maximum tensor numel (1048576)')
+Process ForkProcess-10680:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:40:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(labels + indices_0 * labels_stride_0, mask_0, other=0)
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(logits + (indices_0[:, None] * logits_stride_0 + indices_1[None, :] * logits_stride_1), mask_0[:, None] & mask_1[None, :], other=0)
+                                        ^
+ValueError('numel (134217728) exceeds triton maximum tensor numel (1048576)')
+Process ForkProcess-10700:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+[61s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[128], range_unroll_factors=[3], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[False], num_warps=1, num_stages=4, indexing='pointer', pid_type='persistent_blocked')
+[64s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[512], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='pointer', pid_type='persistent_blocked')
+[65s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[65s] Timeout after 60s compiling Config(block_sizes=[1024], reduction_loops=[64], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[True], num_warps=2, num_stages=5, indexing='block_ptr', pid_type='persistent_interleaved')
+[66s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[66s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[1024], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[False], num_warps=16, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[66s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=1, num_stages=8, indexing='pointer', pid_type='persistent_blocked')
+[67s] Timeout after 60s compiling Config(block_sizes=[2048], reduction_loops=[512], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[True], num_warps=32, num_stages=2, indexing='block_ptr', pid_type='persistent_blocked')
+[78s] Initial population: failed=14 min=0.5015 mid=2.8781 max=29.9776 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[139s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[4096], range_unroll_factors=[3], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[None], num_warps=8, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[140s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[4096], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[False], num_warps=4, num_stages=5, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[187s] Generation 2: replaced=17 min=0.5015 mid=1.1321 max=4.0802 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[250s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[2048], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[251s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[1024], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[True], num_warps=16, num_stages=6, indexing='pointer', pid_type='persistent_interleaved')
+[320s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[413s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[4096], range_unroll_factors=[1], range_num_stages=[2], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=3, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[420s] Generation 3: replaced=16 min=0.5015 mid=1.0100 max=3.2390 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[501s] Generation 4: replaced=13 min=0.5015 mid=0.9706 max=3.2390 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[612s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[676s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[512], range_unroll_factors=[3], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[False], num_warps=1, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[679s] Generation 5: replaced=18 min=0.5015 mid=0.9553 max=3.2390 best=Config(block_sizes=[2], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[False], num_warps=16, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[741s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[4096], range_unroll_factors=[3], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[True], num_warps=16, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[743s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[8192], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[808s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[8192], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[846s] Generation 6: replaced=16 min=0.5005 mid=0.8041 max=2.8139 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[False], num_warps=32, num_stages=5, indexing='pointer', pid_type='persistent_blocked')
+[967s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[1024], range_unroll_factors=[4], range_num_stages=[2], range_multi_buffers=[True], range_flattens=[True], num_warps=4, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[967s] Generation 7: replaced=17 min=0.4857 mid=0.5515 max=1.0219 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1029s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1059s] Generation 8: replaced=20 min=0.4848 mid=0.5131 max=1.0219 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1087s] Generation 9: replaced=17 min=0.4848 mid=0.5053 max=0.9926 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1118s] Generation 10: replaced=14 min=0.4848 mid=0.5037 max=0.9459 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1144s] Generation 11: replaced=20 min=0.4848 mid=0.4923 max=0.5621 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1172s] Generation 12: replaced=11 min=0.4848 mid=0.4871 max=0.5616 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1200s] Generation 13: replaced=7 min=0.4848 mid=0.4868 max=0.5056 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1223s] Generation 14: replaced=5 min=0.4848 mid=0.4868 max=0.5035 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1250s] Generation 15: replaced=9 min=0.4848 mid=0.4855 max=0.5034 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1271s] Generation 16: replaced=19 min=0.4848 mid=0.4852 max=0.5034 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1289s] Generation 17: replaced=18 min=0.4848 mid=0.4850 max=0.4932 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1307s] Generation 18: replaced=11 min=0.4847 mid=0.4850 max=0.4868 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1324s] Generation 19: replaced=7 min=0.4847 mid=0.4850 max=0.4856 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat')
+[1324s] Autotuning complete in 1324.8s after searching 1499 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_warp_specializes=[], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat'))
+
+ 60%|██████    | 3/5 [56:55<38:46, 1163.49s/it]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 1.75ms to get benchmark function for inductor_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 4.69ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 5 outliers from 167 samples
+Removed 2 outliers from 30 samples
+Removed 2 outliers from 90 samples
+Process ForkProcess-12162:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:40:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(labels + indices_0 * labels_stride_0, mask_0, other=0)
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(logits + (indices_0[:, None] * logits_stride_0 + indices_1[None, :] * logits_stride_1), mask_0[:, None] & mask_1[None, :], other=0)
+                                        ^
+ValueError('numel (33554432) exceeds triton maximum tensor numel (1048576)')
+Process ForkProcess-12170:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (134217728) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+Process ForkProcess-12174:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:36:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(labels + indices_0 * labels_stride_0, mask_0, other=0)
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(logits + (indices_0[:, None] * logits_stride_0 + indices_1[None, :] * logits_stride_1), mask_0[:, None] & mask_1[None, :], other=0)
+                                    ^
+ValueError('numel (8388608) exceeds triton maximum tensor numel (1048576)')
+Process ForkProcess-12176:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:30:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                              ^
+Process ForkProcess-12185:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+[62s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[63s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[1024], range_unroll_factors=[1], range_num_stages=[4], range_multi_buffers=[False], range_flattens=[True], num_warps=8, num_stages=1, indexing='pointer', pid_type='persistent_blocked')
+[64s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[1024], range_unroll_factors=[0], range_num_stages=[2], range_multi_buffers=[None], range_flattens=[True], num_warps=2, num_stages=6, indexing='pointer', pid_type='persistent_interleaved')
+[65s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[65s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[4096], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[False], range_flattens=[None], num_warps=16, num_stages=3, indexing='pointer', pid_type='persistent_blocked')
+[66s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[256], range_unroll_factors=[4], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[66s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[128], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=6, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[66s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=2, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[84s] Initial population: failed=15 min=1.8541 mid=6.9539 max=375.8476 best=Config(block_sizes=[1], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=5, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[146s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[512], range_unroll_factors=[2], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=1, num_stages=6, indexing='block_ptr', pid_type='persistent_blocked')
+[147s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[64], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[186s] Generation 2: replaced=15 min=1.8541 mid=2.2620 max=6.9539 best=Config(block_sizes=[1], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=5, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[248s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[1024], range_unroll_factors=[3], range_num_stages=[4], range_multi_buffers=[False], range_flattens=[None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='persistent_interleaved')
+[282s] Generation 3: replaced=18 min=1.8510 mid=1.9773 max=4.6952 best=Config(block_sizes=[4], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[345s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[1024], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[False], num_warps=2, num_stages=4, indexing='pointer', pid_type='persistent_interleaved')
+[345s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[1024], range_unroll_factors=[3], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=2, indexing='block_ptr', pid_type='persistent_blocked')
+[345s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[512], range_unroll_factors=[2], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[445s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[512], range_unroll_factors=[0], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[True], num_warps=1, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[517s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[8192], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[518s] Generation 4: replaced=18 min=1.3233 mid=1.8922 max=2.9287 best=Config(block_sizes=[2], reduction_loops=[2048], range_unroll_factors=[3], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[True], num_warps=32, num_stages=2, indexing='pointer', pid_type='persistent_blocked')
+[614s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[2048], range_unroll_factors=[3], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[None], num_warps=4, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[620s] Generation 5: replaced=17 min=1.1244 mid=1.8764 max=2.1336 best=Config(block_sizes=[1], reduction_loops=[8192], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[683s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[16384], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[786s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[8192], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[800s] Generation 6: replaced=11 min=1.1244 mid=1.8627 max=1.9877 best=Config(block_sizes=[1], reduction_loops=[8192], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[900s] Generation 7: replaced=10 min=1.0040 mid=1.8551 max=1.9877 best=Config(block_sizes=[1], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=1, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[994s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[2048], range_unroll_factors=[1], range_num_stages=[1], range_multi_buffers=[False], range_flattens=[True], num_warps=1, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[1001s] Generation 8: replaced=16 min=0.9819 mid=1.6733 max=1.9515 best=Config(block_sizes=[1], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1076s] Generation 9: replaced=18 min=0.9819 mid=1.2865 max=1.9515 best=Config(block_sizes=[1], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1137s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[8192], range_unroll_factors=[4], range_num_stages=[1], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[1202s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[4096], range_unroll_factors=[3], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[False], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='persistent_interleaved')
+[1226s] Generation 10: replaced=7 min=0.9819 mid=1.2736 max=1.9515 best=Config(block_sizes=[1], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1317s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[8192], range_unroll_factors=[4], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[True], num_warps=16, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1319s] Generation 11: replaced=19 min=0.9788 mid=1.1435 max=1.8222 best=Config(block_sizes=[1], reduction_loops=[16384], range_unroll_factors=[0], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[False], num_warps=32, num_stages=3, indexing='pointer', pid_type='persistent_blocked')
+[1354s] Generation 12: replaced=13 min=0.9788 mid=1.0970 max=1.4682 best=Config(block_sizes=[1], reduction_loops=[16384], range_unroll_factors=[0], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[False], num_warps=32, num_stages=3, indexing='pointer', pid_type='persistent_blocked')
+[1387s] Generation 13: replaced=16 min=0.9767 mid=1.0082 max=1.3192 best=Config(block_sizes=[1], reduction_loops=[16384], range_unroll_factors=[1], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[False], num_warps=32, num_stages=1, indexing='pointer', pid_type='persistent_interleaved')
+[1423s] Generation 14: replaced=9 min=0.9767 mid=1.0024 max=1.3192 best=Config(block_sizes=[1], reduction_loops=[16384], range_unroll_factors=[1], range_num_stages=[3], range_multi_buffers=[False], range_flattens=[False], num_warps=32, num_stages=1, indexing='pointer', pid_type='persistent_interleaved')
+[1457s] Generation 15: replaced=9 min=0.9742 mid=0.9968 max=1.2977 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[True], num_warps=16, num_stages=4, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[1486s] Generation 16: replaced=9 min=0.9468 mid=0.9882 max=1.1432 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1517s] Generation 17: replaced=7 min=0.9468 mid=0.9866 max=1.1432 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1546s] Generation 18: replaced=7 min=0.9468 mid=0.9837 max=1.1432 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1575s] Generation 19: replaced=10 min=0.9468 mid=0.9819 max=1.1047 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1575s] Autotuning complete in 1575.6s after searching 1497 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=32, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[]))
+
+ 80%|████████  | 4/5 [1:23:11<22:06, 1326.49s/it]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 1.94ms to get benchmark function for inductor_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 7.26ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Process ForkProcess-13710:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (16777216) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-13726:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (536870912) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 16:30:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                              ^
+Process ForkProcess-13727:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (16777216) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-13734:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (33554432) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+Process ForkProcess-13736:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (134217728) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:30:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                              ^
+Process ForkProcess-13741:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (134217728) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:30:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                              ^
+Process ForkProcess-13744:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (16777216) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-13755:
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (536870912) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+ 80%|████████  | 4/5 [1:23:32<20:53, 1253.19s/it]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1164, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 300, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 97, in _autotune
+    self.initial_two_generations()
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 59, in initial_two_generations
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 358, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 212, in parallel_benchmark
+    is_workings = PrecompileFuture.wait_for_all(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 487, in wait_for_all
+    remaining = PrecompileFuture._wait_for_all_step(remaining)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 505, in _wait_for_all_step
+    connection.wait(
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 486, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 482, in main
+    run_kernel(kernel_name, tritonbench_args.copy())
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 339, in run_kernel
+    op.run(warmup=warmup, rep=rep)
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1164, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 300, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 97, in _autotune
+    self.initial_two_generations()
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 59, in initial_two_generations
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 358, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 212, in parallel_benchmark
+    is_workings = PrecompileFuture.wait_for_all(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 487, in wait_for_all
+    remaining = PrecompileFuture._wait_for_all_step(remaining)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 505, in _wait_for_all_step
+    connection.wait(
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7fb070a34040>
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_worker/subproc_pool.py", line 262, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 
+Exception ignored in atexit callback: <function _exit_function at 0x7fb07e24e2a0>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/util.py", line 360, in _exit_function
+    p.join()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+Process ForkProcess-13723:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13685:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13738:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13715:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13686:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13743:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13691:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 344, in make_llir
+    pm.run(mod)
+KeyboardInterrupt
+Process ForkProcess-13745:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt
+Process ForkProcess-13713:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/compiler/compiler.py", line 359, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 459, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/backends/nvidia/compiler.py", line 363, in make_llir
+    llvm.optimize_module(llvm_mod, llvm.OPTIMIZE_O3)
+KeyboardInterrupt

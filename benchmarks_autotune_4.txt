@@ -1,0 +1,222 @@
+Running 6 kernels...
+
+
+============================================================
+Kernel: jagged_mean
+============================================================
+
+Running jagged_mean benchmark with Helion implementation...
+
+  0%|          | 0/3616 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_jagged_mean_unbind_torch_mean
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for torch_jagged_mean_torch_nanmean
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for torch_jagged_mean_torch_sum
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_jagged_mean_simple_fused
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for triton_jagged_mean_variable_length_loop
+INFO:tritonbench.utils.triton_op:Took 34.18ms to get benchmark function for torch_compile_nested_tensor_integration
+/home/willfeng/local/pytorch-nightly/torch/backends/cuda/__init__.py:131: UserWarning: Please use the new API settings to control TF32 behavior, such as torch.backends.cudnn.conv.fp32_precision = 'tf32' or torch.backends.cuda.matmul.fp32_precision = 'ieee'. Old settings, e.g, torch.backends.cuda.matmul.allow_tf32 = True, torch.backends.cudnn.allow_tf32 = True, allowTF32CuDNN() and allowTF32CuBLAS() will be deprecated after Pytorch 2.9. Please see https://pytorch.org/docs/main/notes/cuda.html#tensorfloat-32-tf32-on-ampere-and-later-devices (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:78.)
+  return torch._C._get_cublas_allow_tf32()
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for helion_jagged_mean
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 23 outliers from 390 samples
+Removed 11 outliers from 482 samples
+Removed 13 outliers from 712 samples
+Removed 3 outliers from 426 samples
+Removed 1 outliers from 443 samples
+Removed 7 outliers from 343 samples
+[62s] Timeout after 60s compiling Config(block_sizes=[4, 2, 2048], range_unroll_factors=[0, 3, 3], range_num_stages=[0, 4, 0], range_multi_buffers=[None, False, False], range_flattens=[None, True, False], num_warps=1, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[73s] Initial population: failed=3 min=0.0081 mid=0.0114 max=0.2038 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 1, 2], range_num_stages=[0, 0, 0], range_multi_buffers=[None, True, True], range_flattens=[None, None, True], num_warps=2, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[207s] Generation 2: replaced=18 min=0.0081 mid=0.0092 max=0.0115 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 1, 2], range_num_stages=[0, 0, 0], range_multi_buffers=[None, True, True], range_flattens=[None, None, True], num_warps=2, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[289s] Generation 3: replaced=14 min=0.0081 mid=0.0088 max=0.0112 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 1, 2], range_num_stages=[0, 0, 0], range_multi_buffers=[None, True, True], range_flattens=[None, None, True], num_warps=2, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[424s] Generation 4: replaced=13 min=0.0079 mid=0.0087 max=0.0104 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 3], range_num_stages=[0, 0, 1], range_multi_buffers=[None, False, False], range_flattens=[None, False, True], num_warps=8, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[557s] Generation 5: replaced=11 min=0.0079 mid=0.0085 max=0.0104 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 3], range_num_stages=[0, 0, 1], range_multi_buffers=[None, False, False], range_flattens=[None, False, True], num_warps=8, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[668s] Generation 6: replaced=12 min=0.0079 mid=0.0084 max=0.0096 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 3], range_num_stages=[0, 0, 1], range_multi_buffers=[None, False, False], range_flattens=[None, False, True], num_warps=8, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[777s] Generation 7: replaced=8 min=0.0079 mid=0.0083 max=0.0096 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[2, 0, 2], range_num_stages=[3, 1, 0], range_multi_buffers=[False, False, True], range_flattens=[False, True, True], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[828s] Generation 8: replaced=8 min=0.0079 mid=0.0082 max=0.0096 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[2, 0, 2], range_num_stages=[3, 1, 0], range_multi_buffers=[False, False, True], range_flattens=[False, True, True], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[1015s] Generation 9: replaced=7 min=0.0079 mid=0.0082 max=0.0089 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[2, 0, 2], range_num_stages=[3, 1, 0], range_multi_buffers=[False, False, True], range_flattens=[False, True, True], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[1076s] Timeout after 60s compiling Config(block_sizes=[1, 4, 256], range_unroll_factors=[3, 4, 4], range_num_stages=[4, 1, 4], range_multi_buffers=[None, False, None], range_flattens=[True, False, True], num_warps=1, num_stages=3, indexing='pointer', pid_type='persistent_interleaved')
+[1143s] Generation 10: replaced=9 min=0.0079 mid=0.0082 max=0.0089 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[2, 0, 2], range_num_stages=[3, 1, 0], range_multi_buffers=[False, False, True], range_flattens=[False, True, True], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='persistent_interleaved')
+[1256s] Generation 11: replaced=7 min=0.0079 mid=0.0081 max=0.0089 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 1, 1], range_num_stages=[2, 3, 0], range_multi_buffers=[True, False, True], range_flattens=[False, False, False], num_warps=4, num_stages=4, indexing='pointer', pid_type='persistent_interleaved')
+[1353s] Generation 12: replaced=6 min=0.0078 mid=0.0080 max=0.0089 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 1, 1], range_num_stages=[0, 1, 1], range_multi_buffers=[None, True, True], range_flattens=[None, True, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1433s] Generation 13: replaced=7 min=0.0078 mid=0.0080 max=0.0089 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 1, 1], range_num_stages=[0, 1, 1], range_multi_buffers=[None, True, True], range_flattens=[None, True, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1502s] Generation 14: replaced=6 min=0.0078 mid=0.0080 max=0.0086 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 1, 1], range_num_stages=[0, 1, 1], range_multi_buffers=[None, True, True], range_flattens=[None, True, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1571s] Generation 15: replaced=7 min=0.0078 mid=0.0080 max=0.0086 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 1, 1], range_num_stages=[0, 1, 1], range_multi_buffers=[None, True, True], range_flattens=[None, True, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1618s] Generation 16: replaced=8 min=0.0078 mid=0.0079 max=0.0084 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 1, 1], range_num_stages=[0, 1, 1], range_multi_buffers=[None, True, True], range_flattens=[None, True, None], num_warps=4, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1679s] Generation 17: replaced=9 min=0.0077 mid=0.0079 max=0.0083 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[3, 0, 0], range_num_stages=[3, 2, 0], range_multi_buffers=[True, None, True], range_flattens=[False, True, None], num_warps=1, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[1783s] Generation 18: replaced=8 min=0.0077 mid=0.0079 max=0.0083 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[3, 0, 0], range_num_stages=[3, 2, 0], range_multi_buffers=[True, None, True], range_flattens=[False, True, None], num_warps=1, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[1855s] Generation 19: replaced=7 min=0.0077 mid=0.0079 max=0.0083 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[3, 0, 0], range_num_stages=[3, 2, 0], range_multi_buffers=[True, None, True], range_flattens=[False, True, None], num_warps=1, num_stages=8, indexing='pointer', pid_type='persistent_interleaved')
+[1855s] Autotuning complete in 1855.7s after searching 1518 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1, 4, 128], range_unroll_factors=[3, 0, 0], range_num_stages=[3, 2, 0], range_multi_buffers=[True, None, True], range_flattens=[False, True, None], num_warps=1, num_stages=8, indexing='pointer', pid_type='persistent_interleaved'))
+
+  0%|          | 1/3616 [31:02<1870:26:02, 1862.67s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_jagged_mean_unbind_torch_mean
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_jagged_mean_torch_nanmean
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for torch_jagged_mean_torch_sum
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_jagged_mean_simple_fused
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_jagged_mean_variable_length_loop
+INFO:tritonbench.utils.triton_op:Took 1.64ms to get benchmark function for torch_compile_nested_tensor_integration
+INFO:tritonbench.utils.triton_op:Took 7.44ms to get benchmark function for helion_jagged_mean
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 5 outliers from 734 samples
+Removed 19 outliers from 430 samples
+Removed 5 outliers from 666 samples
+Removed 14 outliers from 738 samples
+Removed 23 outliers from 636 samples
+Removed 18 outliers from 675 samples
+Removed 6 outliers from 379 samples
+[64s] Timeout after 60s compiling Config(block_sizes=[2, 4, 8192], range_unroll_factors=[0, 2, 2], range_num_stages=[0, 3, 3], range_multi_buffers=[None, True, None], range_flattens=[None, None, None], num_warps=4, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[72s] Initial population: failed=4 min=0.0084 mid=0.0108 max=0.1283 best=Config(block_sizes=[4, 4, 128], range_unroll_factors=[0, 2, 4], range_num_stages=[0, 1, 1], range_multi_buffers=[None, True, None], range_flattens=[None, None, False], num_warps=2, num_stages=2, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[256s] Generation 2: replaced=10 min=0.0084 mid=0.0092 max=0.0108 best=Config(block_sizes=[1, 2, 256], range_unroll_factors=[0, 4, 1], range_num_stages=[0, 2, 1], range_multi_buffers=[True, True, True], range_flattens=[True, None, None], num_warps=8, num_stages=6, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[395s] Timeout after 60s compiling Config(block_sizes=[4, 4, 2048], range_unroll_factors=[0, 0, 3], range_num_stages=[0, 0, 2], range_multi_buffers=[None, True, None], range_flattens=[None, None, False], num_warps=2, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[500s] Generation 3: replaced=11 min=0.0082 mid=0.0089 max=0.0107 best=Config(block_sizes=[1, 2, 128], range_unroll_factors=[0, 2, 0], range_num_stages=[0, 1, 1], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[565s] Generation 4: replaced=15 min=0.0082 mid=0.0088 max=0.0099 best=Config(block_sizes=[2, 4, 256], range_unroll_factors=[0, 0, 3], range_num_stages=[0, 1, 0], range_multi_buffers=[None, None, False], range_flattens=[None, False, True], num_warps=4, num_stages=1, indexing='tensor_descriptor', pid_type='flat', range_warp_specializes=[])
+[652s] Generation 5: replaced=5 min=0.0080 mid=0.0088 max=0.0099 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 0, 2], range_num_stages=[0, 2, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[714s] Generation 6: replaced=11 min=0.0080 mid=0.0087 max=0.0095 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 0, 2], range_num_stages=[0, 2, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[815s] Generation 7: replaced=10 min=0.0080 mid=0.0087 max=0.0094 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 0, 2], range_num_stages=[0, 2, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[884s] Generation 8: replaced=7 min=0.0080 mid=0.0085 max=0.0094 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 0, 2], range_num_stages=[0, 2, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[946s] Timeout after 60s compiling Config(block_sizes=[1, 4, 1024], range_unroll_factors=[3, 4, 4], range_num_stages=[1, 3, 4], range_multi_buffers=[None, True, False], range_flattens=[None, True, True], num_warps=2, num_stages=5, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[990s] Generation 9: replaced=9 min=0.0080 mid=0.0084 max=0.0094 best=Config(block_sizes=[1, 4, 512], range_unroll_factors=[0, 0, 2], range_num_stages=[0, 2, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1043s] Generation 10: replaced=11 min=0.0080 mid=0.0084 max=0.0090 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 0], range_num_stages=[0, 1, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1097s] Generation 11: replaced=11 min=0.0080 mid=0.0083 max=0.0088 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 0], range_num_stages=[0, 1, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1161s] Generation 12: replaced=9 min=0.0080 mid=0.0082 max=0.0088 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 0], range_num_stages=[0, 1, 0], range_multi_buffers=[None, None, True], range_flattens=[None, False, False], num_warps=4, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[1219s] Generation 13: replaced=7 min=0.0080 mid=0.0082 max=0.0088 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 1, 4], range_num_stages=[0, 0, 1], range_multi_buffers=[None, None, None], range_flattens=[None, False, None], num_warps=4, num_stages=5, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1265s] Generation 14: replaced=9 min=0.0080 mid=0.0082 max=0.0088 best=Config(block_sizes=[1, 4, 256], range_unroll_factors=[0, 2, 3], range_num_stages=[0, 0, 0], range_multi_buffers=[None, False, True], range_flattens=[None, None, False], num_warps=4, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1320s] Generation 15: replaced=7 min=0.0080 mid=0.0081 max=0.0088 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 0], range_num_stages=[0, 2, 0], range_multi_buffers=[None, False, None], range_flattens=[None, None, True], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1366s] Generation 16: replaced=11 min=0.0080 mid=0.0081 max=0.0087 best=Config(block_sizes=[1, 4, 128], range_unroll_factors=[0, 0, 0], range_num_stages=[0, 2, 0], range_multi_buffers=[None, False, None], range_flattens=[None, None, True], num_warps=4, num_stages=1, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[1416s] Timeout after 2s compiling Config(block_sizes=[2, 4, 512], range_unroll_factors=[4, 1, 4], range_num_stages=[2, 2, 1], range_multi_buffers=[False, True, True], range_flattens=[False, None, True], num_warps=4, num_stages=6, indexing='pointer', pid_type='persistent_interleaved')
+  0%|          | 1/3616 [54:40<3294:28:09, 3280.80s/it]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 878, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1179, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 300, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/jagged_mean.py", line 144, in jagged_mean_tritonbench
+    return jagged_mean_kernel(x_values, x_offsets, feature_counts, max_M_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 84, in evolve_population
+    candidate = self.benchmark_flat(self.mutate(i))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 341, in benchmark_flat
+    return PopulationMember(self.benchmark(config), flat_values, config)
+                            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 99, in benchmark
+    if self.start_precompile_and_check_for_hangs(config, fn)():
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 465, in __call__
+    process.join(self.seconds_left())
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 486, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 482, in main
+    run_kernel(kernel_name, tritonbench_args.copy())
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 339, in run_kernel
+    op.run(warmup=warmup, rep=rep)
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 878, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1179, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 300, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/jagged_mean.py", line 144, in jagged_mean_tritonbench
+    return jagged_mean_kernel(x_values, x_offsets, feature_counts, max_M_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 84, in evolve_population
+    candidate = self.benchmark_flat(self.mutate(i))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 341, in benchmark_flat
+    return PopulationMember(self.benchmark(config), flat_values, config)
+                            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 99, in benchmark
+    if self.start_precompile_and_check_for_hangs(config, fn)():
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 465, in __call__
+    process.join(self.seconds_left())
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7fb8c0708040>
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_worker/subproc_pool.py", line 262, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 

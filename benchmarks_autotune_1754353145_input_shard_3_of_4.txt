@@ -1,0 +1,217 @@
+Running cross_entropy benchmark with Helion implementation...
+
+Running input shard 3/4: inputs 4 to 4 (of 6 total)
+  0%|          | 0/1 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 35.25ms to get benchmark function for inductor_cross_entropy_loss
+Exception ignored in: <function ExactWeakKeyDictionary.__setitem__.<locals>.<lambda> at 0x7fdeacaaa200>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/utils.py", line 976, in <lambda>
+    self.refs[idx] = weakref.ref(key, lambda ref: self._remove_id(idx))
+
+KeyboardInterrupt: 
+  0%|          | 0/1 [00:01<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1203, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/cross_entropy/operator.py", line 73, in <lambda>
+    return lambda: compiled(input, target)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 413, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 804, in compile_wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 1595, in __call__
+    result = self._torchdynamo_orig_backend(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 1353, in __call__
+    result = self._inner_convert(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 682, in __call__
+    result = _compile(
+             ^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 1172, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_utils_internal.py", line 92, in wrapper_function
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 858, in compile_inner
+    return _compile_inner(code, one_graph, hooks, transform)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 897, in _compile_inner
+    out_code = transform_code_object(code, transform)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/bytecode_transformation.py", line 1461, in transform_code_object
+    transformations(instructions, code_options)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 300, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/convert_frame.py", line 818, in transform
+    tracer.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py", line 3528, in run
+    super().run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py", line 1372, in run
+    while self.step():
+          ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py", line 1276, in step
+    self.dispatch_table[inst.opcode](self, inst)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py", line 3707, in RETURN_VALUE
+    self._return(inst)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/symbolic_convert.py", line 3688, in _return
+    all_stack_locals_metadata = self.output.compile_subgraph(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/output_graph.py", line 1435, in compile_subgraph
+    self.compile_and_call_fx_graph(tx, pass2.graph_output_vars(), root)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/output_graph.py", line 1710, in compile_and_call_fx_graph
+    compiled_fn = self.call_user_compiler(gm, self.example_inputs())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/output_graph.py", line 1829, in call_user_compiler
+    return self._call_user_compiler(gm, example_inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/output_graph.py", line 1864, in _call_user_compiler
+    compiled_fn = compiler_fn(gm, example_inputs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/repro/after_dynamo.py", line 156, in __call__
+    compiled_gm = compiler_fn(gm, example_inputs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/__init__.py", line 2379, in __call__
+    return compile_fx(model_, inputs_, config_patches=self.config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 2506, in compile_fx
+    return aot_autograd(
+           ^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/backends/common.py", line 109, in __call__
+    cg = aot_module_simplified(gm, example_inputs, **self.kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_functorch/aot_autograd.py", line 1100, in aot_module_simplified
+    compiled_fn, _ = aot_stage2_compile(aot_state, aot_graph_capture)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 240, in aot_stage2_compile
+    return aot_stage2_autograd(aot_state, aot_graph_capture)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 1677, in aot_stage2_autograd
+    compiled_fw_func = aot_config.fw_compiler(fw_module, adjusted_flat_args)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_functorch/_aot_autograd/schemas.py", line 1256, in __call__
+    return self.compiler_fn(gm, example_inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 2333, in fw_compiler_base
+    return inner_compile(
+           ^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 773, in compile_fx_inner
+    return wrap_compiler_debug(_compile_fx_inner, compiler_name="inductor")(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/repro/after_aot.py", line 124, in debug_wrapper
+    inner_compiled_fn = compiler_fn(gm, example_inputs)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 963, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 1643, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 1427, in codegen_and_compile
+    graph.run(*example_inputs)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/graph.py", line 937, in run
+    return super().run(*args)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/interpreter.py", line 174, in run
+    self.env[node] = self.run_node(node)
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/graph.py", line 1817, in run_node
+    self.register_users_of(result)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/graph.py", line 984, in register_users_of
+    register(node_output)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/graph.py", line 979, in register
+    register(x)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/graph.py", line 981, in register
+    for read_name in value.get_read_names():
+                     ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 7872, in get_read_names
+    return self.data.get_read_names()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 7872, in get_read_names
+    return self.data.get_read_names()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 4370, in get_read_names
+    return self.data.get_read_names()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 1035, in get_read_names
+    return OrderedSet(self.inner_fn_opcount().read_buffers)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 6, in inner_fn_opcount_cache_on_self
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 998, in inner_fn_opcount
+    self.inner_fn(*self.inner_fn_args())
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/lowering.py", line 5876, in loader
+    return inner_loader(new_index)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 4222, in loader
+    return ops.load(self.name or "unnamed", indexer(index))
+                                            ^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/ir.py", line 1964, in indexer
+    result = result + idx * st
+             ~~~~~~~^~~~~~~~~~
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/decorators.py", line 236, in _func
+    return func(self, other)
+           ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/decorators.py", line 106, in binary_op_wrapper
+    return func(self, other)
+           ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/expr.py", line 199, in __add__
+    return Add(self, other)
+           ^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/cache.py", line 72, in wrapper
+    retval = cfunc(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/operations.py", line 98, in __new__
+    c_part, nc_part, order_symbols = cls.flatten(args)
+                                     ^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/add.py", line 201, in flatten
+    from sympy.tensor.tensor import TensExpr
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/tensor/tensor.py", line 42, in <module>
+    from sympy.combinatorics import Permutation
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/combinatorics/__init__.py", line 7, in <module>
+    from sympy.combinatorics.polyhedron import (Polyhedron, tetrahedron, cube,
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/combinatorics/polyhedron.py", line 955, in <module>
+    icosahedron = Polyhedron(
+                  ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/combinatorics/polyhedron.py", line 388, in __new__
+    faces = [minlex(f, directed=False, key=default_sort_key) for f in faces]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/utilities/iterables.py", line 2658, in minlex
+    rbest = rotate_left(rseq, least_rotation(rseq, key=key))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/utilities/iterables.py", line 1188, in least_rotation
+    S = x + x      # Concatenate string to it self to avoid modular arithmetic
+        ~~^~~
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/containers.py", line 75, in __add__
+    return Tuple(*(self.args + other.args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/sympy/core/containers.py", line 52, in __new__
+    def __new__(cls, *args, **kwargs):
+    
+KeyboardInterrupt

@@ -1,0 +1,357 @@
+Running cross_entropy benchmark with Helion implementation...
+
+Running input shard 4/4: inputs 5 to 5 (of 6 total)
+  0%|          | 0/1 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 33.48ms to get benchmark function for inductor_cross_entropy_loss
+INFO:tritonbench.utils.triton_op:Took 1.34ms to get benchmark function for inductor_cross_entropy_loss
+/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/cross_entropy/operator.py:73: UserWarning: Using `torch.compile(module)` when there are global hooks on modules (e.g., from `register_module_forward_hook`); this will cause the hooks to fire an extra time for the `OptimizedModule` created by `torch.compile(module)`. If this causes undesired behavior, please try using `module.compile()`, or use the per-module hooks instead
+  return lambda: compiled(input, target)
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_cross_entropy
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=1, crossover_rate=0.8
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Process ForkProcess-12:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (4194304) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+Process ForkProcess-43:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (16777216) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+Process ForkProcess-47:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (33554432) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 14:26:
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < v
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                          ^
+Process ForkProcess-58:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (8388608) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:18:
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, logits_size_0, logits_size_1, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    logits_desc = tl.make_tensor_descriptor(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+                  ^
+Process ForkProcess-66:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 19:40:
+        offset_0 = pid_0 * _BLOCK_SIZE_0
+        indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+        mask_0 = indices_0 < n
+        indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+        mask_1 = indices_1 < v
+        labels_tile = tl.load(labels + indices_0 * labels_stride_0, mask_0, other=0)
+        v_0 = v.to(tl.int32)
+        v_1 = indices_0 * v_0
+        v_2 = v_1.to(tl.int64)
+        v_3 = v_2 + labels_tile
+        logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+        logits_rows = tl.load(logits + (indices_0[:, None] * logits_stride_0 + indices_1[None, :] * logits_stride_1), mask_0[:, None] & mask_1[None, :], other=0)
+                                        ^
+ValueError('numel (67108864) exceeds triton maximum tensor numel (1048576)')
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[16384], range_unroll_factors=[4], range_num_stages=[2], range_multi_buffers=[True], range_flattens=[True], num_warps=32, num_stages=3, indexing='block_ptr', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[256], range_unroll_factors=[2], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[None], num_warps=32, num_stages=6, indexing='pointer', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[512], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[False], num_warps=2, num_stages=2, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[2048], range_unroll_factors=[4], range_num_stages=[1], range_multi_buffers=[True], range_flattens=[None], num_warps=32, num_stages=8, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[512], range_unroll_factors=[4], range_num_stages=[2], range_multi_buffers=[True], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[256], range_unroll_factors=[1], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[True], num_warps=2, num_stages=5, indexing='pointer', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[64], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=2, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[61s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[2048], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[False], num_warps=32, num_stages=3, indexing='block_ptr', pid_type='persistent_blocked')
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[2048], range_unroll_factors=[1], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[62s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[2048], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[102s] Initial population: failed=20 min=7.3892 mid=23.2145 max=428.2710 best=Config(block_sizes=[4], reduction_loops=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[102s] Autotuning complete in 102.6s after searching 69 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[4], reduction_loops=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=8, indexing='block_ptr', pid_type='flat', range_warp_specializes=[]))
+
+INFO:tritonbench.utils.triton_op:Took 0.64ms to get benchmark function for helion_cross_entropy
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime import triton_helpers
+from torch._inductor.runtime.triton_helpers import math as tl_math
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _cross_entropy_kernel(labels, logits_flat, logits, losses, labels_size_0, logits_size_0, logits_size_1, losses_size_0, labels_stride_0, logits_stride_0, logits_stride_1, logits_flat_stride_0, losses_stride_0, n, v, _BLOCK_SIZE_0: tl.constexpr, _REDUCTION_BLOCK_1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    labels_tile = tl.load(tl.make_block_ptr(labels, [labels_size_0], [labels_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), boundary_check=[0], padding_option='zero')
+    v_0 = v.to(tl.int32)
+    v_1 = indices_0 * v_0
+    v_2 = v_1.to(tl.int64)
+    v_3 = v_2 + labels_tile
+    logits_at_target = tl.load(logits_flat + v_3 * logits_flat_stride_0, mask_0, other=0)
+    max_logits_acc = tl.full([_BLOCK_SIZE_0, _REDUCTION_BLOCK_1], float('-inf'), tl.float32)
+    for roffset_1 in tl.range(0, v, _REDUCTION_BLOCK_1):
+        rindex_1 = roffset_1 + tl.arange(0, _REDUCTION_BLOCK_1).to(tl.int32)
+        mask_1 = rindex_1 < v
+        logits_rows = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, roffset_1], [_BLOCK_SIZE_0, _REDUCTION_BLOCK_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+        _mask_to = tl.where(mask_0[:, None] & mask_1[None, :], logits_rows, float('-inf'))
+        v_4 = triton_helpers.maximum(max_logits_acc, _mask_to)
+        max_logits_acc = v_4
+    max_logits = tl.reshape(tl.max(max_logits_acc, 1), [_BLOCK_SIZE_0, 1])
+    squeeze = tl.reshape(max_logits, [_BLOCK_SIZE_0])
+    sum_exp_acc = tl.full([_BLOCK_SIZE_0, _REDUCTION_BLOCK_1], 0, tl.float32)
+    for roffset_1 in tl.range(0, v, _REDUCTION_BLOCK_1):
+        rindex_1 = roffset_1 + tl.arange(0, _REDUCTION_BLOCK_1).to(tl.int32)
+        mask_1 = rindex_1 < v
+        max_logits_copy = max_logits
+        logits_rows_1 = tl.load(tl.make_block_ptr(logits, [logits_size_0, logits_size_1], [logits_stride_0, logits_stride_1], [offset_0, roffset_1], [_BLOCK_SIZE_0, _REDUCTION_BLOCK_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+        v_5 = logits_rows_1 - max_logits_copy
+        v_6 = tl_math.exp(v_5)
+        _mask_to_1 = tl.where(mask_0[:, None] & mask_1[None, :], v_6, 0)
+        v_7 = sum_exp_acc + _mask_to_1
+        sum_exp_acc = v_7
+    sum_exp = tl.reshape(tl.sum(sum_exp_acc, 1), [_BLOCK_SIZE_0, 1])
+    squeeze_1 = tl.reshape(sum_exp, [_BLOCK_SIZE_0])
+    v_8 = tl_math.log(squeeze_1)
+    v_9 = squeeze + v_8
+    v_10 = v_9 - logits_at_target
+    tl.store(tl.make_block_ptr(losses, [losses_size_0], [losses_stride_0], [offset_0], [_BLOCK_SIZE_0], [0]), v_10, boundary_check=[0])
+
+def cross_entropy(logits: torch.Tensor, labels: torch.Tensor, *, _launcher=_default_launcher):
+    """
+    Computes the cross entropy loss between logits and target labels.
+
+    Implements the cross entropy loss function commonly used in classification tasks.
+    The function computes the log softmax of the logits and then calculates the negative
+    log likelihood of the true labels.
+
+    Args:
+        logits: Input logits tensor of shape [N, V] where N is batch size and V is vocabulary size
+        labels: Target labels tensor of shape [N] containing class indices
+
+    Returns:
+        A scalar tensor containing the mean cross entropy loss
+    """
+    n, v = logits.shape
+    losses = torch.zeros([n], dtype=logits.dtype, device=logits.device)
+    logits_flat = logits.view(-1)
+    _BLOCK_SIZE_0 = 4
+    _REDUCTION_BLOCK_1 = 256
+    _launcher(_cross_entropy_kernel, (triton.cdiv(n, _BLOCK_SIZE_0),), labels, logits_flat, logits, losses, labels.size(0), logits.size(0), logits.size(1), losses.size(0), labels.stride(0), logits.stride(0), logits.stride(1), logits_flat.stride(0), losses.stride(0), n, v, _BLOCK_SIZE_0, _REDUCTION_BLOCK_1, num_warps=16, num_stages=8)
+    return losses.mean()
+100%|██████████| 1/1 [01:45<00:00, 105.10s/it]100%|██████████| 1/1 [01:45<00:00, 105.10s/it]
+Exception ignored in: <function WeakIdKeyDictionary.__init__.<locals>.remove at 0x7f58d216a660>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/utils/weak.py", line 159, in remove
+    def remove(k, selfref=ref(self)):
+
+KeyboardInterrupt: 
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+(B, T, V);cross_entropy_loss-gbps;cross_entropy_loss-tflops;liger_cross_entropy_loss-speedup;liger_cross_entropy_loss-gbps;liger_cross_entropy_loss-accuracy;liger_cross_entropy_loss-tflops;inductor_cross_entropy_loss-speedup;inductor_cross_entropy_loss-gbps;inductor_cross_entropy_loss-accuracy;inductor_cross_entropy_loss-tflops;helion_cross_entropy-speedup;helion_cross_entropy-gbps;helion_cross_entropy-accuracy;helion_cross_entropy-tflops
+(8, 2048, 131072);;0.0;1.312869261252497;;1.0;0.0;4.075636426327678;;1.0;0.0;2.0748768180430672;;1.0;0.0
+average;;0.0;1.312869261252497;;1.0;0.0;4.075636426327678;;1.0;0.0;2.0748768180430672;;1.0;0.0
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 609, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 587, in main
+    run_kernel(kernel_names[0], tritonbench_args, input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 309, in run_kernel
+    run_kernel_variants(
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 521, in run_kernel_variants
+    gc.collect()
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7f58c6769440>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 264, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 
