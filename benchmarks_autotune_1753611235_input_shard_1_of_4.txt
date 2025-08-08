@@ -1,0 +1,944 @@
+Running all 4 kernels...
+
+
+============================================================
+Kernel: gemm
+============================================================
+
+Running gemm benchmark with 2 Helion implementations...
+
+Running input shard 1/4: inputs 0 to 7 (of 31 total)
+  0%|          | 0/8 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for matmul_partition_k
+/home/willfeng/local/pytorch-nightly/torch/backends/cuda/__init__.py:131: UserWarning: Please use the new API settings to control TF32 behavior, such as torch.backends.cudnn.conv.fp32_precision = 'tf32' or torch.backends.cuda.matmul.fp32_precision = 'ieee'. Old settings, e.g, torch.backends.cuda.matmul.allow_tf32 = True, torch.backends.cudnn.allow_tf32 = True, allowTF32CuDNN() and allowTF32CuBLAS() will be deprecated after Pytorch 2.9. Please see https://pytorch.org/docs/main/notes/cuda.html#tensorfloat-32-tf32-on-ampere-and-later-devices (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:78.)
+  return torch._C._get_cublas_allow_tf32()
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 158.07ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 42.18ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 31.98ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_matmul_tritonbench
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 24 outliers from 812 samples
+Removed 9 outliers from 769 samples
+Removed 1 outliers from 821 samples
+Removed 1 outliers from 721 samples
+[11s] Initial population: failed=2 min=0.0057 mid=0.0125 max=0.0917 best=Config(block_sizes=[32, 16, 64], loop_orders=[[1, 0]], l2_groupings=[32], range_unroll_factors=[0, 0], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, False], num_warps=4, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[33s] Generation 2: replaced=19 min=0.0056 mid=0.0089 max=0.0125 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[55s] Generation 3: replaced=12 min=0.0056 mid=0.0072 max=0.0125 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[79s] Generation 4: replaced=18 min=0.0056 mid=0.0069 max=0.0108 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[109s] Generation 5: replaced=13 min=0.0056 mid=0.0065 max=0.0089 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[135s] Generation 6: replaced=16 min=0.0056 mid=0.0062 max=0.0089 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[161s] Generation 7: replaced=6 min=0.0056 mid=0.0061 max=0.0072 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[187s] Generation 8: replaced=12 min=0.0056 mid=0.0061 max=0.0069 best=Config(block_sizes=[16, 16, 32], loop_orders=[[0, 1]], l2_groupings=[4], range_unroll_factors=[0, 2], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[215s] Generation 9: replaced=7 min=0.0055 mid=0.0060 max=0.0069 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[240s] Generation 10: replaced=6 min=0.0055 mid=0.0060 max=0.0068 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[266s] Generation 11: replaced=9 min=0.0055 mid=0.0060 max=0.0066 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[294s] Generation 12: replaced=7 min=0.0055 mid=0.0059 max=0.0064 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[318s] Generation 13: replaced=5 min=0.0055 mid=0.0059 max=0.0064 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[344s] Generation 14: replaced=2 min=0.0055 mid=0.0059 max=0.0063 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[369s] Generation 15: replaced=2 min=0.0055 mid=0.0059 max=0.0063 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[396s] Generation 16: replaced=3 min=0.0055 mid=0.0059 max=0.0063 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[425s] Generation 17: replaced=2 min=0.0055 mid=0.0059 max=0.0062 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[454s] Generation 18: replaced=1 min=0.0055 mid=0.0059 max=0.0062 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[478s] Generation 19: replaced=1 min=0.0055 mid=0.0059 max=0.0062 best=Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved')
+[478s] Autotuning complete in 478.8s after searching 1520 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[16, 32, 32], loop_orders=[[1, 0]], l2_groupings=[1], range_unroll_factors=[2, 2], range_num_stages=[4, 0], range_multi_buffers=[None, False], range_flattens=[False, False], num_warps=2, num_stages=7, indexing='block_ptr', pid_type='persistent_interleaved'))
+
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _matmul_kernel(x, y, out, _NUM_SM: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    total_pids = tl.cdiv(256, _BLOCK_SIZE_1) * tl.cdiv(256, _BLOCK_SIZE_0)
+    for virtual_pid in tl.range(tl.program_id(0), total_pids, _NUM_SM, loop_unroll_factor=2, num_stages=4, flatten=False):
+        num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+        pid_0 = virtual_pid % num_blocks_0
+        pid_1 = virtual_pid // num_blocks_0
+        offset_1 = pid_0 * _BLOCK_SIZE_1
+        offset_0 = pid_1 * _BLOCK_SIZE_0
+        acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+        for offset_2 in tl.range(0, 256, _BLOCK_SIZE_2, loop_unroll_factor=2, disallow_acc_multi_buffer=True, flatten=False):
+            acc_copy = acc
+            acc_copy_0 = acc_copy
+            load = tl.load(tl.make_block_ptr(x, [256, 256], [256, 1], [offset_0, offset_2], [_BLOCK_SIZE_0, _BLOCK_SIZE_2], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+            load_1 = tl.load(tl.make_block_ptr(y, [256, 256], [1, 256], [offset_2, offset_1], [_BLOCK_SIZE_2, _BLOCK_SIZE_1], [0, 1]), boundary_check=[0, 1], padding_option='zero')
+            acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+        v_0 = acc.to(tl.float16)
+        tl.store(tl.make_block_ptr(out, [256, 256], [256, 1], [offset_0, offset_1], [_BLOCK_SIZE_0, _BLOCK_SIZE_1], [1, 0]), v_0, boundary_check=[0, 1])
+
+def matmul(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    _NUM_SM = helion.runtime.get_num_sm(x.device)
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_2 = 32
+    _launcher(_matmul_kernel, (_NUM_SM,), x, y, out, _NUM_SM, _BLOCK_SIZE_1, _BLOCK_SIZE_0, _BLOCK_SIZE_2, num_warps=2, num_stages=7)
+    return out
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_matmul_split_k_tritonbench
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+[13s] Initial population: failed=4 min=0.0087 mid=0.0292 max=7.4117 best=Config(block_sizes=[16, 16, 16], loop_orders=[[0, 1, 2]], l2_groupings=[16], range_unroll_factors=[0, 4], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=1, num_stages=5, indexing='pointer', pid_type='flat', split_k=2, range_warp_specializes=[])
+[47s] Generation 2: replaced=21 min=0.0084 mid=0.0099 max=0.0281 best=Config(block_sizes=[16, 32, 128], loop_orders=[[1, 0, 2]], l2_groupings=[16], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='block_ptr', pid_type='flat', split_k=2, range_warp_specializes=[])
+[81s] Generation 3: replaced=16 min=0.0084 mid=0.0091 max=0.0281 best=Config(block_sizes=[16, 32, 128], loop_orders=[[1, 0, 2]], l2_groupings=[16], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='block_ptr', pid_type='flat', split_k=2, range_warp_specializes=[])
+[118s] Generation 4: replaced=15 min=0.0082 mid=0.0089 max=0.0133 best=Config(block_sizes=[32, 64, 64], loop_orders=[[2, 0, 1]], l2_groupings=[4], range_unroll_factors=[3, 0], range_num_stages=[4, 0], range_multi_buffers=[False, None], range_flattens=[False, True], num_warps=8, num_stages=7, indexing='pointer', pid_type='persistent_interleaved', split_k=4)
+[159s] Generation 5: replaced=13 min=0.0081 mid=0.0087 max=0.0108 best=Config(block_sizes=[64, 32, 128], loop_orders=[[2, 0, 1]], l2_groupings=[8], range_unroll_factors=[0, 0], range_num_stages=[0, 0], range_multi_buffers=[None, True], range_flattens=[None, None], num_warps=4, num_stages=2, indexing='tensor_descriptor', pid_type='flat', split_k=4, range_warp_specializes=[])
+[203s] Generation 6: replaced=7 min=0.0079 mid=0.0086 max=0.0108 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[240s] Generation 7: replaced=10 min=0.0079 mid=0.0086 max=0.0098 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[282s] Generation 8: replaced=8 min=0.0079 mid=0.0084 max=0.0095 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[315s] Generation 9: replaced=7 min=0.0079 mid=0.0084 max=0.0092 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[350s] Generation 10: replaced=6 min=0.0079 mid=0.0084 max=0.0092 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[385s] Generation 11: replaced=7 min=0.0079 mid=0.0084 max=0.0092 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[414s] Generation 12: replaced=9 min=0.0079 mid=0.0084 max=0.0089 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[442s] Generation 13: replaced=4 min=0.0079 mid=0.0083 max=0.0089 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[476s] Generation 14: replaced=3 min=0.0079 mid=0.0083 max=0.0089 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[515s] Generation 15: replaced=9 min=0.0079 mid=0.0083 max=0.0088 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[551s] Generation 16: replaced=7 min=0.0079 mid=0.0082 max=0.0087 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[585s] Generation 17: replaced=5 min=0.0079 mid=0.0082 max=0.0084 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[613s] Generation 18: replaced=5 min=0.0079 mid=0.0082 max=0.0084 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[643s] Generation 19: replaced=7 min=0.0079 mid=0.0082 max=0.0084 best=Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[])
+[643s] Autotuning complete in 643.0s after searching 1520 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[64, 16, 64], loop_orders=[[1, 2, 0]], l2_groupings=[2], range_unroll_factors=[0, 1], range_num_stages=[0, 1], range_multi_buffers=[None, None], range_flattens=[None, None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', split_k=4, range_warp_specializes=[]))
+
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_kernel(x, y, out, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_blocks_1 = tl.cdiv(256, _BLOCK_SIZE_2)
+    num_pid_m = tl.cdiv(256, _BLOCK_SIZE_1)
+    num_pid_n = tl.cdiv(256, _BLOCK_SIZE_2)
+    inner_2d_size = num_pid_m * num_pid_n
+    inner_2d_pid = tl.program_id(0) % inner_2d_size
+    num_pid_in_group = 2 * num_pid_n
+    group_id = inner_2d_pid // num_pid_in_group
+    first_pid_m = group_id * 2
+    group_size_m = min(num_pid_m - first_pid_m, 2)
+    pid_0 = first_pid_m + inner_2d_pid % num_pid_in_group % group_size_m
+    pid_1 = inner_2d_pid % num_pid_in_group // group_size_m
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_1 = pid_0 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_1 * _BLOCK_SIZE_2
+    offset_0 = pid_2 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 256)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3, loop_unroll_factor=1, num_stages=1):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 256 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 256), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    eq = offset_2 == 0
+    if eq:
+        acc_copy_1 = acc
+        acc = acc_copy_1
+    tl.atomic_add(out + (indices_0[:, None] * 256 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k(x: torch.Tensor, y: torch.Tensor, epilogue: Callable[[torch.Tensor, list[torch.Tensor]], torch.Tensor]=lambda acc, tile: acc, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 4
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_0 = 64
+    _BLOCK_SIZE_3 = 64
+    _launcher(_matmul_split_k_kernel, (triton.cdiv(256, _BLOCK_SIZE_1) * triton.cdiv(256, _BLOCK_SIZE_2) * triton.cdiv(256, _BLOCK_SIZE_0),), x, y, out, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_0, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 12%|█▎        | 1/8 [18:51<2:11:58, 1131.24s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 4.35ms to get benchmark function for aten_tunableop_matmul
+AUTOTUNE mm(384x384, 384x384)
+strides: [384, 1], [1, 384]
+dtypes: torch.float16, torch.float16
+  triton_mm_4 0.0057 ms 100.0% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=64, BLOCK_N=32, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=5, num_warps=4
+  mm 0.0059 ms 96.7% 
+  triton_mm_8 0.0059 ms 96.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=64, BLOCK_N=64, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=5, num_warps=4
+  triton_mm_3 0.0065 ms 87.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=64, BLOCK_N=32, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=5, num_warps=8
+  triton_mm_2 0.0066 ms 86.4% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=32, BLOCK_N=64, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=5, num_warps=8
+  triton_mm_7 0.0066 ms 86.0% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=64, BLOCK_N=64, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=8
+  triton_mm_12 0.0067 ms 85.6% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=4, num_warps=4
+  triton_mm_1 0.0068 ms 83.6% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=32, BLOCK_N=32, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=2, num_warps=4
+  triton_mm_11 0.0070 ms 80.9% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=3, num_warps=4
+  triton_mm_10 0.0075 ms 76.4% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, EVEN_K=True, GROUP_M=8, USE_FAST_ACCUM=False, num_stages=4, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.1986 seconds and 0.9863 seconds precompiling for 20 choices
+INFO:tritonbench.utils.triton_op:Took 1643.53ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+ 12%|█▎        | 1/8 [19:01<2:13:07, 1141.08s/it]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1149, in _do_bench
+    fn = self._get_bm_func(fn_name)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 786, in _get_bm_func
+    fwd_fn = fwd_fn_lambda(*self.example_inputs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 612, in _inner
+    return function(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/gemm/operator.py", line 335, in pt2_cutlass_matmul
+    compiled(a, b)
+  File "/home/willfeng/local/pytorch-nightly/torch/_dynamo/eval_frame.py", line 816, in compile_wrapper
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 952, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 936, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1616, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1400, in codegen_and_compile
+    graph.run(*example_inputs)
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 915, in run
+    return super().run(*args)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 174, in run
+    self.env[node] = self.run_node(node)
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1595, in run_node
+    result = super().run_node(n)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 256, in run_node
+    return getattr(self, n.op)(n.target, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1262, in call_function
+    raise LoweringException(e, target, args, kwargs).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1252, in call_function
+    out = lowerings[target](*args, **kwargs)  # type: ignore[index]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/lowering.py", line 449, in wrapped
+    out = decomp_fn(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/kernel/mm.py", line 780, in tuned_mm
+    and use_cutlass_template(layout, m, n, k)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/utils.py", line 1649, in use_cutlass_template
+    if not try_import_cutlass():
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 146, in try_import_cutlass
+    link_and_append(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 140, in link_and_append
+    os.remove(dst_link)  # remove if exists
+    ^^^^^^^^^^^^^^^^^^^
+torch._inductor.exc.InductorError: LoweringException: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/torchinductor_willfeng/torch_cutlass/cutlass_library'
+  target: aten.mm.default
+  args[0]: TensorBox(StorageBox(
+    InputBuffer(name='arg0_1', layout=FixedLayout('cuda:0', torch.float16, size=[384, 384], stride=[384, 1]))
+  ))
+  args[1]: TensorBox(StorageBox(
+    InputBuffer(name='arg1_1', layout=FixedLayout('cuda:0', torch.float16, size=[384, 384], stride=[1, 384]))
+  ))
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 537, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 533, in main
+    run_kernel(kernel_name, tritonbench_args.copy(), input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 245, in run_kernel
+    run_kernel_variants(
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 442, in run_kernel_variants
+    op.run(warmup=warmup, rep=rep)
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1149, in _do_bench
+    fn = self._get_bm_func(fn_name)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 786, in _get_bm_func
+    fwd_fn = fwd_fn_lambda(*self.example_inputs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 612, in _inner
+    return function(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/gemm/operator.py", line 335, in pt2_cutlass_matmul
+    compiled(a, b)
+  File "/home/willfeng/local/pytorch-nightly/torch/_dynamo/eval_frame.py", line 816, in compile_wrapper
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 952, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 936, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1616, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_fx.py", line 1400, in codegen_and_compile
+    graph.run(*example_inputs)
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 915, in run
+    return super().run(*args)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 174, in run
+    self.env[node] = self.run_node(node)
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1595, in run_node
+    result = super().run_node(n)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/fx/interpreter.py", line 256, in run_node
+    return getattr(self, n.op)(n.target, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1262, in call_function
+    raise LoweringException(e, target, args, kwargs).with_traceback(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/graph.py", line 1252, in call_function
+    out = lowerings[target](*args, **kwargs)  # type: ignore[index]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/lowering.py", line 449, in wrapped
+    out = decomp_fn(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/kernel/mm.py", line 780, in tuned_mm
+    and use_cutlass_template(layout, m, n, k)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/utils.py", line 1649, in use_cutlass_template
+    if not try_import_cutlass():
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 146, in try_import_cutlass
+    link_and_append(
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/codegen/cuda/cutlass_utils.py", line 140, in link_and_append
+    os.remove(dst_link)  # remove if exists
+    ^^^^^^^^^^^^^^^^^^^
+torch._inductor.exc.InductorError: LoweringException: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/torchinductor_willfeng/torch_cutlass/cutlass_library'
+  target: aten.mm.default
+  args[0]: TensorBox(StorageBox(
+    InputBuffer(name='arg0_1', layout=FixedLayout('cuda:0', torch.float16, size=[384, 384], stride=[384, 1]))
+  ))
+  args[1]: TensorBox(StorageBox(
+    InputBuffer(name='arg1_1', layout=FixedLayout('cuda:0', torch.float16, size=[384, 384], stride=[1, 384]))
+  ))
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+

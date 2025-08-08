@@ -1,0 +1,406 @@
+Running all 9 kernels...
+
+
+============================================================
+Kernel: rms_norm
+============================================================
+
+Running rms_norm benchmark with Helion implementation...
+
+Running input shard 1/4: inputs 0 to 0 (of 3 total)
+  0%|          | 0/1 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 1.79ms to get benchmark function for llama_rms
+INFO:tritonbench.utils.triton_op:Took 0.23ms to get benchmark function for llama_rms
+INFO:tritonbench.utils.triton_op:Took 0.14ms to get benchmark function for liger_rms
+INFO:tritonbench.utils.triton_op:Took 0.25ms to get benchmark function for liger_rms
+INFO:tritonbench.utils.triton_op:Took 35.05ms to get benchmark function for inductor_rms
+INFO:tritonbench.utils.triton_op:Took 1.29ms to get benchmark function for inductor_rms
+/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/rms_norm/operator.py:92: UserWarning: Using `torch.compile(module)` when there are global hooks on modules (e.g., from `register_module_forward_hook`); this will cause the hooks to fire an extra time for the `OptimizedModule` created by `torch.compile(module)`. If this causes undesired behavior, please try using `module.compile()`, or use the per-module hooks instead
+  return lambda: compiled(input)
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_rms_norm_tritonbench
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _rms_norm_kernel(x, weight, out, eps, _RDIM_SIZE_1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0
+    indices_0 = offset_0 + tl.zeros([1], tl.int32)
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    x_tile = tl.load(x + (indices_0[:, None] * 1024 + indices_1[None, :] * 1), None)
+    v_0 = x_tile * x_tile
+    mean_x_squared_extra = tl.reshape(tl.sum(v_0, 1), [1, 1])
+    v_1 = 1024
+    v_2 = mean_x_squared_extra / v_1.to(tl.float32)
+    v_3 = v_2 + eps
+    v_4 = libdevice.rsqrt(v_3)
+    v_5 = x_tile * v_4
+    load_1 = tl.load(weight + indices_1 * 1, None)
+    v_6 = load_1[None, :]
+    v_7 = v_5 * v_6
+    tl.store(out + (indices_0[:, None] * 1024 + indices_1[None, :] * 1), v_7, None)
+
+def rms_norm(x: torch.Tensor, weight: torch.Tensor, eps: float=1e-05, *, _launcher=_default_launcher):
+    m, n = x.size()
+    assert weight.size(0) == n, f'weight size mismatch {weight.size(0)} != {n}'
+    out = torch.empty([m, n], dtype=x.dtype, device=x.device)
+    _RDIM_SIZE_1 = 1024
+    _launcher(_rms_norm_kernel, (2048,), x, weight, out, eps, _RDIM_SIZE_1, num_warps=4, num_stages=3)
+    return out
+INFO:tritonbench.utils.triton_op:Took 0.33ms to get benchmark function for helion_rms_norm_tritonbench
+  0%|          | 0/1 [00:01<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 218, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 578, in visit_For
+    self._assign(node.target, inner_type.proxy())
+                              ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/type_propagation.py", line 998, in proxy
+    return Tile(self.block_id)
+           ^^^^^^^^^^^^^^^^^^^
+RuntimeError: Creating a new Tensor subclass Tile but the raw Tensor object is already associated to a python object of type Tensor which is not a subclass of the requested type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1262, in _do_bench
+    metrics.tflops = self.tflops(fn_name, self.example_inputs, metrics)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1855, in tflops
+    self._op_flops[fn] = _get_flops(self, fn)
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1849, in _get_flops
+    work_func()
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1843, in work_func
+    func()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 424, in _inner
+    result = kfunc(*args)
+             ^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/rms_norm.py", line 35, in rms_norm_tritonbench
+    return rms_norm(inp, weight, eps=1e-6)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 158, in bind
+    bound_kernel = BoundKernel(self, args)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 338, in __init__
+    self.host_function: HostFunction = HostFunction(
+                                       ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/host_function.py", line 110, in __init__
+    self.device_ir = lower_to_device_ir(self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1036, in lower_to_device_ir
+    visitor.visit(stmt)
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 218, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1017, in visit_For
+    _make_fx(lambda: WalkDeviceAST(self.device_ir).visit(node))
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 131, in _make_fx
+    return proxy_tensor.make_fx(fn, decomposition_table=select_decomp_table())(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2351, in wrapped
+    return make_fx_tracer.trace(f, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2283, in trace
+    return self._trace_inner(f, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2254, in _trace_inner
+    t = dispatch_trace(
+        ^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1005, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 1283, in dispatch_trace
+    graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1005, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py", line 850, in trace
+    (self.create_arg(fn(*args)),),
+                     ^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 1341, in wrapped
+    out = f(*tensors)  # type:ignore[call-arg]
+          ^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1017, in <lambda>
+    _make_fx(lambda: WalkDeviceAST(self.device_ir).visit(node))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 222, in visit
+    raise exc.InternalError(e) from e
+helion.exc.InternalError: RuntimeError: Creating a new Tensor subclass Tile but the raw Tensor object is already associated to a python object of type Tensor which is not a subclass of the requested type
+While processing:
+  File "/data/users/willfeng/helion/examples/rms_norm.py", line 17, in rms_norm
+    for tile_m in hl.tile(m):
+
+
+============================================================
+Kernel: layer_norm
+============================================================
+
+Running layer_norm benchmark with Helion implementation...
+
+Running input shard 1/4: inputs 0 to 7 (of 30 total)
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 2 outliers from 667 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 5 outliers from 654 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+(M, H)
+  0%|          | 0/8 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for torch_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_layer_norm
+INFO:tritonbench.utils.triton_op:Took 1.28ms to get benchmark function for torch_compile_layer_norm
+INFO:tritonbench.utils.triton_op:Took 1.28ms to get benchmark function for torch_compile_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for liger_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_layer_norm_fwd
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _layer_norm_fwd_kernel(bias, x, weight, out, bias_size_0, bias_stride_0, out_stride_0, out_stride_1, weight_stride_0, x_stride_0, x_stride_1, eps, _RDIM_SIZE_1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0
+    indices_0 = offset_0 + tl.zeros([1], tl.int32)
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < bias_size_0
+    acc = tl.load(x + (indices_0[:, None] * x_stride_0 + indices_1[None, :] * x_stride_1), mask_1[None, :], other=0)
+    var_mean_extra = tl.reshape(tl.sum(acc, 1), [1, 1])
+    v_0 = var_mean_extra / bias_size_0.to(tl.float32)
+    v_1 = acc - v_0
+    v_2 = v_1 * v_1
+    var_mean_extra_2 = tl.reshape(tl.sum(v_2, 1), [1, 1])
+    v_3 = var_mean_extra_2 / bias_size_0.to(tl.float32)
+    v_4 = acc - v_0
+    v_5 = v_3 + eps
+    v_6 = libdevice.rsqrt(v_5)
+    v_7 = v_4 * v_6
+    load_1 = tl.load(weight + indices_1 * weight_stride_0, mask_1, other=0)
+    v_8 = load_1[None, :]
+    v_9 = v_7 * v_8
+    load_2 = tl.load(bias + indices_1 * bias_stride_0, mask_1, other=0)
+    v_10 = load_2[None, :]
+    v_11 = v_9 + v_10
+    v_12 = v_11.to(tl.float16)
+    tl.store(out + (indices_0[:, None] * out_stride_0 + indices_1[None, :] * out_stride_1), v_12, mask_1[None, :])
+
+def layer_norm_fwd(x: torch.Tensor, nomralized_shape: list[int], weight: torch.Tensor, bias: torch.Tensor, eps: float=1e-05, *, _launcher=_default_launcher):
+    m, n = x.size()
+    assert weight.size(0) == n, f'weight size mismatch {weight.size(0)} != {m}'
+    assert bias.size(0) == n, f'bias size mismatch {bias.size(0)} != {m}'
+    assert len(nomralized_shape) == 1, 'Helion layer norm only supports 1D layer norm currently'
+    assert nomralized_shape[0] == n, f'normalized shape mismatch {nomralized_shape[0]} != {n}'
+    out = torch.empty([m, n], dtype=torch.float16, device=x.device)
+    _RDIM_SIZE_1 = triton.next_power_of_2(bias.size(0))
+    _launcher(_layer_norm_fwd_kernel, (m,), bias, x, weight, out, bias.size(0), bias.stride(0), out.stride(0), out.stride(1), weight.stride(0), x.stride(0), x.stride(1), eps, _RDIM_SIZE_1, num_warps=4, num_stages=3)
+    return out
+INFO:tritonbench.utils.triton_op:Took 0.31ms to get benchmark function for helion_layer_norm_fwd
+  0%|          | 0/8 [00:00<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 218, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 578, in visit_For
+    self._assign(node.target, inner_type.proxy())
+                              ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/type_propagation.py", line 998, in proxy
+    return Tile(self.block_id)
+           ^^^^^^^^^^^^^^^^^^^
+RuntimeError: Creating a new Tensor subclass Tile but the raw Tensor object is already associated to a python object of type Tensor which is not a subclass of the requested type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1262, in _do_bench
+    metrics.tflops = self.tflops(fn_name, self.example_inputs, metrics)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1855, in tflops
+    self._op_flops[fn] = _get_flops(self, fn)
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1849, in _get_flops
+    work_func()
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1843, in work_func
+    func()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 424, in _inner
+    result = kfunc(*args)
+             ^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 158, in bind
+    bound_kernel = BoundKernel(self, args)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 338, in __init__
+    self.host_function: HostFunction = HostFunction(
+                                       ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/host_function.py", line 110, in __init__
+    self.device_ir = lower_to_device_ir(self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1036, in lower_to_device_ir
+    visitor.visit(stmt)
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 218, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1017, in visit_For
+    _make_fx(lambda: WalkDeviceAST(self.device_ir).visit(node))
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 131, in _make_fx
+    return proxy_tensor.make_fx(fn, decomposition_table=select_decomp_table())(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2351, in wrapped
+    return make_fx_tracer.trace(f, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2283, in trace
+    return self._trace_inner(f, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2254, in _trace_inner
+    t = dispatch_trace(
+        ^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1005, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 1283, in dispatch_trace
+    graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1005, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py", line 850, in trace
+    (self.create_arg(fn(*args)),),
+                     ^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 1341, in wrapped
+    out = f(*tensors)  # type:ignore[call-arg]
+          ^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1017, in <lambda>
+    _make_fx(lambda: WalkDeviceAST(self.device_ir).visit(node))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 222, in visit
+    raise exc.InternalError(e) from e
+helion.exc.InternalError: RuntimeError: Creating a new Tensor subclass Tile but the raw Tensor object is already associated to a python object of type Tensor which is not a subclass of the requested type
+While processing:
+  File "/data/users/willfeng/helion/examples/layer_norm.py", line 30, in layer_norm_fwd
+    for tile_m in hl.tile(m):
+
+
+============================================================
+Kernel: softmax
+============================================================
+
+Running softmax benchmark with Helion implementation...
+
+Running input shard 1/4: inputs 0 to 24 (of 98 total)
+Removed 1 outliers from 719 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 1 outliers from 738 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 5 outliers from 646 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 7 outliers from 689 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 8 outliers from 700 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+x_val
+  0%|          | 0/25 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for triton_softmax
+  0%|          | 0/25 [00:00<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1202, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 188, in do_bench
+    di.synchronize()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/cuda/__init__.py", line 1083, in synchronize
+    return torch._C._cuda_synchronize()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Removed 8 outliers from 677 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+x_val
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 587, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 583, in main
+    run_kernel(kernel_name, tritonbench_args.copy(), input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 309, in run_kernel
+    run_kernel_variants(
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 504, in run_kernel_variants
+    gc.collect()
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7fec16d9d800>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 264, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 

@@ -1,0 +1,52 @@
+INFO:root:TMA benchmarks will be running without grid constant TMA descriptor.
+TMA benchmarks will be running without grid constant TMA descriptor.
+Running flash_attention benchmark with Helion implementation...
+
+  0%|          | 0/8 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 34.34ms to get benchmark function for flex_attention
+ 12%|█▎        | 1/8 [00:01<00:12,  1.75s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.26ms to get benchmark function for flex_attention
+ 25%|██▌       | 2/8 [00:02<00:07,  1.29s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.23ms to get benchmark function for flex_attention
+ 38%|███▊      | 3/8 [00:03<00:06,  1.25s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.22ms to get benchmark function for flex_attention
+ 50%|█████     | 4/8 [00:04<00:04,  1.16s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.35ms to get benchmark function for flex_attention
+ 62%|██████▎   | 5/8 [00:06<00:03,  1.14s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.32ms to get benchmark function for flex_attention
+ 75%|███████▌  | 6/8 [00:07<00:02,  1.22s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.32ms to get benchmark function for flex_attention
+ 88%|████████▊ | 7/8 [00:09<00:01,  1.61s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for cudnn
+INFO:tritonbench.utils.triton_op:Took 1.35ms to get benchmark function for flex_attention
+100%|██████████| 8/8 [00:12<00:00,  1.91s/it]100%|██████████| 8/8 [00:12<00:00,  1.55s/it]
+Removed 15 outliers from 476 samples
+Removed 6 outliers from 667 samples
+Removed 6 outliers from 447 samples
+Removed 1 outliers from 324 samples
+Removed 11 outliers from 639 samples
+Removed 9 outliers from 420 samples
+Removed 3 outliers from 113 samples
+Removed 8 outliers from 553 samples
+Removed 10 outliers from 402 samples
+Removed 1 outliers from 33 samples
+Removed 8 outliers from 238 samples
+Removed 1 outliers from 38 samples
+Removed 1 outliers from 9 samples
+(Batch, Heads, SeqLen, SeqLen_KV, Dhead);cudnn-speedup;flex_attention-speedup
+(4, 48, 128, 128, 128);2.9027984340681643;1.1996348399374404
+(4, 48, 256, 256, 128);5.680478962218512;3.4329439952236678
+(4, 48, 512, 512, 128);12.219970568694485;7.279589385734849
+(4, 48, 1024, 1024, 128);15.745723815482847;9.983676239622714
+(4, 48, 2048, 2048, 128);15.49966600043825;11.651748990900792
+(4, 48, 4096, 4096, 128);16.2646866423095;12.431341730568725
+(4, 48, 8192, 8192, 128);CUDA OOM;CUDA OOM;CUDA OOM
+(4, 48, 16384, 16384, 128);CUDA OOM;CUDA OOM;CUDA OOM
+average;8.53916555290147;5.747366897748523

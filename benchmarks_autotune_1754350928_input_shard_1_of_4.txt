@@ -1,0 +1,106 @@
+Running all 13 kernels...
+
+
+============================================================
+Kernel: vector_add
+============================================================
+
+Running vector_add benchmark with Helion implementation...
+
+Running input shard 1/4: inputs 0 to 3 (of 16 total)
+  0%|          | 0/4 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_add
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_add
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for triton_add
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for triton_add
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_add
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 17 outliers from 804 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+[10s] Initial population: failed=1 min=0.0047 mid=0.0052 max=0.0102 best=Config(block_sizes=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[25s] Generation 2: replaced=16 min=0.0047 mid=0.0048 max=0.0052 best=Config(block_sizes=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[40s] Generation 3: replaced=9 min=0.0047 mid=0.0048 max=0.0052 best=Config(block_sizes=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[54s] Generation 4: replaced=10 min=0.0047 mid=0.0048 max=0.0052 best=Config(block_sizes=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[69s] Generation 5: replaced=6 min=0.0047 mid=0.0048 max=0.0052 best=Config(block_sizes=[256], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+  0%|          | 0/4 [01:23<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1202, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 396, in _inner
+    result = kfunc(*args)
+             ^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 581, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 473, in autotune
+    config = self.settings.autotuner_fn(self, args, **kwargs).autotune()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_cache.py", line 165, in autotune
+    config = self.autotuner.autotune()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 260, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 84, in evolve_population
+    candidate = self.benchmark_flat(self.mutate(i))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 359, in benchmark_flat
+    return PopulationMember(self.benchmark(config), flat_values, config)
+                            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 116, in benchmark
+    return self.benchmark_function(config, fn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 140, in benchmark_function
+    res = do_bench(
+          ^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 185, in do_bench
+    fn()
+  File "/tmp/torchinductor_willfeng/iu/ciuusmzzmgfvh5jqohlchqgniri3b5faqzlystiacgdop5xpv3yh.py", line 31, in add
+    _launcher(_add_kernel, (triton.cdiv(x.size(0), _BLOCK_SIZE_0),), x, y, out, out.size(0), x.size(0), y.size(0), out.stride(0), x.stride(0), y.stride(0), _BLOCK_SIZE_0, num_warps=4, num_stages=3)
+  File "/data/users/willfeng/helion/helion/runtime/__init__.py", line 55, in default_launcher
+    return triton_kernel.run(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/runtime/jit.py", line 617, in run
+    kernel.run(grid_0, grid_1, grid_2, stream, kernel.function, kernel.packed_metadata, launch_metadata,
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/backends/nvidia/driver.py", line 708, in __call__
+    self.launch(gridX, gridY, gridZ, stream, function, self.launch_cooperative_grid, self.launch_pdl,
+KeyboardInterrupt
+Exception ignored in: <function WeakIdKeyDictionary.__init__.<locals>.remove at 0x7f19611a76a0>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/utils/weak.py", line 159, in remove
+    def remove(k, selfref=ref(self)):
+
+KeyboardInterrupt: 
+x_val
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 564, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 560, in main
+    run_kernel(kernel_name, tritonbench_args.copy(), input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 281, in run_kernel
+    run_kernel_variants(
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 476, in run_kernel_variants
+    gc.collect()
+KeyboardInterrupt

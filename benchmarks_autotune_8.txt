@@ -1,0 +1,43 @@
+Running 6 kernels...
+
+
+============================================================
+Kernel: jagged_mean
+============================================================
+
+Running jagged_mean benchmark with Helion implementation...
+
+  0%|          | 0/5 [00:00<?, ?it/s]  0%|          | 0/5 [00:00<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 953, in run
+    self.example_inputs = next(self._sampled_input_iter)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 808, in _create_sampled_iterator
+    all_inputs = list(self.get_input_iter())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/jagged_mean/operator.py", line 209, in get_input_iter
+    for nt, B, M, max_seqlen, sparsity in generate_random_nested_tensors(
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/jagged_utils.py", line 227, in generate_random_nested_tensors
+    tensor_2d = torch.randn((sum(seqlens), M), device=device, dtype=dtype)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.95 GiB. GPU 0 has a total capacity of 94.99 GiB of which 165.06 MiB is free. Including non-PyTorch memory, this process has 94.82 GiB memory in use. Of the allocated memory 91.34 GiB is allocated by PyTorch, and 2.89 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 486, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 482, in main
+    run_kernel(kernel_name, tritonbench_args.copy())
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 339, in run_kernel
+    op.run(warmup=warmup, rep=rep)
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 953, in run
+    self.example_inputs = next(self._sampled_input_iter)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 808, in _create_sampled_iterator
+    all_inputs = list(self.get_input_iter())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/jagged_mean/operator.py", line 209, in get_input_iter
+    for nt, B, M, max_seqlen, sparsity in generate_random_nested_tensors(
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/jagged_utils.py", line 227, in generate_random_nested_tensors
+    tensor_2d = torch.randn((sum(seqlens), M), device=device, dtype=dtype)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.95 GiB. GPU 0 has a total capacity of 94.99 GiB of which 165.06 MiB is free. Including non-PyTorch memory, this process has 94.82 GiB memory in use. Of the allocated memory 91.34 GiB is allocated by PyTorch, and 2.89 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

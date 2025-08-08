@@ -1,0 +1,4 @@
+(B, T, V);cross_entropy_loss-gbps;cross_entropy_loss-tflops;helion_cross_entropy-accuracy;helion_cross_entropy-gbps;helion_cross_entropy-speedup;helion_cross_entropy-tflops;inductor_cross_entropy_loss-accuracy;inductor_cross_entropy_loss-gbps;inductor_cross_entropy_loss-speedup;inductor_cross_entropy_loss-tflops;liger_cross_entropy_loss-accuracy;liger_cross_entropy_loss-gbps;liger_cross_entropy_loss-speedup;liger_cross_entropy_loss-tflops
+(8, 2048, 4096);;0.0;1.0;;1.7010922028099031;0.0;1.0;;2.0531915729950474;0.0;1.0;;0.6672679489589032;0.0
+(8, 2048, 8192);;0.0;1.0;;1.2204447586013805;0.0;1.0;;0.9997825394690356;0.0;1.0;;0.8920480024031566;0.0
+average;;0.0;1.0;;1.4607684807056418;0.0;1.0;;1.5264870562320416;0.0;1.0;;0.7796579756810299;0.0

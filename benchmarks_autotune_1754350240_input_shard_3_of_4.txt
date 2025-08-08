@@ -1,0 +1,475 @@
+Running all 9 kernels...
+
+
+============================================================
+Kernel: rms_norm
+============================================================
+
+Running rms_norm benchmark with Helion implementation...
+
+Running input shard 3/4: inputs 2 to 2 (of 3 total)
+  0%|          | 0/1 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 1.78ms to get benchmark function for llama_rms
+INFO:tritonbench.utils.triton_op:Took 0.24ms to get benchmark function for llama_rms
+INFO:tritonbench.utils.triton_op:Took 0.13ms to get benchmark function for liger_rms
+INFO:tritonbench.utils.triton_op:Took 0.28ms to get benchmark function for liger_rms
+INFO:tritonbench.utils.triton_op:Took 33.92ms to get benchmark function for inductor_rms
+INFO:tritonbench.utils.triton_op:Took 1.28ms to get benchmark function for inductor_rms
+/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/operators/rms_norm/operator.py:92: UserWarning: Using `torch.compile(module)` when there are global hooks on modules (e.g., from `register_module_forward_hook`); this will cause the hooks to fire an extra time for the `OptimizedModule` created by `torch.compile(module)`. If this causes undesired behavior, please try using `module.compile()`, or use the per-module hooks instead
+  return lambda: compiled(input)
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for helion_rms_norm_tritonbench
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 7 outliers from 602 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 5 outliers from 603 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Process ForkProcess-7:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:13:
+def _rms_norm_kernel(x, weight, out, eps, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [2048, 4096], [4096, 1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+             ^
+[61s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[0], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=5, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[3], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[False], num_warps=2, num_stages=2, indexing='block_ptr', pid_type='persistent_blocked')
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[2048], range_unroll_factors=[1], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=6, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[70s] Initial population: failed=10 min=0.0297 mid=0.1471 max=5.5285 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[131s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[1024], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[210s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[512], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=2, num_stages=4, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[210s] Generation 2: replaced=16 min=0.0297 mid=0.0634 max=0.1894 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[287s] Generation 3: replaced=12 min=0.0297 mid=0.0444 max=0.1878 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[310s] Generation 4: replaced=19 min=0.0297 mid=0.0415 max=0.1471 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[343s] Generation 5: replaced=9 min=0.0297 mid=0.0410 max=0.1186 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[385s] Generation 6: replaced=13 min=0.0297 mid=0.0388 max=0.0757 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[408s] Generation 7: replaced=10 min=0.0297 mid=0.0373 max=0.0634 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[434s] Generation 8: replaced=11 min=0.0297 mid=0.0368 max=0.0507 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[457s] Generation 9: replaced=8 min=0.0297 mid=0.0365 max=0.0507 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[477s] Generation 10: replaced=11 min=0.0297 mid=0.0362 max=0.0455 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[497s] Generation 11: replaced=11 min=0.0297 mid=0.0359 max=0.0397 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[518s] Generation 12: replaced=5 min=0.0297 mid=0.0359 max=0.0393 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[568s] Generation 13: replaced=10 min=0.0297 mid=0.0358 max=0.0367 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[582s] Generation 14: replaced=16 min=0.0297 mid=0.0355 max=0.0363 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[595s] Generation 15: replaced=13 min=0.0297 mid=0.0353 max=0.0362 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[609s] Generation 16: replaced=9 min=0.0297 mid=0.0352 max=0.0360 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[622s] Generation 17: replaced=11 min=0.0297 mid=0.0352 max=0.0360 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[634s] Generation 18: replaced=12 min=0.0297 mid=0.0351 max=0.0360 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[647s] Generation 19: replaced=4 min=0.0297 mid=0.0351 max=0.0356 best=Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[647s] Autotuning complete in 647.2s after searching 1514 configs.
+One can hardcode the best config and skip autotuning with:
+    @helion.kernel(config=helion.Config(block_sizes=[1], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[]))
+
+INFO:tritonbench.utils.triton_op:Took 4.05ms to get benchmark function for helion_rms_norm_tritonbench
+  0%|          | 0/1 [10:48<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 218, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 578, in visit_For
+    self._assign(node.target, inner_type.proxy())
+                              ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/type_propagation.py", line 998, in proxy
+    return Tile(self.block_id)
+           ^^^^^^^^^^^^^^^^^^^
+RuntimeError: Creating a new Tensor subclass Tile but the raw Tensor object is already associated to a python object of type Tensor which is not a subclass of the requested type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1262, in _do_bench
+    metrics.tflops = self.tflops(fn_name, self.example_inputs, metrics)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1855, in tflops
+    self._op_flops[fn] = _get_flops(self, fn)
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1849, in _get_flops
+    work_func()
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1843, in work_func
+    func()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 424, in _inner
+    result = kfunc(*args)
+             ^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/rms_norm.py", line 35, in rms_norm_tritonbench
+    return rms_norm(inp, weight, eps=1e-6)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 158, in bind
+    bound_kernel = BoundKernel(self, args)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 338, in __init__
+    self.host_function: HostFunction = HostFunction(
+                                       ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/host_function.py", line 110, in __init__
+    self.device_ir = lower_to_device_ir(self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1036, in lower_to_device_ir
+    visitor.visit(stmt)
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 218, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1017, in visit_For
+    _make_fx(lambda: WalkDeviceAST(self.device_ir).visit(node))
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 131, in _make_fx
+    return proxy_tensor.make_fx(fn, decomposition_table=select_decomp_table())(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2351, in wrapped
+    return make_fx_tracer.trace(f, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2283, in trace
+    return self._trace_inner(f, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 2254, in _trace_inner
+    t = dispatch_trace(
+        ^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1005, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 1283, in dispatch_trace
+    graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 1005, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py", line 850, in trace
+    (self.create_arg(fn(*args)),),
+                     ^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/fx/experimental/proxy_tensor.py", line 1341, in wrapped
+    out = f(*tensors)  # type:ignore[call-arg]
+          ^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/device_ir.py", line 1017, in <lambda>
+    _make_fx(lambda: WalkDeviceAST(self.device_ir).visit(node))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/ast_extension.py", line 222, in visit
+    raise exc.InternalError(e) from e
+helion.exc.InternalError: RuntimeError: Creating a new Tensor subclass Tile but the raw Tensor object is already associated to a python object of type Tensor which is not a subclass of the requested type
+While processing:
+  File "/data/users/willfeng/helion/examples/rms_norm.py", line 17, in rms_norm
+    for tile_m in hl.tile(m):
+
+
+============================================================
+Kernel: layer_norm
+============================================================
+
+Running layer_norm benchmark with Helion implementation...
+
+Running input shard 3/4: inputs 16 to 22 (of 30 total)
+Removed 2 outliers from 579 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+(M, H)
+  0%|          | 0/7 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for torch_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for torch_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_layer_norm
+INFO:tritonbench.utils.triton_op:Took 1.35ms to get benchmark function for torch_compile_layer_norm
+INFO:tritonbench.utils.triton_op:Took 1.70ms to get benchmark function for torch_compile_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for liger_layer_norm
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_layer_norm_fwd
+  0%|          | 0/7 [00:01<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1202, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 212, in do_bench_wrapper
+    raise e
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 424, in _inner
+    file=sys.stderr,
+                     
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 158, in bind
+    bound_kernel = BoundKernel(self, args)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 338, in __init__
+    self.host_function: HostFunction = HostFunction(
+                                       ^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/_compiler/host_function.py", line 92, in __init__
+    (root,) = root.body
+    ^^^^^^^
+ValueError: too many values to unpack (expected 1)
+
+============================================================
+Kernel: softmax
+============================================================
+
+Running softmax benchmark with Helion implementation...
+
+Running input shard 3/4: inputs 50 to 73 (of 98 total)
+Removed 4 outliers from 305 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 7 outliers from 357 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Removed 1 outliers from 375 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+x_val
+  0%|          | 0/24 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for naive_softmax
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for triton_softmax
+INFO:tritonbench.utils.triton_op:Took 0.04ms to get benchmark function for helion_softmax
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 3 outliers from 176 samples
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Module      FLOP    % Total
+--------  ------  ---------
+Global         0         0%
+Process ForkProcess-1527:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2304, in make_tensor_descriptor
+    return _semantic.make_tensor_descriptor(base, shape, strides, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1880, in make_tensor_descriptor
+    type = tl.block_type(base.type.element_ty, block_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (4194304) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 2:13:
+def _softmax_kernel(x, out, out_size_0, out_size_1, x_size_0, x_size_1, out_stride_0, out_stride_1, x_stride_0, x_stride_1, n, _m, _NUM_SM: tl.constexpr, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    x_desc = tl.make_tensor_descriptor(x, [x_size_0, x_size_1], [x_stride_0, x_stride_1], [_BLOCK_SIZE_0, _RDIM_SIZE_1])
+             ^
+Process ForkProcess-1565:
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 42, in wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 2231, in make_block_ptr
+    return _semantic.make_block_ptr(base, shape, strides, offsets, block_shape, order)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/semantic.py", line 1838, in make_block_ptr
+    return self.tensor(handle, tl.pointer_type(tl.block_type(base.type.element_ty, block_shape)))
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/language/core.py", line 726, in __init__
+    self.numel = validate_block_shape(self.shape)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/_utils.py", line 56, in validate_block_shape
+    raise ValueError(f"numel ({numel}) exceeds triton maximum tensor numel ({TRITON_MAX_TENSOR_NUMEL})")
+ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/users/willfeng/helion/helion/runtime/precompile_shim.py", line 54, in finish_it
+    kernel_cache[key] = fn.compile(
+                        ^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 339, in compile
+    module = src.make_ir(options, codegen_fns, module_map, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py", line 83, in make_ir
+    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+triton.compiler.errors.CompilationError: at 8:19:
+def _softmax_kernel(x, out, out_size_0, out_size_1, x_size_0, x_size_1, out_stride_0, out_stride_1, x_stride_0, x_stride_1, n, _m, _BLOCK_SIZE_0: tl.constexpr, _RDIM_SIZE_1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    mask_0 = indices_0 < n
+    indices_1 = tl.arange(0, _RDIM_SIZE_1).to(tl.int32)
+    mask_1 = indices_1 < _m
+    load = tl.load(tl.make_block_ptr(x, [x_size_0, x_size_1], [x_stride_0, x_stride_1], [offset_0, 0], [_BLOCK_SIZE_0, _RDIM_SIZE_1], [1, 0]), boundary_check=[0, 1], padding_option='zero')
+                   ^
+[61s] Timeout after 60s compiling Config(block_sizes=[16], reduction_loops=[None], range_unroll_factors=[4], range_num_stages=[4], range_multi_buffers=[True], range_flattens=[None], num_warps=1, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[61s] Timeout after 60s compiling Config(block_sizes=[32], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=3, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[61s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[512], range_unroll_factors=[4], range_num_stages=[2], range_multi_buffers=[True], range_flattens=[None], num_warps=2, num_stages=3, indexing='block_ptr', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[256], reduction_loops=[256], range_unroll_factors=[1], range_num_stages=[3], range_multi_buffers=[None], range_flattens=[True], num_warps=2, num_stages=5, indexing='pointer', pid_type='persistent_blocked')
+[61s] Timeout after 60s compiling Config(block_sizes=[4096], reduction_loops=[64], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=8, num_stages=5, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[None], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=4, indexing='block_ptr', pid_type='flat', range_warp_specializes=[])
+[62s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[2048], range_unroll_factors=[4], range_num_stages=[3], range_multi_buffers=[True], range_flattens=[False], num_warps=32, num_stages=3, indexing='block_ptr', pid_type='persistent_blocked')
+[62s] Timeout after 60s compiling Config(block_sizes=[128], reduction_loops=[2048], range_unroll_factors=[1], range_num_stages=[2], range_multi_buffers=[False], range_flattens=[None], num_warps=4, num_stages=7, indexing='tensor_descriptor', pid_type='persistent_interleaved')
+[63s] Timeout after 60s compiling Config(block_sizes=[512], reduction_loops=[1024], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=16, num_stages=7, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[63s] Timeout after 60s compiling Config(block_sizes=[64], reduction_loops=[None], range_unroll_factors=[2], range_num_stages=[2], range_multi_buffers=[True], range_flattens=[False], num_warps=1, num_stages=3, indexing='tensor_descriptor', pid_type='persistent_blocked')
+[72s] Initial population: failed=16 min=0.1443 mid=0.8517 max=31.8039 best=Config(block_sizes=[1], reduction_loops=[4096], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=4, num_stages=3, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+[103s] Timeout after 22s compiling Config(block_sizes=[32], reduction_loops=[512], range_unroll_factors=[0], range_num_stages=[0], range_multi_buffers=[None], range_flattens=[None], num_warps=1, num_stages=8, indexing='pointer', pid_type='flat', range_warp_specializes=[])
+  0%|          | 0/24 [01:43<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 913, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 901, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1202, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 424, in _inner
+    f"Running {operator_name} benchmark with Helion implementation...\n",
+                     ^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 272, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 569, in __call__
+    Returns:
+            ^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 470, in autotune
+    config = FiniteSearch(self, args, self.configs).autotune()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_cache.py", line 165, in autotune
+    config = self.autotuner.autotune()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 260, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 84, in evolve_population
+    candidate = self.benchmark_flat(self.mutate(i))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 359, in benchmark_flat
+    return PopulationMember(self.benchmark(config), flat_values, config)
+                            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 115, in benchmark
+    if self.start_precompile_and_check_for_hangs(config, fn)():
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 484, in __call__
+    process.join(self.seconds_left())
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/multiprocessing/connection.py", line 1135, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/miniconda3/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in: <function WeakIdKeyDictionary.__init__.<locals>.remove at 0x7fcd6d497060>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/utils/weak.py", line 159, in remove
+    def remove(k, selfref=ref(self)):
+
+KeyboardInterrupt: 
+x_val
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 587, in <module>
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 583, in main
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 309, in run_kernel
+    file=sys.stderr,
+^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 504, in run_kernel_variants
+    # Store input-shard info for later processing
+        ^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7fcdf206d800>
+Traceback (most recent call last):
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/miniconda3/lib/python3.12/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 264, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 

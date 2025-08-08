@@ -1,0 +1,1155 @@
+Running 4 kernels...
+
+
+============================================================
+Kernel: gemm
+============================================================
+
+Running gemm benchmark with Helion implementation (variant: matmul_split_k)...
+
+Running input shard 4/4: inputs 24 to 30 (of 31 total)
+  0%|          | 0/7 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for matmul_partition_k
+/home/willfeng/local/pytorch-nightly/torch/backends/cuda/__init__.py:131: UserWarning: Please use the new API settings to control TF32 behavior, such as torch.backends.cudnn.conv.fp32_precision = 'tf32' or torch.backends.cuda.matmul.fp32_precision = 'ieee'. Old settings, e.g, torch.backends.cuda.matmul.allow_tf32 = True, torch.backends.cudnn.allow_tf32 = True, allowTF32CuDNN() and allowTF32CuBLAS() will be deprecated after Pytorch 2.9. Please see https://pytorch.org/docs/main/notes/cuda.html#tensorfloat-32-tf32-on-ampere-and-later-devices (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:78.)
+  return torch._C._get_cublas_allow_tf32()
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 23.56ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 40.37ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 28.53ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3328, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(3328, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3328)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3328 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3328), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 3328 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(3328, _BLOCK_SIZE_0) * triton.cdiv(3328, _BLOCK_SIZE_1) * triton.cdiv(3328, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 14%|█▍        | 1/7 [00:09<00:55,  9.18s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 25.89ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 37.42ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 29.95ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.22ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3456, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(3456, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3456)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3456 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3456), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 3456 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(3456, _BLOCK_SIZE_0) * triton.cdiv(3456, _BLOCK_SIZE_1) * triton.cdiv(3456, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 29%|██▊       | 2/7 [00:17<00:43,  8.61s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 31.94ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 39.17ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 31.28ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.20ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3584, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(3584, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3584)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3584 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3584), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 3584 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(3584, _BLOCK_SIZE_0) * triton.cdiv(3584, _BLOCK_SIZE_1) * triton.cdiv(3584, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 43%|████▎     | 3/7 [00:25<00:33,  8.48s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.06ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 33.40ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 47.26ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 35.75ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.32ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3712, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(3712, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3712)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3712 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3712), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 3712 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(3712, _BLOCK_SIZE_0) * triton.cdiv(3712, _BLOCK_SIZE_1) * triton.cdiv(3712, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 57%|█████▋    | 4/7 [00:34<00:25,  8.50s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.09ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 36.13ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 41.02ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 33.71ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.35ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3840, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(3840, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3840)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3840 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3840), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 3840 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(3840, _BLOCK_SIZE_0) * triton.cdiv(3840, _BLOCK_SIZE_1) * triton.cdiv(3840, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 71%|███████▏  | 5/7 [00:42<00:16,  8.47s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.09ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 42.05ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 43.97ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 33.81ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.48ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(3968, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(3968, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 3968)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 3968 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 3968), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 3968 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(3968, _BLOCK_SIZE_0) * triton.cdiv(3968, _BLOCK_SIZE_1) * triton.cdiv(3968, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 86%|████████▌ | 6/7 [00:51<00:08,  8.49s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.09ms to get benchmark function for matmul_partition_k
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 43.72ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 36.22ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 28.94ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.21ms to get benchmark function for helion_gemm_matmul_split_k
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import helion
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+import examples.matmul_split_k as _source_module
+
+@triton.jit
+def _matmul_split_k_no_bias_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = tl.cdiv(4096, _BLOCK_SIZE_0)
+    num_blocks_1 = tl.cdiv(4096, _BLOCK_SIZE_1)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0 % num_blocks_1
+    pid_2 = tl.program_id(0) // (num_blocks_0 * num_blocks_1)
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    offset_2 = pid_2 * _BLOCK_SIZE_2
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    tile_end = tl.minimum(offset_2 + _BLOCK_SIZE_2, 4096)
+    for offset_3 in tl.range(offset_2.to(tl.int32), tile_end.to(tl.int32), _BLOCK_SIZE_3):
+        indices_3 = offset_3 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        mask_3 = indices_3 < tile_end
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        load = tl.load(x + (indices_0[:, None] * 4096 + indices_3[None, :] * 1), mask_3[None, :], other=0)
+        load_1 = tl.load(y + (indices_3[:, None] * 1 + indices_1[None, :] * 4096), mask_3[:, None], other=0)
+        acc = tl.dot(load, load_1, acc=acc_copy_0, input_precision='tf32')
+    tl.atomic_add(out + (indices_0[:, None] * 4096 + indices_1[None, :] * 1), acc, mask=None, sem='relaxed')
+
+def matmul_split_k_no_bias(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.zeros([m, n], dtype=torch.promote_types(x.dtype, y.dtype), device=x.device)
+    split_k = 1
+    k_block = helion.next_power_of_2(helion.cdiv(k, split_k))
+    _BLOCK_SIZE_0 = 16
+    _BLOCK_SIZE_1 = 16
+    _BLOCK_SIZE_2 = k_block
+    _BLOCK_SIZE_3 = 16
+    _launcher(_matmul_split_k_no_bias_kernel, (triton.cdiv(4096, _BLOCK_SIZE_0) * triton.cdiv(4096, _BLOCK_SIZE_1) * triton.cdiv(4096, _BLOCK_SIZE_2),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+100%|██████████| 7/7 [00:59<00:00,  8.52s/it]100%|██████████| 7/7 [00:59<00:00,  8.54s/it]
+
+Benchmark Results:
+         (M, N, K)    aten_matmul-gbps    aten_matmul-tflops    triton_tutorial_matmul-speedup    triton_tutorial_matmul-gbps    triton_tutorial_matmul-tflops    matmul_partition_k-speedup    matmul_partition_k-gbps    matmul_partition_k-tflops    triton_ops_matmul-speedup    triton_ops_matmul-gbps    triton_ops_matmul-tflops    aten_tunableop_matmul-speedup    aten_tunableop_matmul-gbps    aten_tunableop_matmul-tflops    pt2_triton_matmul-speedup    pt2_triton_matmul-gbps    pt2_triton_matmul-tflops    streamk_matmul-speedup    streamk_matmul-gbps    streamk_matmul-tflops    pt2_cutlass_matmul-speedup    pt2_cutlass_matmul-gbps    pt2_cutlass_matmul-tflops    helion_gemm_matmul_split_k-speedup    helion_gemm_matmul_split_k-gbps    helion_gemm_matmul_split_k-tflops
+------------------  ------------------  --------------------  --------------------------------  -----------------------------  -------------------------------  ----------------------------  -------------------------  ---------------------------  ---------------------------  ------------------------  --------------------------  -------------------------------  ----------------------------  ------------------------------  ---------------------------  ------------------------  --------------------------  ------------------------  ---------------------  -----------------------  ----------------------------  -------------------------  ---------------------------  ------------------------------------  ---------------------------------  -----------------------------------
+(3328, 3328, 3328)             633.518               702.783                          0.81909                         518.909                          575.643                     0.0168589                    10.6804                      11.8482                     0.766963                   485.885                     539.008                         0.95485                        604.915                         671.052                     0.991831                   628.343                     697.041                  0.351717                222.819                  247.18                       0.990033                    627.204                      695.778                             0.0285371                            18.0788                              20.0554
+(3456, 3456, 3456)             613.222               706.432                          0.85367                         523.489                          603.06                      0.0174242                    10.6849                      12.309                      0.778678                   477.503                     550.083                         0.941965                       577.634                         665.435                     0.984367                   603.636                     695.388                  0.357059                218.957                  252.238                      0.990507                    607.401                      699.726                             0.027981                             17.1586                              19.7667
+(3584, 3584, 3584)             599.116               715.744                          0.882159                        528.516                          631.401                     0.0176109                    10.551                       12.6049                     0.766152                   459.014                     548.369                         0.960573                       575.495                         687.525                     1.00149                    600.012                     716.814                  0.353158                211.583                  252.771                      1.00676                     603.168                      720.584                             0.0276745                            16.5803                              19.8079
+(3712, 3712, 3712)             556.68                688.799                          0.785146                        437.075                          540.808                     0.0193261                    10.7584                      13.3118                     0.731788                   407.372                     504.055                         0.961666                       535.34                          662.394                     0.992515                   552.513                     683.643                  0.368567                205.174                  253.869                      0.978288                    544.594                      673.844                             0.0291973                            16.2536                              20.1111
+(3840, 3840, 3840)             560.016               716.821                          0.797062                        446.367                          571.35                      0.0191766                    10.7392                      13.7462                     0.685885                   384.107                     491.657                         0.941457                       527.231                         674.856                     0.991365                   555.181                     710.631                  0.364005                203.849                  260.926                      0.989577                    554.179                      709.349                             0.0281005                            15.7367                              20.143
+(3968, 3968, 3968)             498.26                659.032                          0.909859                        453.346                          599.626                     0.0211289                    10.5277                      13.9247                     0.789474                   393.363                     520.289                         0.989479                       493.018                         652.099                     1.0039                     500.202                     661.6                    0.385291                191.975                  253.919                      1.01892                     507.686                      671.499                             0.030431                             15.1625                              20.055
+(4096, 4096, 4096)             527.276               719.907                          0.883067                        465.62                           635.726                     0.0207254                    10.928                       14.9203                     0.761844                   401.702                     548.457                         0.998494                       526.482                         718.823                     1.00336                    529.049                     722.329                  0.363116                191.462                  261.41                       1.00692                     530.925                      724.889                             0.0279847                            14.7557                              20.1464
+           average             569.727               701.36                           0.84715                         481.903                          593.945                     0.018893                     10.6957                      13.2379                     0.754398                   429.849                     528.845                         0.964069                       548.588                         676.026                     0.995548                   566.991                     698.207                  0.363273                206.546                  254.616                      0.997286                    567.879                      699.381                             0.028558                             16.2466                              20.0122
+
+============================================================
+Kernel: flash_attention
+============================================================
+
+INFO:root:TMA benchmarks will be running without grid constant TMA descriptor.
+TMA benchmarks will be running without grid constant TMA descriptor.
+Running flash_attention benchmark with Helion implementation...
+
+Running input shard 4/4: inputs 6 to 7 (of 8 total)
+Removed 9 outliers from 387 samples
+Removed 3 outliers from 458 samples
+Removed 1 outliers from 240 samples
+Removed 2 outliers from 461 samples
+Removed 6 outliers from 375 samples
+Removed 8 outliers from 440 samples
+Removed 2 outliers from 424 samples
+Removed 32 outliers from 347 samples
+Removed 22 outliers from 418 samples
+Removed 6 outliers from 207 samples
+Removed 7 outliers from 419 samples
+Removed 1 outliers from 20 samples
+Removed 45 outliers from 305 samples
+Removed 3 outliers from 381 samples
+Removed 72 outliers from 389 samples
+Removed 3 outliers from 18 samples
+Removed 17 outliers from 382 samples
+Removed 42 outliers from 283 samples
+Removed 21 outliers from 364 samples
+Removed 24 outliers from 376 samples
+Removed 39 outliers from 299 samples
+Removed 1 outliers from 10 samples
+Removed 11 outliers from 272 samples
+Removed 21 outliers from 327 samples
+Removed 17 outliers from 336 samples
+Removed 11 outliers from 159 samples
+Removed 3 outliers from 15 samples
+Removed 14 outliers from 342 samples
+Removed 16 outliers from 335 samples
+Removed 1 outliers from 156 samples
+Removed 58 outliers from 342 samples
+  0%|          | 0/2 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.19ms to get benchmark function for sdpa
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_tma
+INFO:tritonbench.utils.triton_op:Took 0.22ms to get benchmark function for flash_v3
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_ws
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_tma_ws
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_tma_ws_persistent
+INFO:tritonbench.utils.triton_op:Took 1.16ms to get benchmark function for flex_attention
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_flash_attention
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime import triton_helpers
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _attention_kernel(q_view, k_view, v_view, out, _BLOCK_SIZE_1: tl.constexpr, _RDIM_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = 192
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0
+    indices_0 = offset_0 + tl.zeros([1], tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    indices_4 = tl.arange(0, _RDIM_SIZE_2).to(tl.int32)
+    m_i = tl.full([1, _BLOCK_SIZE_1], float('-inf'), tl.float32)
+    l_i = tl.full([1, _BLOCK_SIZE_1], 1.0, tl.float32)
+    acc = tl.full([1, _BLOCK_SIZE_1, 64], 0.0, tl.float32)
+    q = tl.load(q_view + (indices_0[:, None, None] * 524288 + indices_1[None, :, None] * 64 + indices_4[None, None, :] * 1), None)
+    for offset_2 in tl.range(0, 8192, _BLOCK_SIZE_3):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        q_copy = q
+        m_i_copy = m_i
+        l_i_copy = l_i
+        acc_copy = acc
+        q_copy_0 = q_copy
+        m_i_copy_0 = m_i_copy
+        l_i_copy_0 = l_i_copy
+        acc_copy_0 = acc_copy
+        k = tl.load(k_view + (indices_0[:, None, None] * 524288 + indices_4[None, :, None] * 1 + indices_2[None, None, :] * 64), None)
+        qk = tl.reshape(tl.dot(tl.reshape(q_copy_0, [_BLOCK_SIZE_1, 64]), tl.reshape(k, [64, _BLOCK_SIZE_3]), input_precision='tf32'), [1, _BLOCK_SIZE_1, _BLOCK_SIZE_3])
+        amax = tl.max(qk, 2)
+        v_0 = tl.full([], 0.18033688, tl.bfloat16)
+        v_1 = amax * v_0
+        v_2 = v_1.to(tl.float32)
+        v_3 = triton_helpers.maximum(m_i_copy_0, v_2)
+        v_4 = tl.full([], 0.18033688, tl.bfloat16)
+        v_5 = qk * v_4
+        subscript = v_3[:, :, None]
+        v_6 = v_5.to(tl.float32)
+        v_7 = v_6 - subscript
+        v_8 = libdevice.exp2(v_7)
+        l_ij = tl.sum(v_8, 2)
+        v_9 = m_i_copy_0 - v_3
+        v_10 = libdevice.exp2(v_9)
+        v_11 = l_i_copy_0 * v_10
+        l_i = v_11 + l_ij
+        subscript_1 = v_10[:, :, None]
+        v_13 = acc_copy_0 * subscript_1
+        v = tl.load(v_view + (indices_0[:, None, None] * 524288 + indices_2[None, :, None] * 64 + indices_4[None, None, :] * 1), None)
+        v_14 = v_8.to(tl.bfloat16)
+        acc = tl.reshape(tl.dot(tl.reshape(v_14, [_BLOCK_SIZE_1, _BLOCK_SIZE_3]), tl.reshape(v, [_BLOCK_SIZE_3, 64]), acc=tl.reshape(v_13, [_BLOCK_SIZE_1, 64]), input_precision='tf32'), [1, _BLOCK_SIZE_1, 64])
+        m_i = v_3
+    subscript_2 = l_i[:, :, None]
+    v_15 = acc / subscript_2
+    v_16 = v_15.to(tl.bfloat16)
+    tl.store(out + (indices_0[:, None, None] * 524288 + indices_1[None, :, None] * 64 + indices_4[None, None, :] * 1), v_16, None)
+
+def attention(q_in: torch.Tensor, k_in: torch.Tensor, v_in: torch.Tensor, *, _launcher=_default_launcher):
+    m_dim = q_in.size(-2)
+    n_dim = k_in.size(-2)
+    assert n_dim == v_in.size(-2)
+    head_dim = 64
+    assert head_dim == k_in.size(-1) == v_in.size(-1)
+    q_view = q_in.reshape([-1, m_dim, head_dim])
+    v_view = v_in.reshape([-1, n_dim, head_dim])
+    k_view = k_in.reshape([-1, n_dim, head_dim]).transpose(1, 2)
+    out = torch.empty_like(q_view)
+    _BLOCK_SIZE_1 = 32
+    _RDIM_SIZE_2 = 64
+    _BLOCK_SIZE_3 = 32
+    _launcher(_attention_kernel, (192 * triton.cdiv(8192, _BLOCK_SIZE_1),), q_view, k_view, v_view, out, _BLOCK_SIZE_1, _RDIM_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out.view(q_in.size())
+ 50%|█████     | 1/2 [00:06<00:06,  6.91s/it]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten
+INFO:tritonbench.utils.triton_op:Took 0.02ms to get benchmark function for sdpa
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_tma
+INFO:tritonbench.utils.triton_op:Took 0.16ms to get benchmark function for flash_v3
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_ws
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_tma_ws
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_flash_v2_tma_ws_persistent
+INFO:tritonbench.utils.triton_op:Took 1.15ms to get benchmark function for flex_attention
+INFO:tritonbench.utils.triton_op:Took 0.46ms to get benchmark function for helion_flash_attention
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime import triton_helpers
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _attention_kernel(q_view, k_view, v_view, out, _BLOCK_SIZE_1: tl.constexpr, _RDIM_SIZE_2: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    num_blocks_0 = 192
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0
+    indices_0 = offset_0 + tl.zeros([1], tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    indices_4 = tl.arange(0, _RDIM_SIZE_2).to(tl.int32)
+    m_i = tl.full([1, _BLOCK_SIZE_1], float('-inf'), tl.float32)
+    l_i = tl.full([1, _BLOCK_SIZE_1], 1.0, tl.float32)
+    acc = tl.full([1, _BLOCK_SIZE_1, 64], 0.0, tl.float32)
+    q = tl.load(q_view + (indices_0[:, None, None] * 1048576 + indices_1[None, :, None] * 64 + indices_4[None, None, :] * 1), None)
+    for offset_2 in tl.range(0, 16384, _BLOCK_SIZE_3):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+        q_copy = q
+        m_i_copy = m_i
+        l_i_copy = l_i
+        acc_copy = acc
+        q_copy_0 = q_copy
+        m_i_copy_0 = m_i_copy
+        l_i_copy_0 = l_i_copy
+        acc_copy_0 = acc_copy
+        k = tl.load(k_view + (indices_0[:, None, None] * 1048576 + indices_4[None, :, None] * 1 + indices_2[None, None, :] * 64), None)
+        qk = tl.reshape(tl.dot(tl.reshape(q_copy_0, [_BLOCK_SIZE_1, 64]), tl.reshape(k, [64, _BLOCK_SIZE_3]), input_precision='tf32'), [1, _BLOCK_SIZE_1, _BLOCK_SIZE_3])
+        amax = tl.max(qk, 2)
+        v_0 = tl.full([], 0.18033688, tl.bfloat16)
+        v_1 = amax * v_0
+        v_2 = v_1.to(tl.float32)
+        v_3 = triton_helpers.maximum(m_i_copy_0, v_2)
+        v_4 = tl.full([], 0.18033688, tl.bfloat16)
+        v_5 = qk * v_4
+        subscript = v_3[:, :, None]
+        v_6 = v_5.to(tl.float32)
+        v_7 = v_6 - subscript
+        v_8 = libdevice.exp2(v_7)
+        l_ij = tl.sum(v_8, 2)
+        v_9 = m_i_copy_0 - v_3
+        v_10 = libdevice.exp2(v_9)
+        v_11 = l_i_copy_0 * v_10
+        l_i = v_11 + l_ij
+        subscript_1 = v_10[:, :, None]
+        v_13 = acc_copy_0 * subscript_1
+        v = tl.load(v_view + (indices_0[:, None, None] * 1048576 + indices_2[None, :, None] * 64 + indices_4[None, None, :] * 1), None)
+        v_14 = v_8.to(tl.bfloat16)
+        acc = tl.reshape(tl.dot(tl.reshape(v_14, [_BLOCK_SIZE_1, _BLOCK_SIZE_3]), tl.reshape(v, [_BLOCK_SIZE_3, 64]), acc=tl.reshape(v_13, [_BLOCK_SIZE_1, 64]), input_precision='tf32'), [1, _BLOCK_SIZE_1, 64])
+        m_i = v_3
+    subscript_2 = l_i[:, :, None]
+    v_15 = acc / subscript_2
+    v_16 = v_15.to(tl.bfloat16)
+    tl.store(out + (indices_0[:, None, None] * 1048576 + indices_1[None, :, None] * 64 + indices_4[None, None, :] * 1), v_16, None)
+
+def attention(q_in: torch.Tensor, k_in: torch.Tensor, v_in: torch.Tensor, *, _launcher=_default_launcher):
+    m_dim = q_in.size(-2)
+    n_dim = k_in.size(-2)
+    assert n_dim == v_in.size(-2)
+    head_dim = 64
+    assert head_dim == k_in.size(-1) == v_in.size(-1)
+    q_view = q_in.reshape([-1, m_dim, head_dim])
+    v_view = v_in.reshape([-1, n_dim, head_dim])
+    k_view = k_in.reshape([-1, n_dim, head_dim]).transpose(1, 2)
+    out = torch.empty_like(q_view)
+    _BLOCK_SIZE_1 = 32
+    _RDIM_SIZE_2 = 64
+    _BLOCK_SIZE_3 = 32
+    _launcher(_attention_kernel, (192 * triton.cdiv(16384, _BLOCK_SIZE_1),), q_view, k_view, v_view, out, _BLOCK_SIZE_1, _RDIM_SIZE_2, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out.view(q_in.size())
+100%|██████████| 2/2 [00:19<00:00, 10.04s/it]100%|██████████| 2/2 [00:19<00:00,  9.57s/it]
+
+Benchmark Results:
+  (Batch, Heads, SeqLen, SeqLen_KV, Dhead)    aten-gbps    aten-tflops    sdpa-speedup    sdpa-gbps    sdpa-tflops    triton_tutorial_flash_v2-speedup    triton_tutorial_flash_v2-gbps    triton_tutorial_flash_v2-tflops    triton_tutorial_flash_v2_tma-speedup    triton_tutorial_flash_v2_tma-gbps    triton_tutorial_flash_v2_tma-tflops    flash_v3-speedup    flash_v3-gbps    flash_v3-tflops    triton_tutorial_flash_v2_ws-speedup    triton_tutorial_flash_v2_ws-gbps    triton_tutorial_flash_v2_ws-tflops    triton_tutorial_flash_v2_tma_ws-speedup    triton_tutorial_flash_v2_tma_ws-gbps    triton_tutorial_flash_v2_tma_ws-tflops    triton_tutorial_flash_v2_tma_ws_persistent-speedup    triton_tutorial_flash_v2_tma_ws_persistent-gbps    triton_tutorial_flash_v2_tma_ws_persistent-tflops    flex_attention-speedup    flex_attention-gbps    flex_attention-tflops    helion_flash_attention-speedup    helion_flash_attention-gbps    helion_flash_attention-tflops
+------------------------------------------  -----------  -------------  --------------  -----------  -------------  ----------------------------------  -------------------------------  ---------------------------------  --------------------------------------  -----------------------------------  -------------------------------------  ------------------  ---------------  -----------------  -------------------------------------  ----------------------------------  ------------------------------------  -----------------------------------------  --------------------------------------  ----------------------------------------  ----------------------------------------------------  -------------------------------------------------  ---------------------------------------------------  ------------------------  ---------------------  -----------------------  --------------------------------  -----------------------------  -------------------------------
+                   (4, 48, 8192, 8192, 64)     CUDA OOM                       CUDA OOM                                                        CUDA OOM                                                                                                    CUDA OOM                                                                                        CUDA OOM                                                                   CUDA OOM                                                                                                             CUDA OOM                                                                                                                                CUDA OOM                                                                                                                          CUDA OOM                                                                          CUDA OOM
+                 (4, 48, 16384, 16384, 64)     CUDA OOM                       CUDA OOM                                                        CUDA OOM                                                                                                    CUDA OOM                                                                                        CUDA OOM                                                                   CUDA OOM                                                                                                             CUDA OOM                                                                                                                                CUDA OOM                                                                                                                          CUDA OOM                                                                          CUDA OOM
+                                   average
+
+============================================================
+Kernel: fp8_gemm
+============================================================
+
+WARNING:tritonbench.operators.fp8_gemm.fp8_gemm:Failed to import TMA due to module not being found
+Running fp8_gemm benchmark with Helion implementation...
+
+Running input shard 4/4: inputs 15 to 19 (of 20 total)
+Removed 2 outliers from 12 samples
+Removed 1 outliers from 7 samples
+  0%|          | 0/5 [00:00<?, ?it/s]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 51.05ms to get benchmark function for torch_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.03ms to get benchmark function for helion_fp8_gemm
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_gemm_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    num_blocks_0 = tl.cdiv(14336, _BLOCK_SIZE_0)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    for offset_2 in tl.range(0, 14336, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        x_tile = tl.load(x + (indices_0[:, None] * 14336 + indices_2[None, :] * 1), None)
+        y_tile = tl.load(y + (indices_2[:, None] * 1 + indices_1[None, :] * 14336), None)
+        permute = tl.permute(y_tile, [1, 0])
+        y_tile_col_major = tl.permute(permute, [1, 0])
+        scale_a = tl.full([], 1.0, tl.float32)
+        scale_b = tl.full([], 1.0, tl.float32)
+        mm_out = tl.dot(x_tile, y_tile_col_major) * scale_a * scale_b
+        acc = acc_copy_0 + mm_out
+    v_1 = acc.to(tl.float16)
+    tl.store(out + (indices_0[:, None] * 14336 + indices_1[None, :] * 1), v_1, None)
+
+def fp8_gemm(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    """FP8 General Matrix Multiplication (GEMM).
+
+    This kernel demonstrates FP8 computation in Helion.
+    When lowered to Triton, the tl.dot operation will handle
+    FP8 inputs natively and accumulate to FP32.
+
+    Args:
+        x: Input tensor of shape [m, k] in FP8 format
+        y: Input tensor of shape [k, n] in FP8 format
+
+    Returns:
+        Output tensor of shape [m, n] in FP16 format
+    """
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.float16, device=x.device)
+    _BLOCK_SIZE_0 = 32
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_2 = 32
+    _launcher(_fp8_gemm_kernel, (triton.cdiv(14336, _BLOCK_SIZE_0) * triton.cdiv(14336, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, num_warps=4, num_stages=3)
+    return out
+ 20%|██        | 1/5 [00:04<00:16,  4.03s/it]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 56.76ms to get benchmark function for torch_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.26ms to get benchmark function for helion_fp8_gemm
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_gemm_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    num_blocks_0 = tl.cdiv(16384, _BLOCK_SIZE_0)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    for offset_2 in tl.range(0, 16384, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        x_tile = tl.load(x + (indices_0[:, None] * 16384 + indices_2[None, :] * 1), None)
+        y_tile = tl.load(y + (indices_2[:, None] * 1 + indices_1[None, :] * 16384), None)
+        permute = tl.permute(y_tile, [1, 0])
+        y_tile_col_major = tl.permute(permute, [1, 0])
+        scale_a = tl.full([], 1.0, tl.float32)
+        scale_b = tl.full([], 1.0, tl.float32)
+        mm_out = tl.dot(x_tile, y_tile_col_major) * scale_a * scale_b
+        acc = acc_copy_0 + mm_out
+    v_1 = acc.to(tl.float16)
+    tl.store(out + (indices_0[:, None] * 16384 + indices_1[None, :] * 1), v_1, None)
+
+def fp8_gemm(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    """FP8 General Matrix Multiplication (GEMM).
+
+    This kernel demonstrates FP8 computation in Helion.
+    When lowered to Triton, the tl.dot operation will handle
+    FP8 inputs natively and accumulate to FP32.
+
+    Args:
+        x: Input tensor of shape [m, k] in FP8 format
+        y: Input tensor of shape [k, n] in FP8 format
+
+    Returns:
+        Output tensor of shape [m, n] in FP16 format
+    """
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.float16, device=x.device)
+    _BLOCK_SIZE_0 = 32
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_2 = 32
+    _launcher(_fp8_gemm_kernel, (triton.cdiv(16384, _BLOCK_SIZE_0) * triton.cdiv(16384, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, num_warps=4, num_stages=3)
+    return out
+ 40%|████      | 2/5 [00:08<00:13,  4.51s/it]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 106.27ms to get benchmark function for torch_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.44ms to get benchmark function for helion_fp8_gemm
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_gemm_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    num_blocks_0 = tl.cdiv(20480, _BLOCK_SIZE_0)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    for offset_2 in tl.range(0, 20480, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        x_tile = tl.load(x + (indices_0[:, None] * 20480 + indices_2[None, :] * 1), None)
+        y_tile = tl.load(y + (indices_2[:, None] * 1 + indices_1[None, :] * 20480), None)
+        permute = tl.permute(y_tile, [1, 0])
+        y_tile_col_major = tl.permute(permute, [1, 0])
+        scale_a = tl.full([], 1.0, tl.float32)
+        scale_b = tl.full([], 1.0, tl.float32)
+        mm_out = tl.dot(x_tile, y_tile_col_major) * scale_a * scale_b
+        acc = acc_copy_0 + mm_out
+    v_1 = acc.to(tl.float16)
+    tl.store(out + (indices_0[:, None] * 20480 + indices_1[None, :] * 1), v_1, None)
+
+def fp8_gemm(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    """FP8 General Matrix Multiplication (GEMM).
+
+    This kernel demonstrates FP8 computation in Helion.
+    When lowered to Triton, the tl.dot operation will handle
+    FP8 inputs natively and accumulate to FP32.
+
+    Args:
+        x: Input tensor of shape [m, k] in FP8 format
+        y: Input tensor of shape [k, n] in FP8 format
+
+    Returns:
+        Output tensor of shape [m, n] in FP16 format
+    """
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.float16, device=x.device)
+    _BLOCK_SIZE_0 = 32
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_2 = 32
+    _launcher(_fp8_gemm_kernel, (triton.cdiv(20480, _BLOCK_SIZE_0) * triton.cdiv(20480, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, num_warps=4, num_stages=3)
+    return out
+ 60%|██████    | 3/5 [00:16<00:11,  5.98s/it]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 215.36ms to get benchmark function for torch_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.46ms to get benchmark function for helion_fp8_gemm
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_gemm_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    num_blocks_0 = tl.cdiv(24576, _BLOCK_SIZE_0)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    for offset_2 in tl.range(0, 24576, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        x_tile = tl.load(x + (indices_0[:, None] * 24576 + indices_2[None, :] * 1), None)
+        y_tile = tl.load(y + (indices_2[:, None] * 1 + indices_1[None, :] * 24576), None)
+        permute = tl.permute(y_tile, [1, 0])
+        y_tile_col_major = tl.permute(permute, [1, 0])
+        scale_a = tl.full([], 1.0, tl.float32)
+        scale_b = tl.full([], 1.0, tl.float32)
+        mm_out = tl.dot(x_tile, y_tile_col_major) * scale_a * scale_b
+        acc = acc_copy_0 + mm_out
+    v_1 = acc.to(tl.float16)
+    tl.store(out + (indices_0[:, None] * 24576 + indices_1[None, :] * 1), v_1, None)
+
+def fp8_gemm(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    """FP8 General Matrix Multiplication (GEMM).
+
+    This kernel demonstrates FP8 computation in Helion.
+    When lowered to Triton, the tl.dot operation will handle
+    FP8 inputs natively and accumulate to FP32.
+
+    Args:
+        x: Input tensor of shape [m, k] in FP8 format
+        y: Input tensor of shape [k, n] in FP8 format
+
+    Returns:
+        Output tensor of shape [m, n] in FP16 format
+    """
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.float16, device=x.device)
+    _BLOCK_SIZE_0 = 32
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_2 = 32
+    _launcher(_fp8_gemm_kernel, (triton.cdiv(24576, _BLOCK_SIZE_0) * triton.cdiv(24576, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, num_warps=4, num_stages=3)
+    return out
+ 80%|████████  | 4/5 [00:29<00:08,  8.53s/it]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 384.68ms to get benchmark function for torch_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.01ms to get benchmark function for triton_fp8_gemm
+INFO:tritonbench.utils.triton_op:Took 0.43ms to get benchmark function for helion_fp8_gemm
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import torch
+import triton
+import triton.language as tl
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_gemm_kernel(x, y, out, _BLOCK_SIZE_0: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_2: tl.constexpr):
+    num_blocks_0 = tl.cdiv(28672, _BLOCK_SIZE_0)
+    pid_0 = tl.program_id(0) % num_blocks_0
+    pid_1 = tl.program_id(0) // num_blocks_0
+    offset_0 = pid_0 * _BLOCK_SIZE_0
+    indices_0 = (offset_0 + tl.arange(0, _BLOCK_SIZE_0)).to(tl.int32)
+    offset_1 = pid_1 * _BLOCK_SIZE_1
+    indices_1 = (offset_1 + tl.arange(0, _BLOCK_SIZE_1)).to(tl.int32)
+    acc = tl.full([_BLOCK_SIZE_0, _BLOCK_SIZE_1], 0.0, tl.float32)
+    for offset_2 in tl.range(0, 28672, _BLOCK_SIZE_2):
+        indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_2).to(tl.int32)
+        acc_copy = acc
+        acc_copy_0 = acc_copy
+        x_tile = tl.load(x + (indices_0[:, None] * 28672 + indices_2[None, :] * 1), None)
+        y_tile = tl.load(y + (indices_2[:, None] * 1 + indices_1[None, :] * 28672), None)
+        permute = tl.permute(y_tile, [1, 0])
+        y_tile_col_major = tl.permute(permute, [1, 0])
+        scale_a = tl.full([], 1.0, tl.float32)
+        scale_b = tl.full([], 1.0, tl.float32)
+        mm_out = tl.dot(x_tile, y_tile_col_major) * scale_a * scale_b
+        acc = acc_copy_0 + mm_out
+    v_1 = acc.to(tl.float16)
+    tl.store(out + (indices_0[:, None] * 28672 + indices_1[None, :] * 1), v_1, None)
+
+def fp8_gemm(x: torch.Tensor, y: torch.Tensor, *, _launcher=_default_launcher):
+    """FP8 General Matrix Multiplication (GEMM).
+
+    This kernel demonstrates FP8 computation in Helion.
+    When lowered to Triton, the tl.dot operation will handle
+    FP8 inputs natively and accumulate to FP32.
+
+    Args:
+        x: Input tensor of shape [m, k] in FP8 format
+        y: Input tensor of shape [k, n] in FP8 format
+
+    Returns:
+        Output tensor of shape [m, n] in FP16 format
+    """
+    m, k = x.size()
+    k2, n = y.size()
+    assert k == k2, f'size mismatch {k} != {k2}'
+    out = torch.empty([m, n], dtype=torch.float16, device=x.device)
+    _BLOCK_SIZE_0 = 32
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_2 = 32
+    _launcher(_fp8_gemm_kernel, (triton.cdiv(28672, _BLOCK_SIZE_0) * triton.cdiv(28672, _BLOCK_SIZE_1),), x, y, out, _BLOCK_SIZE_0, _BLOCK_SIZE_1, _BLOCK_SIZE_2, num_warps=4, num_stages=3)
+    return out
+100%|██████████| 5/5 [00:48<00:00, 12.44s/it]100%|██████████| 5/5 [00:48<00:00,  9.68s/it]
+
+Benchmark Results:
+                x_val    torch_fp8_gemm-gbps    torch_fp8_gemm-tflops    triton_fp8_gemm-speedup    triton_fp8_gemm-gbps    triton_fp8_gemm-tflops    helion_fp8_gemm-speedup    helion_fp8_gemm-gbps    helion_fp8_gemm-tflops
+---------------------  ---------------------  -----------------------  -------------------------  ----------------------  ------------------------  -------------------------  ----------------------  ------------------------
+(14336, 14336, 14336)               187.931                   1347.09                   0.917265                172.382                    1235.64                  0.0820666                15.4228                   110.551
+(16384, 16384, 16384)               163.505                   1339.44                   0.986341                161.272                    1321.14                  0.0666256                10.8936                    89.2408
+(20480, 20480, 20480)               120.456                   1233.47                   0.895125                107.823                    1104.11                  0.0672966                 8.10629                   83.0084
+(24576, 24576, 24576)               106.135                   1304.18                   0.884206                 93.8449                   1153.17                  0.0607498                 6.44766                   79.2288
+(28672, 28672, 28672)                96.5798                  1384.57                   0.934723                 90.2754                   1294.19                  0.0583574                 5.63615                   80.7998
+              average               134.921                   1321.75                   0.923532                125.12                     1221.65                  0.0670192                 9.30131                   88.5657
+
+============================================================
+Kernel: fp8_attention
+============================================================
+
+Running fp8_attention benchmark with Helion implementation...
+
+Running input shard 4/4: inputs 6 to 7 (of 8 total)
+Removed 4 outliers from 24 samples
+  0%|          | 0/2 [00:00<?, ?it/s]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 0.22ms to get benchmark function for triton_flash_v2
+INFO:tritonbench.utils.triton_op:Took 0.24ms to get benchmark function for triton_flash_v2_tma
+INFO:tritonbench.utils.triton_op:Took 0.23ms to get benchmark function for triton_flash_v2_ws
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_fp8_attention
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import math
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime import triton_helpers
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_attention_kernel_kernel(q, k, v, out, out_stride_0, heads, _RDIM_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0
+    indices_5 = tl.arange(0, _RDIM_SIZE_2).to(tl.int32)
+    for offset_4 in tl.range(0, 8192, _BLOCK_SIZE_1):
+        indices_4 = offset_4 + tl.arange(0, _BLOCK_SIZE_1).to(tl.int32)
+        m_i = tl.full([_BLOCK_SIZE_1], float('-inf'), tl.float32)
+        l_i = tl.full([_BLOCK_SIZE_1], 0.0, tl.float32)
+        acc = tl.full([_BLOCK_SIZE_1, 64], 0.0, tl.float32)
+        q_tile = tl.load(q + (offset_0 * 524288 + indices_4[:, None] * 64 + indices_5[None, :] * 1), None)
+        for offset_2 in tl.range(0, 8192, _BLOCK_SIZE_3):
+            indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+            q_tile_copy = q_tile
+            m_i_copy = m_i
+            l_i_copy = l_i
+            acc_copy = acc
+            q_tile_copy_0 = q_tile_copy
+            m_i_copy_0 = m_i_copy
+            l_i_copy_0 = l_i_copy
+            acc_copy_0 = acc_copy
+            k_tile = tl.load(k + (offset_0 * 524288 + indices_2[:, None] * 64 + indices_5[None, :] * 1), None)
+            k_tile_t = tl.permute(k_tile, [1, 0])
+            scale_a = tl.full([], 1.0, tl.float32)
+            scale_b = tl.full([], 1.0, tl.float32)
+            qk = tl.dot(q_tile_copy_0, k_tile_t) * scale_a * scale_b
+            v_0 = 0.18033688
+            v_1 = qk * v_0
+            qk_max = tl.max(v_1, 1)
+            v_2 = triton_helpers.maximum(m_i_copy_0, qk_max)
+            subscript = v_2[:, None]
+            v_3 = v_1 - subscript
+            v_4 = libdevice.exp2(v_3)
+            l_ij = tl.sum(v_4, 1)
+            v_5 = m_i_copy_0 - v_2
+            v_6 = libdevice.exp2(v_5)
+            v_7 = l_i_copy_0 * v_6
+            l_i = v_7 + l_ij
+            subscript_1 = v_6[:, None]
+            v_9 = acc_copy_0 * subscript_1
+            v_tile = tl.load(v + (offset_0 * 524288 + indices_5[:, None] * 1 + indices_2[None, :] * 64), None)
+            v_10 = v_4.to(tl.float8e4nv)
+            v_t = tl.permute(v_tile, [1, 0])
+            scale_p = tl.full([], 1.0, tl.float32)
+            scale_v = tl.full([], 1.0, tl.float32)
+            pv = tl.dot(v_10, v_t) * scale_p * scale_v
+            acc = v_9 + pv
+            m_i = v_2
+        subscript_2 = l_i[:, None]
+        v_12 = acc / subscript_2
+        v_13 = v_12.to(tl.float8e4nv)
+        symnode_0 = triton_helpers.div_floor_integer(offset_0, heads)
+        symnode_1 = triton_helpers.remainder_integer(offset_0, heads)
+        tl.store(out + (symnode_0 * out_stride_0 + symnode_1 * 524288 + indices_4[:, None] * 64 + indices_5[None, :] * 1), v_13, None)
+
+def fp8_attention_kernel(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, batch: int, heads: int, *, _launcher=_default_launcher):
+    batch_heads = q.size(0)
+    seq_len = q.size(1)
+    head_dim = q.size(2)
+    out = torch.empty([batch, heads, seq_len, head_dim], dtype=torch.float8_e4m3fn, device=q.device)
+    sm_scale = 1.0 / math.sqrt(float(head_dim))
+    sm_scale = sm_scale * 1.44269504
+    _RDIM_SIZE_2 = 64
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_3 = 32
+    _launcher(_fp8_attention_kernel_kernel, (192,), q, k, v, out, out.stride(0), heads, _RDIM_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+ 50%|█████     | 1/2 [00:04<00:04,  4.79s/it]WARNING:tritonbench.utils.env_utils:[tritonbench] Precision fp8 is handled by operator.
+INFO:tritonbench.utils.triton_op:Took 0.14ms to get benchmark function for triton_flash_v2
+INFO:tritonbench.utils.triton_op:Took 0.25ms to get benchmark function for triton_flash_v2_tma
+INFO:tritonbench.utils.triton_op:Took 0.23ms to get benchmark function for triton_flash_v2_ws
+INFO:tritonbench.utils.triton_op:Took 0.76ms to get benchmark function for helion_fp8_attention
+INFO:helion.runtime.kernel:Output code: 
+from __future__ import annotations
+
+import math
+import torch
+import triton
+import triton.language as tl
+from torch._inductor.runtime import triton_helpers
+from torch._inductor.runtime.triton_compat import libdevice
+from helion.runtime import default_launcher as _default_launcher
+
+@triton.jit
+def _fp8_attention_kernel_kernel(q, k, v, out, out_stride_0, heads, _RDIM_SIZE_2: tl.constexpr, _BLOCK_SIZE_1: tl.constexpr, _BLOCK_SIZE_3: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    offset_0 = pid_0
+    indices_5 = tl.arange(0, _RDIM_SIZE_2).to(tl.int32)
+    for offset_4 in tl.range(0, 16384, _BLOCK_SIZE_1):
+        indices_4 = offset_4 + tl.arange(0, _BLOCK_SIZE_1).to(tl.int32)
+        m_i = tl.full([_BLOCK_SIZE_1], float('-inf'), tl.float32)
+        l_i = tl.full([_BLOCK_SIZE_1], 0.0, tl.float32)
+        acc = tl.full([_BLOCK_SIZE_1, 64], 0.0, tl.float32)
+        q_tile = tl.load(q + (offset_0 * 1048576 + indices_4[:, None] * 64 + indices_5[None, :] * 1), None)
+        for offset_2 in tl.range(0, 16384, _BLOCK_SIZE_3):
+            indices_2 = offset_2 + tl.arange(0, _BLOCK_SIZE_3).to(tl.int32)
+            q_tile_copy = q_tile
+            m_i_copy = m_i
+            l_i_copy = l_i
+            acc_copy = acc
+            q_tile_copy_0 = q_tile_copy
+            m_i_copy_0 = m_i_copy
+            l_i_copy_0 = l_i_copy
+            acc_copy_0 = acc_copy
+            k_tile = tl.load(k + (offset_0 * 1048576 + indices_2[:, None] * 64 + indices_5[None, :] * 1), None)
+            k_tile_t = tl.permute(k_tile, [1, 0])
+            scale_a = tl.full([], 1.0, tl.float32)
+            scale_b = tl.full([], 1.0, tl.float32)
+            qk = tl.dot(q_tile_copy_0, k_tile_t) * scale_a * scale_b
+            v_0 = 0.18033688
+            v_1 = qk * v_0
+            qk_max = tl.max(v_1, 1)
+            v_2 = triton_helpers.maximum(m_i_copy_0, qk_max)
+            subscript = v_2[:, None]
+            v_3 = v_1 - subscript
+            v_4 = libdevice.exp2(v_3)
+            l_ij = tl.sum(v_4, 1)
+            v_5 = m_i_copy_0 - v_2
+            v_6 = libdevice.exp2(v_5)
+            v_7 = l_i_copy_0 * v_6
+            l_i = v_7 + l_ij
+            subscript_1 = v_6[:, None]
+            v_9 = acc_copy_0 * subscript_1
+            v_tile = tl.load(v + (offset_0 * 1048576 + indices_5[:, None] * 1 + indices_2[None, :] * 64), None)
+            v_10 = v_4.to(tl.float8e4nv)
+            v_t = tl.permute(v_tile, [1, 0])
+            scale_p = tl.full([], 1.0, tl.float32)
+            scale_v = tl.full([], 1.0, tl.float32)
+            pv = tl.dot(v_10, v_t) * scale_p * scale_v
+            acc = v_9 + pv
+            m_i = v_2
+        subscript_2 = l_i[:, None]
+        v_12 = acc / subscript_2
+        v_13 = v_12.to(tl.float8e4nv)
+        symnode_0 = triton_helpers.div_floor_integer(offset_0, heads)
+        symnode_1 = triton_helpers.remainder_integer(offset_0, heads)
+        tl.store(out + (symnode_0 * out_stride_0 + symnode_1 * 1048576 + indices_4[:, None] * 64 + indices_5[None, :] * 1), v_13, None)
+
+def fp8_attention_kernel(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, batch: int, heads: int, *, _launcher=_default_launcher):
+    batch_heads = q.size(0)
+    seq_len = q.size(1)
+    head_dim = q.size(2)
+    out = torch.empty([batch, heads, seq_len, head_dim], dtype=torch.float8_e4m3fn, device=q.device)
+    sm_scale = 1.0 / math.sqrt(float(head_dim))
+    sm_scale = sm_scale * 1.44269504
+    _RDIM_SIZE_2 = 64
+    _BLOCK_SIZE_1 = 32
+    _BLOCK_SIZE_3 = 32
+    _launcher(_fp8_attention_kernel_kernel, (192,), q, k, v, out, out.stride(0), heads, _RDIM_SIZE_2, _BLOCK_SIZE_1, _BLOCK_SIZE_3, num_warps=4, num_stages=3)
+    return out
+100%|██████████| 2/2 [00:13<00:00,  7.35s/it]100%|██████████| 2/2 [00:13<00:00,  6.96s/it]
+
+Benchmark Results:
+  x_val    triton_flash_v2-gbps    triton_flash_v2-tflops    triton_flash_v2_tma-speedup    triton_flash_v2_tma-gbps    triton_flash_v2_tma-tflops    triton_flash_v2_ws-speedup    triton_flash_v2_ws-gbps    triton_flash_v2_ws-tflops    helion_fp8_attention-speedup    helion_fp8_attention-gbps    helion_fp8_attention-tflops
+-------  ----------------------  ------------------------  -----------------------------  --------------------------  ----------------------------  ----------------------------  -------------------------  ---------------------------  ------------------------------  ---------------------------  -----------------------------
+      6                                           491.802                       0.989715                                                   486.744                      0.930219                                                 457.483                       0.078727                                                      38.7181
+      7                                           499.87                        1.09471                                                    547.214                      0.95589                                                  477.821                       0.0777039                                                     38.8418
+average                                           495.836                       1.04221                                                    516.979                      0.943054                                                 467.652                       0.0782154                                                     38.78
+Removed 2 outliers from 15 samples

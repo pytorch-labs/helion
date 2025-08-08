@@ -1,0 +1,158 @@
+Running 4 kernels...
+
+
+============================================================
+Kernel: gemm
+============================================================
+
+Running gemm benchmark with Helion implementation (variant: matmul_split_k)...
+
+Running input shard 2/4: inputs 8 to 15 (of 31 total)
+  0%|          | 0/8 [00:00<?, ?it/s]INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for aten_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_tutorial_matmul
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for matmul_partition_k
+/home/willfeng/local/pytorch-nightly/torch/backends/cuda/__init__.py:131: UserWarning: Please use the new API settings to control TF32 behavior, such as torch.backends.cudnn.conv.fp32_precision = 'tf32' or torch.backends.cuda.matmul.fp32_precision = 'ieee'. Old settings, e.g, torch.backends.cuda.matmul.allow_tf32 = True, torch.backends.cudnn.allow_tf32 = True, allowTF32CuDNN() and allowTF32CuBLAS() will be deprecated after Pytorch 2.9. Please see https://pytorch.org/docs/main/notes/cuda.html#tensorfloat-32-tf32-on-ampere-and-later-devices (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:78.)
+  return torch._C._get_cublas_allow_tf32()
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for triton_ops_matmul
+INFO:tritonbench.utils.triton_op:Took 3.76ms to get benchmark function for aten_tunableop_matmul
+INFO:tritonbench.utils.triton_op:Took 41.96ms to get benchmark function for pt2_triton_matmul
+INFO:tritonbench.utils.triton_op:Took 0.00ms to get benchmark function for streamk_matmul
+INFO:tritonbench.utils.triton_op:Took 30.49ms to get benchmark function for pt2_cutlass_matmul
+INFO:tritonbench.utils.triton_op:Took 0.05ms to get benchmark function for helion_gemm_matmul_split_k
+[0s] Starting DifferentialEvolutionSearch with population=40, generations=20, crossover_rate=0.8
+Removed 10 outliers from 751 samples
+Removed 1 outliers from 102 samples
+Removed 1 outliers from 796 samples
+Removed 3 outliers from 774 samples
+[4s] PTXASError compiling config: Config(block_sizes=[256, 256, 16], loop_orders=[[1, 0, 2]], l2_groupings=[8], range_unroll_factors=[0, 3], range_num_stages=[0, 2], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=32, num_stages=1, indexing='block_ptr', pid_type='flat', split_k=8, range_warp_specializes=[])
+[12s] Initial population: failed=5 min=0.0477 mid=0.6092 max=31.7252 best=Config(block_sizes=[16, 16, 64], loop_orders=[[2, 1, 0]], l2_groupings=[64], range_unroll_factors=[0, 0], range_num_stages=[0, 4], range_multi_buffers=[None, None], range_flattens=[None, True], num_warps=1, num_stages=1, indexing='tensor_descriptor', pid_type='flat', split_k=1, range_warp_specializes=[])
+[40s] Generation 2: replaced=20 min=0.0364 mid=0.1293 max=0.4541 best=Config(block_sizes=[32, 64, 32], loop_orders=[[1, 0, 2]], l2_groupings=[32], range_unroll_factors=[0, 2], range_num_stages=[0, 4], range_multi_buffers=[None, True], range_flattens=[None, True], num_warps=4, num_stages=3, indexing='block_ptr', pid_type='flat', split_k=1, range_warp_specializes=[])
+  0%|          | 0/8 [00:53<?, ?it/s]
+WARNING:tritonbench.utils.triton_op:Caught exception, terminating early with partial results
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1164, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 335, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/matmul_split_k.py", line 54, in matmul_split_k
+    return matmul_split_k_no_bias(x, y)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 83, in evolve_population
+    for i, candidate in self.iter_candidates():
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 76, in iter_candidates
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 358, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 226, in parallel_benchmark
+    results.append((config, self.benchmark_function(config, fn)))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 124, in benchmark_function
+    res = do_bench(
+          ^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 188, in do_bench
+    di.synchronize()
+  File "/home/willfeng/local/pytorch-nightly/torch/cuda/__init__.py", line 1083, in synchronize
+    return torch._C._cuda_synchronize()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 510, in <module>
+    main()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 506, in main
+    run_kernel(kernel_name, tritonbench_args.copy(), input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 235, in run_kernel
+    run_single_kernel_variant(kernel_name, tritonbench_module, module_path, func_name, tritonbench_args.copy(), variant_name, input_shard_info)
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 413, in run_single_kernel_variant
+    op.run(warmup=warmup, rep=rep)
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 902, in run
+    y_vals: Dict[str, BenchmarkOperatorMetrics] = functools.reduce(
+                                                  ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 890, in _reduce_benchmarks
+    acc[bm_name] = self._do_bench(
+                   ^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/utils/triton_op.py", line 1164, in _do_bench
+    metrics.latency = do_bench_wrapper(
+                      ^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/benchmarks/tritonbench/tritonbench/components/do_bench/run.py", line 202, in do_bench_wrapper
+    times=triton.testing.do_bench(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 149, in do_bench
+    fn()
+  File "/data/users/willfeng/helion/benchmarks/run.py", line 335, in _inner
+    result = kernel_func(*args)
+             ^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/examples/matmul_split_k.py", line 54, in matmul_split_k
+    return matmul_split_k_no_bias(x, y)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 252, in __call__
+    return self.bind(args)(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 535, in __call__
+    self.autotune(args)
+  File "/data/users/willfeng/helion/helion/runtime/kernel.py", line 447, in autotune
+    ).autotune()
+      ^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 242, in autotune
+    best = self._autotune()
+           ^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 99, in _autotune
+    replaced = self.evolve_population()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 83, in evolve_population
+    for i, candidate in self.iter_candidates():
+  File "/data/users/willfeng/helion/helion/autotuner/differential_evolution.py", line 76, in iter_candidates
+    self.parallel_benchmark_flat(
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 358, in parallel_benchmark_flat
+    to_check, configs, self.parallel_benchmark(configs), strict=True
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 226, in parallel_benchmark
+    results.append((config, self.benchmark_function(config, fn)))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/users/willfeng/helion/helion/autotuner/base_search.py", line 124, in benchmark_function
+    res = do_bench(
+          ^^^^^^^^^
+  File "/home/willfeng/local/pytorch-nightly/triton/testing.py", line 188, in do_bench
+    di.synchronize()
+  File "/home/willfeng/local/pytorch-nightly/torch/cuda/__init__.py", line 1083, in synchronize
+    return torch._C._cuda_synchronize()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in atexit callback: <function shutdown_compile_workers at 0x7fb05a240720>
+Traceback (most recent call last):
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/async_compile.py", line 145, in shutdown_compile_workers
+    pool.shutdown()
+  File "/home/willfeng/local/pytorch-nightly/torch/_inductor/compile_worker/subproc_pool.py", line 262, in shutdown
+    self.process.wait(300)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/willfeng/local/miniconda3/lib/python3.12/subprocess.py", line 2045, in _wait
+    time.sleep(delay)
+KeyboardInterrupt: 
